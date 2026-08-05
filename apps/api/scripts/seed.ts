@@ -12,6 +12,7 @@ async function main() {
 
   // wipe (FK order)
   for (const t of [
+    'auditor_scopes', 'scheduled_reports', 'saved_reports',
     'notifications', 'email_outbox', 'qb_outbox', 'retirements', 'advances',
     'budget_allocations', 'budget_versions', 'signature_signers', 'signature_requests',
     'doc_links', 'doc_versions', 'documents', 'doc_folders',

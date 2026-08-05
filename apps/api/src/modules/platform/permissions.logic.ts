@@ -96,4 +96,8 @@ export const DEFAULT_ROLE_GRANTS: Record<RoleCode, PermGrant[]> = {
     ...grant(['admin'], [...PERMISSION_ACTIONS], 'organisation'),
     ...grant([...PERMISSION_MODULES], ['VIEW', 'CONFIGURE'], 'organisation'),
   ],
+  // AUD-06: scoped read-only — enforcement is in AuthGuard; grants document intent
+  EXTERNAL_AUDITOR: [
+    ...grant(['requisitions', 'advances', 'retirements', 'audit', 'reports', 'documents'], ['VIEW'], 'organisation'),
+  ],
 };

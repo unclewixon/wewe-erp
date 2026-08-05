@@ -7,7 +7,7 @@ import { db, schema } from './db/client';
 import { AuditService } from './audit/audit.service';
 import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, type AuthedUser } from './auth/auth';
 import { WorkflowService } from './workflow/workflow.service';
-import { RequisitionsController, RequisitionsService } from './requisitions/requisitions';
+import { BulkActionsService, RequisitionsController, RequisitionsService } from './requisitions/requisitions';
 import { canAct, type StageDef } from './workflow/engine.logic';
 import * as money from './modules/money';
 import * as dms from './modules/dms';
@@ -15,8 +15,9 @@ import * as people from './modules/people';
 import * as ops from './modules/ops';
 import * as governance from './modules/governance';
 import * as platform from './modules/platform';
+import * as reporting from './modules/reporting';
 
-const MODULE_AREAS = [money, dms, people, ops, governance, platform] as const;
+const MODULE_AREAS = [money, dms, people, ops, governance, platform, reporting] as const;
 export const moduleSeedDefaults = async () => { for (const m of MODULE_AREAS) await m.seedDefaults(); };
 for (const m of MODULE_AREAS) m.register();
 
@@ -35,12 +36,48 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: unknown, @Req() req: any, @Res({ passthrough: true }) res: any) {
     const dto = LoginSchema.parse(body);
-    const { token, expiresAt } = await this.auth.login(dto.email, dto.password, req.ip);
-    res.cookie(SESSION_COOKIE, token, {
-      httpOnly: true, sameSite: 'lax', secure: false /* true behind TLS in production */, expires: expiresAt, path: '/',
+    const result = await this.auth.login(dto.email, dto.password, req.ip);
+    if (result.kind === '2fa') return { requires2fa: true, pendingToken: result.pendingToken };
+    res.cookie(SESSION_COOKIE, result.token, {
+      httpOnly: true, sameSite: 'lax', secure: false /* true behind TLS in production */, expires: result.expiresAt, path: '/',
     });
+    const user = await this.auth.resolveSession(result.token);
+    return { user };
+  }
+
+  /** AUTH-02: complete a 2FA login. */
+  @Post('verify-2fa')
+  async verify2fa(@Body() body: unknown, @Req() req: any, @Res({ passthrough: true }) res: any) {
+    const dto = z.object({ pendingToken: z.string().min(10), code: z.string().min(6).max(12) }).parse(body);
+    const { token, expiresAt } = await this.auth.verify2fa(dto.pendingToken, dto.code, req.ip);
+    res.cookie(SESSION_COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: false, expires: expiresAt, path: '/' });
     const user = await this.auth.resolveSession(token);
     return { user };
+  }
+
+  @Post('2fa/setup')
+  @UseGuards(AuthGuard)
+  setup2fa(@CurrentUser() user: AuthedUser) { return this.auth.setup2fa(user); }
+
+  @Post('2fa/confirm')
+  @UseGuards(AuthGuard)
+  confirm2fa(@CurrentUser() user: AuthedUser, @Body() body: unknown) {
+    const dto = z.object({ code: z.string().min(6).max(8) }).parse(body);
+    return this.auth.confirm2fa(user, dto.code);
+  }
+
+  @Post('admin/:userId/reset-2fa')
+  @UseGuards(AuthGuard)
+  @RequireRoles('SYSTEM_ADMIN')
+  adminReset2fa(@CurrentUser() admin: AuthedUser, @Param('userId') userId: string, @Req() req: any) {
+    return this.auth.adminReset2fa(admin, userId, req.ip);
+  }
+
+  @Post('admin/:userId/unlock')
+  @UseGuards(AuthGuard)
+  @RequireRoles('SYSTEM_ADMIN')
+  adminUnlock(@CurrentUser() admin: AuthedUser, @Param('userId') userId: string, @Req() req: any) {
+    return this.auth.adminUnlock(admin, userId, req.ip);
   }
 
   @Post('logout')
@@ -188,7 +225,7 @@ export class DelegationsController {
     ...MODULE_AREAS.flatMap((m) => m.controllers as any[]),
   ],
   providers: [
-    AuditService, AuthService, AuthGuard, WorkflowService, RequisitionsService,
+    AuditService, AuthService, AuthGuard, WorkflowService, RequisitionsService, BulkActionsService,
     ...MODULE_AREAS.flatMap((m) => (m.providers ?? []) as any[]),
   ],
 })

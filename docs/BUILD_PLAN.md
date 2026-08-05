@@ -17,8 +17,8 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Web: tokens.css from design handoff, Shell (282px sidebar, groups), sign-in, dashboard (live stats), requisitions queue/list, new-requisition form, transaction detail with ApprovalTracker
 - [x] Interim build-side screens DELETED; apps/web now serves the design bundle byte-for-byte (cmp-guarded)
 - [ ] Data adapter: feed real API data into the verbatim render paths (no markup changes) — requisitions first
-- [ ] 2FA TOTP enrolment + verification (AUTH-02) — awaiting design (gap #1)
-- [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04) — awaiting design (gaps #2–4, #6)
+- [x] 2FA TOTP (AUTH-02): RFC-6238 impl (zero-dep, RFC-4226 test vectors), enrolment + backup codes, pending-login verify; enrolment SCREEN still awaiting design (gap #1)
+- [x] Progressive lockout + admin unlock (AUTH-04); session/profile UI awaiting design (gaps #2–4, #6)
 
 ## Phase 2 — Workflow depth (BACKEND COMPLETE)
 - [x] Amount-based rules / thresholds (WFE-03): chain resolved & frozen at submission; auto-passed stages reported, never silent (config via TransactionType.stages)
@@ -26,7 +26,7 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Instant revocation (AUTH-05): deactivate kills sessions + delegations, audit + notify
 - [x] SLA timers + escalation (WFE-06): in-process 60s scanner, 75% reminder / 100% escalation, deduped per stage (BullMQ/Redis = production upgrade path)
 - [x] Notifications in-app (NTF-01) via event bus + email outbox with dev transport (.eml to var/outbox; provider OAuth pending — NTF-02 stub noted in code)
-- [ ] Bulk actions endpoint (WFE-08) — engine supports it; batch endpoint pending
+- [x] Bulk actions (WFE-08): 50-item cap, per-item amount ceiling, open-audit-flag exclusion, per-item results
 - [x] Workflow configuration API (WFE-10 backend): transaction-types CRUD with validation; UI = verbatim design
 
 ## Phase 3 — Money (BACKEND COMPLETE)
@@ -44,8 +44,9 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 ## Phase 6 — Depth modules (BACKEND COMPLETE)
 - [x] Procurement: vendors/RFQ/quotes/PO/receipts/contracts/thresholds/order-splitting (PRC-01..05); assets: register/assign/verify/dispose/depreciation (AST-01..04); grants: budget-vs-actual, FX, reports, calendar (DGM-01..04)
 - [x] Inventory & stores: items, GRN/issue/adjust/count, low-stock alerts (INV-01..04)
-- [x] Audit suite backend: flags/respond/close, findings, evidence packs, access & activity reports (AUD-02..05); external auditor portal accounts (AUD-06) pending
-- [x] Pipeline analytics + registers + exports (DSH-02..04 backend); scheduled reports + custom builder (DSH-05/06) pending
+- [x] Audit suite backend: flags/respond/close, findings, evidence packs, access & activity reports (AUD-02..05)
+- [x] External auditor accounts (AUD-06): scoped (donor/period), auto-expiring, read-only enforced at guard level, revocation kills sessions
+- [x] Pipeline analytics + registers + exports (DSH-02..04); scheduled reports w/ role recipients + Lagos-time cadence (DSH-05); saved custom reports w/ whitelisted columns/filters + CSV (DSH-06)
 
 ## Phase 7 — Admin depth & hardening (BACKEND LARGELY COMPLETE)
 - [x] Roles & Permissions backend: 17×7 catalog, matrix get/set with SoD-pair blocking, resolver, change log (UI = verbatim design)

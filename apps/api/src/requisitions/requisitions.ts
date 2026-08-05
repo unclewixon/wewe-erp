@@ -28,6 +28,11 @@ const ActionSchema = z.object({
   verb: z.enum(['approve', 'reject', 'return']),
   comment: z.string().max(2000).optional(),
 });
+const BulkActionSchema = z.object({
+  ids: z.array(z.string()).min(1).max(50), // WFE-08 cap
+  verb: z.enum(['approve', 'reject', 'return']),
+  comment: z.string().max(2000).optional(),
+});
 
 @Injectable()
 export class RequisitionsService {
@@ -98,6 +103,29 @@ export class RequisitionsService {
     const actor = { id: user.id, roles: user.roles };
     const central = user.roles.some((r) =>
       ['INTERNAL_AUDIT', 'FINANCE', 'FINAL_APPROVER', 'SYSTEM_ADMIN'].includes(r.code));
+    // AUD-06: external auditors see only their scoped donor/period, read-only
+    const auditorOnly = user.roles.length > 0 && user.roles.every((r) => r.code === 'EXTERNAL_AUDITOR');
+    if (auditorOnly) {
+      const scope = await db.query.auditorScopes.findFirst({
+        where: and(eq(schema.auditorScopes.userId, user.id), sql`${schema.auditorScopes.expiresAt} > now()`),
+      });
+      if (!scope) return [];
+      return rows.filter((tx) =>
+        (!scope.donorCode || tx.donorCode === scope.donorCode) &&
+        (!scope.periodStart || (tx.submittedAt && tx.submittedAt >= scope.periodStart)) &&
+        (!scope.periodEnd || (tx.submittedAt && tx.submittedAt <= scope.periodEnd)),
+      ).map((tx) => {
+        const chain = ((tx.payload as any)?.chain as StageDef[]) ?? (tx.type.stages as StageDef[]);
+        return {
+          id: tx.id, ref: tx.ref, title: tx.title, status: tx.status,
+          currentStage: tx.currentStage, chain: chain.map((st) => st.role),
+          stageRole: tx.status === 'PENDING' ? chain[tx.currentStage]?.role : null,
+          amountKobo: tx.amountKobo.toString(), donorCode: tx.donorCode,
+          department: tx.department.name, initiator: tx.initiator.name,
+          submittedAt: tx.submittedAt, updatedAt: tx.updatedAt,
+        };
+      });
+    }
     const filtered = rows.filter((tx) => {
       const chain = ((tx.payload as any)?.chain as StageDef[]) ?? (tx.type.stages as StageDef[]);
       const ctx = {
@@ -173,10 +201,53 @@ export class RequisitionsService {
   }
 }
 
+@Injectable()
+export class BulkActionsService {
+  constructor(private readonly workflow: WorkflowService) {}
+
+  /** WFE-08: act on many items; each result individual, each fully audit-logged by the engine. */
+  async bulkAction(user: AuthedUser, dto: z.infer<typeof BulkActionSchema>, ip?: string) {
+    if ((dto.verb === 'reject' || dto.verb === 'return') && !dto.comment?.trim())
+      throw new BadRequestException('A note is required for bulk return/reject and is applied to every item');
+    const capSetting = await db.query.settings.findFirst({ where: eq(schema.settings.key, 'bulk.maxItemKobo') });
+    const maxItemKobo = BigInt((capSetting?.value as string) ?? '100000000'); // default ₦1,000,000 per item for bulk approve
+    const results: { id: string; ok: boolean; ref?: string; status?: string; reason?: string }[] = [];
+    for (const id of dto.ids) {
+      try {
+        const tx = await db.query.transactions.findFirst({ where: eq(schema.transactions.id, id) });
+        if (!tx) { results.push({ id, ok: false, reason: 'Not found' }); continue; }
+        if (dto.verb === 'approve' && tx.amountKobo > maxItemKobo) {
+          results.push({ id, ok: false, ref: tx.ref, reason: 'Above the bulk-approve amount cap — approve individually' });
+          continue;
+        }
+        // Items with open audit flags are excluded from bulk actions (AUD-02)
+        const flag = await db.query.auditFlags.findFirst({
+          where: and(eq(schema.auditFlags.entityType, 'transaction'), eq(schema.auditFlags.entityId, tx.ref), eq(schema.auditFlags.status, 'OPEN')),
+        });
+        if (flag) { results.push({ id, ok: false, ref: tx.ref, reason: 'Open audit flag — resolve before acting' }); continue; }
+        const next = await this.workflow.act(id, user, dto.verb, dto.comment, ip);
+        results.push({ id, ok: true, ref: tx.ref, status: next.status });
+      } catch (e: any) {
+        results.push({ id, ok: false, reason: e?.message ?? 'Failed' });
+      }
+    }
+    return { requested: dto.ids.length, succeeded: results.filter((r) => r.ok).length, results };
+  }
+}
+
 @Controller('v1/requisitions')
 @UseGuards(AuthGuard)
 export class RequisitionsController {
-  constructor(private readonly svc: RequisitionsService, private readonly workflow: WorkflowService) {}
+  constructor(
+    private readonly svc: RequisitionsService,
+    private readonly workflow: WorkflowService,
+    private readonly bulk: BulkActionsService,
+  ) {}
+
+  @Post('bulk-action')
+  bulkAction(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {
+    return this.bulk.bulkAction(user, BulkActionSchema.parse(body), req.ip);
+  }
 
   @Post()
   create(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {

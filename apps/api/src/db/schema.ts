@@ -4,7 +4,7 @@ import {
 import { relations, sql } from 'drizzle-orm';
 
 export const roleCode = pgEnum('role_code', [
-  'INITIATOR', 'SUPERVISOR', 'INTERNAL_AUDIT', 'FINANCE', 'FINAL_APPROVER', 'HR_OFFICER', 'SYSTEM_ADMIN',
+  'INITIATOR', 'SUPERVISOR', 'INTERNAL_AUDIT', 'FINANCE', 'FINAL_APPROVER', 'HR_OFFICER', 'SYSTEM_ADMIN', 'EXTERNAL_AUDITOR',
 ]);
 export type RoleCode = (typeof roleCode.enumValues)[number];
 
@@ -29,6 +29,13 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   active: boolean('active').notNull().default(true),
   departmentId: text('department_id').references(() => departments.id),
+  // AUTH-02: TOTP 2FA
+  totpSecret: text('totp_secret'),
+  totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
+  backupCodes: jsonb('backup_codes'), // sha256 hashes of unused codes
+  // AUTH-04: progressive lockout
+  failedAttempts: integer('failed_attempts').notNull().default(0),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -598,5 +605,42 @@ export const findings = pgTable('findings', {
   dueDate: timestamp('due_date', { withTimezone: true }),
   status: text('status').notNull().default('OPEN'), // OPEN | IN_PROGRESS | RESOLVED | CLOSED
   notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+
+// AUD-06: external auditor scope — read-only, donor/period-bounded, auto-expiring.
+export const auditorScopes = pgTable('auditor_scopes', {
+  id: cuid('id'),
+  userId: text('user_id').notNull().references(() => users.id),
+  donorCode: text('donor_code'), // null = all donors
+  periodStart: timestamp('period_start', { withTimezone: true }),
+  periodEnd: timestamp('period_end', { withTimezone: true }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdById: text('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// DSH-05: scheduled reports — emailed on a cadence to role recipients.
+export const scheduledReports = pgTable('scheduled_reports', {
+  id: cuid('id'),
+  name: text('name').notNull(),
+  reportKey: text('report_key').notNull(), // requisition-register | outstanding-advances | pipeline
+  filters: jsonb('filters'),
+  recipientsRole: roleCode('recipients_role').notNull(),
+  dayOfWeek: integer('day_of_week').notNull().default(1), // 0=Sun..6
+  hour: integer('hour').notNull().default(8), // Africa/Lagos
+  active: boolean('active').notNull().default(true),
+  lastRunAt: timestamp('last_run_at', { withTimezone: true }),
+  createdById: text('created_by_id').references(() => users.id),
+});
+
+// DSH-06: saved custom report definitions over curated views.
+export const savedReports = pgTable('saved_reports', {
+  id: cuid('id'),
+  name: text('name').notNull(),
+  ownerId: text('owner_id').notNull().references(() => users.id),
+  shared: boolean('shared').notNull().default(false),
+  config: jsonb('config').notNull(), // { entity:'transactions', columns:[], filters:{} }
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
