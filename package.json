@@ -1,0 +1,11 @@
+{
+  "name": "wewe-erp",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}
