@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  canAct, applyVerb, canWithdraw, canResubmit, canSubmit, currentStageRole,
+  canAct, applyVerb, canWithdraw, canResubmit, canSubmit, currentStageRole, resolveChain,
   type ActorCtx, type TxCtx, type StageDef,
 } from './engine.logic';
 
@@ -83,5 +83,48 @@ describe('submission', () => {
     expect(canSubmit(actor('amina', 'INITIATOR'), tx({ status: 'DRAFT' })).ok).toBe(true);
     expect(canSubmit(actor('amina', 'INITIATOR'), tx({ status: 'PENDING' })).ok).toBe(false);
     expect(canSubmit(actor('tunde', 'SUPERVISOR'), tx({ status: 'DRAFT' })).ok).toBe(false);
+  });
+});
+
+describe('amount-based rules (WFE-03)', () => {
+  const STAGES = [
+    { role: 'SUPERVISOR' }, { role: 'INTERNAL_AUDIT' }, { role: 'FINANCE' },
+    { role: 'FINAL_APPROVER', minAmountKobo: '50000000' }, // ₦500,000.00
+  ] as any;
+
+  it('auto-passes Final Approver under the threshold and reports it as skipped', () => {
+    const r = resolveChain(STAGES, 46_000_000n); // ₦460k
+    expect(r.chain.map((s: any) => s.role)).toEqual(['SUPERVISOR', 'INTERNAL_AUDIT', 'FINANCE']);
+    expect(r.skipped.map((s: any) => s.role)).toEqual(['FINAL_APPROVER']);
+  });
+
+  it('keeps the full chain at or above the threshold', () => {
+    const r = resolveChain(STAGES, 50_000_000n);
+    expect(r.chain).toHaveLength(4);
+    expect(r.skipped).toHaveLength(0);
+  });
+});
+
+describe('delegation (WFE-05)', () => {
+  const delegated = (delegatorId: string): ActorCtx => ({
+    id: 'zainab',
+    roles: [{ code: 'FINANCE' as any, departmentId: null, onBehalfOf: { userId: delegatorId, name: 'Ibrahim Musa' } }],
+  });
+
+  it('a delegate can act at the delegated stage, and the grant is reported for on-behalf-of logging', () => {
+    const d = canAct(delegated('ibrahim'), tx({ currentStage: 2 }));
+    expect(d.ok).toBe(true);
+    expect((d as any).via.onBehalfOf.userId).toBe('ibrahim');
+  });
+
+  it('delegation cannot defeat SoD: blocked when the delegator is the initiator', () => {
+    const d = canAct(delegated('amina'), tx({ currentStage: 2 })); // amina initiated the tx
+    expect(d.ok).toBe(false);
+    expect((d as any).reason).toMatch(/delegat/i);
+  });
+
+  it('delegation cannot defeat SoD: blocked when the delegator already approved a stage', () => {
+    const d = canAct(delegated('tunde'), tx({ currentStage: 2, priorApproverIds: ['tunde'] }));
+    expect(d.ok).toBe(false);
   });
 });

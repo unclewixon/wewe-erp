@@ -70,9 +70,9 @@ export const transactionTypes = pgTable('transaction_types', {
   code: text('code').notNull().unique(),
   name: text('name').notNull(),
   refPrefix: text('ref_prefix').notNull(),
-  // ordered approval chain after the initiator:
-  // [{"role":"SUPERVISOR"},{"role":"INTERNAL_AUDIT"},{"role":"FINANCE"},{"role":"FINAL_APPROVER"}]
-  stages: jsonb('stages').notNull().$type<{ role: RoleCode }[]>(),
+  // ordered approval chain after the initiator; minAmountKobo = WFE-03 threshold (stage
+  // applies only at/above that amount): [{"role":"SUPERVISOR"},...,{"role":"FINAL_APPROVER","minAmountKobo":"50000000"}]
+  stages: jsonb('stages').notNull().$type<{ role: RoleCode; minAmountKobo?: string }[]>(),
 });
 
 export const transactions = pgTable('transactions', {
@@ -153,3 +153,14 @@ export const stageEventsRelations = relations(stageEvents, ({ one }) => ({
   transaction: one(transactions, { fields: [stageEvents.transactionId], references: [transactions.id] }),
   actor: one(users, { fields: [stageEvents.actorId], references: [users.id] }),
 }));
+
+// WFE-05: date-bounded delegation of approval duties. A delegate acts "on behalf of" the delegator.
+export const delegations = pgTable('delegations', {
+  id: cuid('id'),
+  delegatorId: text('delegator_id').notNull().references(() => users.id),
+  delegateId: text('delegate_id').notNull().references(() => users.id),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  active: boolean('active').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

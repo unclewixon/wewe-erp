@@ -21,8 +21,9 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04) — awaiting design (gaps #2–4, #6)
 
 ## Phase 2 — Workflow depth
-- [ ] Amount-based rules / thresholds (WFE-03) — engine hook exists, config UI pending
-- [ ] Delegation & backup approvers (WFE-05); instant revocation reassignment (AUTH-05)
+- [x] Amount-based rules / thresholds (WFE-03): chain resolved & frozen at submission; auto-passed stages reported, never silent (config via TransactionType.stages)
+- [x] Delegation (WFE-05): date-bounded, max 30 days, no chains, SoD-safe (delegator-initiator and delegator-prior-approver blocked), on-behalf-of logged; endpoints /v1/delegations
+- [ ] Instant revocation reassignment (AUTH-05)
 - [ ] SLA timers + escalation via BullMQ (WFE-06); aging badges
 - [ ] Bulk actions (WFE-08); notifications in-app (NTF-01) + email via provider OAuth (NTF-02/03)
 - [ ] Workflow configuration UI (WFE-10)

@@ -76,10 +76,11 @@ export class RequisitionsService {
     const central = user.roles.some((r) =>
       ['INTERNAL_AUDIT', 'FINANCE', 'FINAL_APPROVER', 'SYSTEM_ADMIN'].includes(r.code));
     const filtered = rows.filter((tx) => {
+      const chain = ((tx.payload as any)?.chain as StageDef[]) ?? (tx.type.stages as StageDef[]);
       const ctx = {
         id: tx.id, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
         status: tx.status, currentStage: tx.currentStage,
-        chain: tx.type.stages as StageDef[],
+        chain,
         priorApproverIds: tx.stageEvents.filter((e) => e.action === 'APPROVED').map((e) => e.actorId),
       };
       if (scope === 'mine') return tx.initiatorId === user.id;
@@ -87,14 +88,17 @@ export class RequisitionsService {
       // 'all': central roles see everything; others see their department's
       return central || tx.departmentId === user.departmentId || tx.initiatorId === user.id;
     });
-    return filtered.map((tx) => ({
+    return filtered.map((tx) => {
+      const chain = ((tx.payload as any)?.chain as StageDef[]) ?? (tx.type.stages as StageDef[]);
+      return {
       id: tx.id, ref: tx.ref, title: tx.title, status: tx.status,
-      currentStage: tx.currentStage, chain: (tx.type.stages as StageDef[]).map((s) => s.role),
-      stageRole: tx.status === 'PENDING' ? (tx.type.stages as StageDef[])[tx.currentStage]?.role : null,
+      currentStage: tx.currentStage, chain: chain.map((s) => s.role),
+      stageRole: tx.status === 'PENDING' ? chain[tx.currentStage]?.role : null,
       amountKobo: tx.amountKobo.toString(), donorCode: tx.donorCode,
       department: tx.department.name, initiator: tx.initiator.name,
       submittedAt: tx.submittedAt, updatedAt: tx.updatedAt,
-    }));
+      };
+    });
   }
 
   async get(txId: string, user: AuthedUser) {
@@ -108,7 +112,8 @@ export class RequisitionsService {
       },
     });
     if (!tx || tx.typeCode !== 'REQUISITION') throw new NotFoundException('Requisition not found');
-    const chain = tx.type.stages as StageDef[];
+    const payload = (tx.payload ?? {}) as { chain?: StageDef[]; autoPassed?: StageDef[] };
+    const chain = payload.chain ?? (tx.type.stages as StageDef[]);
     const ctx = {
       id: tx.id, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
       status: tx.status, currentStage: tx.currentStage, chain,
@@ -119,6 +124,8 @@ export class RequisitionsService {
       id: tx.id, ref: tx.ref, title: tx.title, status: tx.status,
       currentStage: tx.currentStage, currentStageRole: currentStageRole(ctx),
       chain: chain.map((s) => s.role),
+      // WFE-03: stages auto-passed under threshold, so the tracker never shows a silent gap
+      autoPassed: (payload.autoPassed ?? []).map((s) => ({ role: s.role, minAmountKobo: s.minAmountKobo ?? null })),
       amountKobo: tx.amountKobo.toString(), currency: tx.currency, donorCode: tx.donorCode,
       department: { id: tx.departmentId, name: tx.department.name },
       initiator: tx.initiator, submittedAt: tx.submittedAt, createdAt: tx.createdAt,

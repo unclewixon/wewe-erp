@@ -4,12 +4,38 @@
  */
 import type { RoleCode, TxStatus } from '../db/schema';
 
-export type StageDef = { role: RoleCode };
+export type StageDef = {
+  role: RoleCode;
+  /** WFE-03: stage applies only when the transaction amount is at or above this (kobo, as string). */
+  minAmountKobo?: string;
+};
 export type Verb = 'approve' | 'reject' | 'return';
+
+export interface RoleGrant {
+  code: RoleCode;
+  departmentId: string | null; // null = org-wide scope
+  /** WFE-05: set when this grant is held via delegation from another user. */
+  onBehalfOf?: { userId: string; name: string };
+}
 
 export interface ActorCtx {
   id: string;
-  roles: { code: RoleCode; departmentId: string | null }[]; // departmentId null = org-wide scope
+  roles: RoleGrant[];
+}
+
+/**
+ * WFE-03: resolve the concrete chain for a transaction amount. Stages whose
+ * minAmountKobo exceeds the amount are auto-passed and reported in `skipped`
+ * so the tracker can show "auto-approved under threshold" — never a silent gap.
+ */
+export function resolveChain(stages: StageDef[], amountKobo: bigint): { chain: StageDef[]; skipped: StageDef[] } {
+  const chain: StageDef[] = [];
+  const skipped: StageDef[] = [];
+  for (const s of stages) {
+    if (s.minAmountKobo !== undefined && amountKobo < BigInt(s.minAmountKobo)) skipped.push(s);
+    else chain.push(s);
+  }
+  return { chain, skipped };
 }
 
 export interface TxCtx {
@@ -34,9 +60,9 @@ export function holdsRoleFor(actor: ActorCtx, role: RoleCode, departmentId: stri
   );
 }
 
-export type Decision = { ok: true } | { ok: false; reason: string };
+export type Decision = { ok: true; via?: RoleGrant } | { ok: false; reason: string };
 
-/** WFE-04 + segregation-of-duties checks. */
+/** WFE-04 + segregation-of-duties checks (delegation-aware, WFE-05). */
 export function canAct(actor: ActorCtx, tx: TxCtx): Decision {
   if (tx.status !== 'PENDING') return { ok: false, reason: `Transaction is ${tx.status}, not pending approval` };
   const stage = tx.chain[tx.currentStage];
@@ -45,9 +71,19 @@ export function canAct(actor: ActorCtx, tx: TxCtx): Decision {
     return { ok: false, reason: 'Segregation of duties: an initiator cannot act on their own transaction' };
   if (tx.priorApproverIds.includes(actor.id))
     return { ok: false, reason: 'Segregation of duties: this user has already approved a stage on this transaction' };
-  if (!holdsRoleFor(actor, stage.role, tx.departmentId))
+  const grants = actor.roles.filter(
+    (r) => r.code === stage.role && (r.departmentId === null || r.departmentId === tx.departmentId),
+  );
+  if (grants.length === 0)
     return { ok: false, reason: `Current stage requires the ${stage.role} role for this department` };
-  return { ok: true };
+  // A delegated grant collapses SoD if the delegator is the initiator or already approved a stage.
+  const usable = grants.find((g) =>
+    !g.onBehalfOf ||
+    (g.onBehalfOf.userId !== tx.initiatorId && !tx.priorApproverIds.includes(g.onBehalfOf.userId)),
+  );
+  if (!usable)
+    return { ok: false, reason: 'Segregation of duties: the delegating approver cannot act on this transaction, so neither can their delegate' };
+  return { ok: true, via: usable };
 }
 
 /** State transition for an allowed verb. Reject/return require a comment (enforced at the service edge). */

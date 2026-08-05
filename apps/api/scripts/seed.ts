@@ -72,7 +72,9 @@ async function main() {
   await db.insert(schema.transactionTypes).values({
     code: 'REQUISITION', name: 'Requisition', refPrefix: 'REQ',
     stages: [
-      { role: 'SUPERVISOR' }, { role: 'INTERNAL_AUDIT' }, { role: 'FINANCE' }, { role: 'FINAL_APPROVER' },
+      { role: 'SUPERVISOR' }, { role: 'INTERNAL_AUDIT' }, { role: 'FINANCE' },
+      // WFE-03: requisitions under ₦500,000.00 auto-pass the Final Approver stage
+      { role: 'FINAL_APPROVER', minAmountKobo: '50000000' },
     ],
   });
 
