@@ -23,6 +23,9 @@ function localCdnResources(): Plugin {
   ]);
   // PAGE_SPECS: per-route live override (Object.assign so unwired routes keep fixtures)
   DATA_WRAPS.push(['const PAGE_SPECS = {', 'const PAGE_SPECS = Object.assign({']);
+  // DASH: per-persona live dashboard override (active ?as persona only)
+  DATA_WRAPS.push(['const DASH = {', 'const DASH = Object.assign({']);
+  DATA_WRAPS.push(["]\n  }\n};\n\nconst PAGE_SPECS", "]\n  }\n}, window.__weweDash || {});\n\nconst PAGE_SPECS"]);
   DATA_WRAPS.push([",'g:LIVE']] } }\n};", ",'g:LIVE']] } }\n}, window.__wewePageSpecs || {});"]);
   return {
     name: 'wewe-local-cdn-resources',
@@ -34,6 +37,10 @@ function localCdnResources(): Plugin {
         return {
           html: out,
           tags: [
+            // The design's font stack is "Google Sans", "Google Sans Text", Figtree, system-ui.
+            // Loading Google Sans from Google Fonts activates the first-choice family everywhere;
+            // if unavailable, the browser ignores this and the design's own Figtree link applies.
+            { tag: 'link', injectTo: 'head-prepend' as const, attrs: { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;600;700&display=swap' } },
             { tag: 'script', injectTo: 'head-prepend' as const, children: `window.__resources=${JSON.stringify(map)};` },
             // adapter runs synchronously BEFORE support.js so live data exists at design boot
             { tag: 'script', injectTo: 'head-prepend' as const, attrs: { src: '/adapter.js' } },

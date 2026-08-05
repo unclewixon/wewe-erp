@@ -332,3 +332,169 @@
       .catch(function () { btn.disabled = false; });
   }, true);
 })();
+
+/* ---- Phase D: live dashboards (active persona), grant totals, outstanding advances page ---- */
+(function () {
+  function xhr(method, url, body) {
+    try {
+      var r = new XMLHttpRequest();
+      r.open(method, url, false); r.withCredentials = true;
+      if (body) r.setRequestHeader('content-type', 'application/json');
+      r.send(body ? JSON.stringify(body) : null);
+      if (r.status < 200 || r.status >= 300) return null;
+      return JSON.parse(r.responseText);
+    } catch (e) { return null; }
+  }
+  function fmtNaira(kobo) {
+    var k = BigInt(kobo || '0'); var neg = k < 0n; if (neg) k = -k;
+    var whole = (k / 100n).toString(); var cents = (k % 100n).toString().padStart(2, '0');
+    return (neg ? '-' : '') + '₦' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + cents;
+  }
+  function sumKobo(rows, f) { return rows.reduce(function (s, r) { return s + BigInt(f(r) || '0'); }, 0n); }
+  function ageDays(iso) { return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000); }
+  function ddmmyyyy(iso) { if (!iso) return '—'; var d = new Date(iso); return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
+
+  var persona = new URLSearchParams(location.search).get('as') || 'admin';
+
+  var queue = xhr('GET', '/v1/requisitions?scope=queue') || [];
+  var dash = xhr('GET', '/v1/dashboard') || { pipeline: {}, myOpen: 0, queueCount: 0 };
+  var qTotal = fmtNaira(sumKobo(queue, function (t) { return t.amountKobo; }).toString());
+  var overdue = queue.filter(function (t) { return (Date.now() - new Date(t.updatedAt)) > 86400000; });
+  var refs = queue.map(function (t) { return t.ref; });
+
+  // grants + burn meters (also fixes the GRANTS spent mapping from Phase B)
+  var grants = xhr('GET', '/v1/grants') || [];
+  var meters = [];
+  var committedTotalNgn = 0n;
+  grants.forEach(function (g) {
+    var d = xhr('GET', '/v1/grants/' + g.id);
+    if (!d || !d.totals) return;
+    var fx = parseFloat(g.fxRateToNgn || '1') || 1;
+    var valueNgnKobo = g.currency === 'NGN' ? BigInt(g.valueMinor || '0')
+      : BigInt(Math.round(Number(BigInt(g.valueMinor || '0')) * fx));
+    committedTotalNgn += valueNgnKobo;
+    var pct = d.health && typeof d.health.utilisationPct === 'number' ? Math.round(d.health.utilisationPct)
+      : Math.round(Number(BigInt(d.totals.actualKobo || '0') * 100n) / Math.max(1, Number(valueNgnKobo)));
+    meters.push({ label: g.code, pct: Math.min(100, pct), detail: fmtNaira(d.totals.actualKobo) + ' of ' + fmtNaira(valueNgnKobo.toString()) });
+    // patch the GRANTS const data (Phase B wired it; totals key now known)
+    if (window.__weweData && Array.isArray(window.__weweData.GRANTS)) {
+      window.__weweData.GRANTS.forEach(function (row) {
+        if (row.code === g.code) row.spent = Number(BigInt(d.totals.actualKobo || '0') / 100n);
+      });
+    }
+  });
+
+  // budgets meters (dept view for supervisor/initiator)
+  var budgetMeters = [];
+  var pos = xhr('GET', '/v1/budgets/position') || [];
+  pos.slice(0, 4).forEach(function (b) {
+    var alloc = BigInt(b.allocatedKobo || '1'); var actual = BigInt(b.actualKobo || '0');
+    budgetMeters.push({
+      label: b.code, pct: Math.min(100, Math.round(Number(actual * 100n) / Math.max(1, Number(alloc)))),
+      detail: fmtNaira(actual.toString()) + ' of ' + fmtNaira(alloc.toString()),
+    });
+  });
+
+  var qb = xhr('GET', '/v1/qb/outbox?status=ERROR') || [];
+  var advAll = xhr('GET', '/v1/advances?scope=all') || [];
+  var advOpen = advAll.filter(function (a) { return ['DISBURSED', 'RETIRING'].indexOf(a.status) >= 0; });
+  var advTotal = fmtNaira(sumKobo(advOpen, function (a) { return a.balanceKobo; }).toString());
+
+  var D = null;
+  var base = {
+    banner: '', queueTitle: 'Awaiting me', queueSubtitle: 'Live queue from the workflow engine',
+    refs: refs, meterTitle: 'Grant burn rate', meterSubtitle: 'Actual against budget by donor', meters: meters.length ? meters : budgetMeters,
+  };
+  if (persona === 'finance') D = Object.assign({}, base, {
+    title: 'Finance processing', soft: true,
+    subtitle: queue.length + ' item' + (queue.length === 1 ? '' : 's') + ' for payment processing worth ' + qTotal + '.',
+    cards: [
+      { label: 'Awaiting Finance', value: String(queue.length), delta: '', context: qTotal + ' in value' },
+      { label: 'Overdue at my stage', value: String(overdue.length), delta: '', context: overdue.slice(0, 2).map(function (t) { return t.ref; }).join(', ') || 'Nothing overdue' },
+      { label: 'Advances outstanding', value: advTotal, delta: '', context: advOpen.length + ' open advance' + (advOpen.length === 1 ? '' : 's') },
+      { label: 'QuickBooks exceptions', value: String(qb.length), delta: '', context: qb.length ? 'Needs review' : 'Sandbox mode · all posted' },
+    ],
+    banner: qb.length ? qb.length + ' posting' + (qb.length === 1 ? '' : 's') + ' failed to reach QuickBooks — see the exception queue.' : '',
+    queueTitle: 'Awaiting Finance', queueSubtitle: 'Payment processing queue',
+  });
+  if (persona === 'supervisor') D = Object.assign({}, base, {
+    title: 'Your department today', soft: true,
+    subtitle: queue.length + ' request' + (queue.length === 1 ? '' : 's') + ' waiting for your review.',
+    cards: [
+      { label: 'Awaiting my review', value: String(queue.length), delta: '', context: qTotal + ' in value' },
+      { label: 'Overdue at my stage', value: String(overdue.length), delta: '', context: overdue.length ? 'Act today' : 'Nothing overdue' },
+      { label: 'In the pipeline', value: String(dash.pipeline.PENDING || 0), delta: '', context: 'Across all five stages' },
+      { label: 'Returned for fixes', value: String(dash.pipeline.RETURNED || 0), delta: '', context: 'Awaiting resubmission' },
+    ],
+    queueTitle: 'Awaiting my review', queueSubtitle: 'Oldest first', meters: budgetMeters,
+    meterTitle: 'Department budgets', meterSubtitle: 'Actual against allocation',
+  });
+  if (persona === 'initiator') D = Object.assign({}, base, {
+    title: 'Your requests', soft: true,
+    subtitle: dash.myOpen + ' of your items are open.',
+    cards: [
+      { label: 'My open items', value: String(dash.myOpen), delta: '', context: 'Drafts, pending and returned' },
+      { label: 'Awaiting my action', value: String(dash.queueCount), delta: '', context: dash.queueCount ? 'Returned for your edits' : 'Nothing needs you' },
+      { label: 'Approved this month', value: String(dash.pipeline.APPROVED || 0), delta: '', context: 'Across the organisation' },
+      { label: 'In the pipeline', value: String(dash.pipeline.PENDING || 0), delta: '', context: 'Being reviewed now' },
+    ],
+    queueTitle: 'My submissions', queueSubtitle: 'Latest first', meters: budgetMeters,
+    meterTitle: 'Department budgets', meterSubtitle: 'Actual against allocation',
+  });
+  if (persona === 'audit') D = Object.assign({}, base, {
+    title: 'Compliance at a glance', soft: true,
+    subtitle: queue.length + ' item' + (queue.length === 1 ? '' : 's') + ' at the Internal Audit stage.',
+    cards: [
+      { label: 'Awaiting Internal Audit', value: String(queue.length), delta: '', context: qTotal + ' in value' },
+      { label: 'Open flags', value: String((xhr('GET', '/v1/audit-flags?status=OPEN') || []).length), delta: '', context: 'Raised by audit' },
+      { label: 'Open findings', value: String((xhr('GET', '/v1/findings') || []).filter(function (f) { return f.status === 'OPEN'; }).length), delta: '', context: 'In the register' },
+      { label: 'Overdue at my stage', value: String(overdue.length), delta: '', context: overdue.length ? 'Act today' : 'Nothing overdue' },
+    ],
+    queueTitle: 'Awaiting Internal Audit', queueSubtitle: 'Compliance review queue',
+  });
+  if (persona === 'md') {
+    var approvedKobo = sumKobo((window.__weweData && window.__weweData.TXNS ? [] : []), function () { return '0'; });
+    var pipe = xhr('GET', '/v1/analytics/pipeline');
+    var med = pipe && pipe.stages && pipe.stages.length
+      ? (pipe.stages.reduce(function (s, x) { return s + (x.medianHours || 0); }, 0) / 24).toFixed(1) + ' days' : '—';
+    D = Object.assign({}, base, {
+      title: 'The whole organisation, one screen', soft: true,
+      subtitle: queue.length + ' decision' + (queue.length === 1 ? '' : 's') + ' for you.',
+      cards: [
+        { label: 'Awaiting my signature', value: String(queue.length), delta: '', context: qTotal + ' combined' },
+        { label: 'In the pipeline', value: String(dash.pipeline.PENDING || 0), delta: '', context: 'Across all five stages' },
+        { label: 'Grants active', value: String(grants.filter(function (g) { return g.status === 'ACTIVE'; }).length), delta: '', context: fmtNaira(committedTotalNgn.toString()) + ' committed' },
+        { label: 'Cumulative approval path', value: med, delta: '', context: 'Sum of stage medians' },
+      ],
+      queueTitle: 'Awaiting my signature', queueSubtitle: 'Final release',
+    });
+  }
+  if (D) { var o = {}; o[persona] = D; window.__weweDash = o; }
+
+  // outstanding advances register page (finance/admin)
+  if (advAll.length) {
+    var overdueAdv = advOpen.filter(function (a) { return a.retirementDeadline && new Date(a.retirementDeadline) < new Date(); });
+    window.__wewePageSpecs = window.__wewePageSpecs || {};
+    window.__wewePageSpecs['/advances/outstanding'] = {
+      title: 'Outstanding advances register',
+      sub: 'Every advance not yet retired, aged against policy',
+      actions: ['Export register', 'Send reminders'],
+      stats: [
+        ['Outstanding', advTotal, advOpen.length + ' open advance' + (advOpen.length === 1 ? '' : 's')],
+        ['Overdue', String(overdueAdv.length), overdueAdv.length ? 'Past retirement deadline' : 'None past deadline'],
+        ['Requested, not yet disbursed', String(advAll.filter(function (a) { return a.status === 'REQUESTED'; }).length), 'Awaiting Finance disbursement'],
+        ['Live data', 'ON', 'Rows from the advances module'],
+      ],
+      table: {
+        title: 'Register, oldest first',
+        cols: [['Reference', null, '104px'], ['Staff', null, 'minmax(110px,1fr)'], ['Purpose', null, 'minmax(120px,1fr)'], ['Balance', 'r', '112px'], ['Deadline', null, '96px'], ['Age', 'r', '74px'], ['Status', null, '128px']],
+        rows: advAll.map(function (a) {
+          var isOver = a.retirementDeadline && new Date(a.retirementDeadline) < new Date();
+          var badge = isOver ? 'r:OVERDUE' : a.status === 'REQUESTED' ? 'n:REQUESTED' : a.status === 'CLOSED' ? 'g:CLOSED' : 'a:' + a.status;
+          return [a.ref || a.id, (a.staff && a.staff.name) || a.staffName || '—', a.purpose,
+            fmtNaira(a.balanceKobo || a.amountKobo), ddmmyyyy(a.retirementDeadline), ageDays(a.createdAt || a.disbursedAt || Date.now()) + 'd', badge];
+        }),
+      },
+    };
+  }
+})();
