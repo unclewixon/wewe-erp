@@ -50,7 +50,7 @@ async function main() {
   const mkUser = (email: string, name: string, title: string, departmentId: string) =>
     ({ email, name, title, passwordHash: hash, departmentId });
 
-  const [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin] = await db.insert(schema.users).values([
+  const [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin, blessing, emeka, adeleke] = await db.insert(schema.users).values([
     mkUser('amina.yusuf@wewe.org', 'Amina Yusuf', 'Programme Officer', prg.id),
     mkUser('tunde.balogun@wewe.org', 'Tunde Balogun', 'Head of Programmes', prg.id),
     mkUser('ngozi.okafor@wewe.org', 'Ngozi Okafor', 'Internal Auditor', grc.id),
@@ -58,6 +58,9 @@ async function main() {
     mkUser('folake.adeyemi@wewe.org', 'Folake Adeyemi', 'Managing Director', fin.id),
     mkUser('chiamaka.eze@wewe.org', 'Chiamaka Eze', 'M&E Officer', mne.id),
     mkUser('admin@wewe.org', 'Systems Desk', 'System Administrator', ops.id),
+    mkUser('blessing.adeyemi@wewe.org', 'Blessing Adeyemi', 'Human Resources Officer', fin.id),
+    mkUser('emeka.nwosu@wewe.org', 'Emeka Nwosu', 'Procurement Officer', ops.id),
+    mkUser('k.adeleke@auditfirm.ng', 'K. Adeleke', 'External Auditor', grc.id),
   ]).returning();
 
   await db.insert(schema.userRoles).values([
@@ -69,7 +72,17 @@ async function main() {
     { userId: ibrahim.id, roleId: role('FINANCE'), departmentId: null },
     { userId: folake.id, roleId: role('FINAL_APPROVER'), departmentId: null },
     { userId: admin.id, roleId: role('SYSTEM_ADMIN'), departmentId: null },
+    { userId: blessing.id, roleId: role('HR_OFFICER'), departmentId: null },
+    { userId: blessing.id, roleId: role('INITIATOR'), departmentId: null },
+    { userId: emeka.id, roleId: role('INITIATOR'), departmentId: null },
   ]);
+
+  // EXTERNAL_AUDITOR role row + K. Adeleke's scoped, expiring access (AUD-06)
+  const [extRole] = await db.insert(schema.roles).values({ code: 'EXTERNAL_AUDITOR', name: 'External Auditor' }).returning();
+  await db.insert(schema.userRoles).values({ userId: adeleke.id, roleId: extRole.id, departmentId: null });
+  await db.insert(schema.auditorScopes).values({
+    userId: adeleke.id, donorCode: 'USAID-LON-24', expiresAt: new Date(Date.now() + 90 * 86400_000), createdById: admin.id,
+  });
 
   const year = new Date().getFullYear();
   const bl = await db.insert(schema.budgetLines).values([

@@ -16,11 +16,11 @@ function localCdnResources(): Plugin {
   };
   // Data-adapter fallback wrapping: fixture consts become `window.__weweData.X || <fixture>`.
   // Serve-time only — the design file on disk stays byte-identical (cmp-guarded).
-  const DATA_WRAPS: [string, string][] = [
-    ['const TXNS = [', 'const TXNS = (window.__weweData && window.__weweData.TXNS) || ['],
-    ['const BUDGET_ROWS = [', 'const BUDGET_ROWS = (window.__weweData && window.__weweData.BUDGET_ROWS) || ['],
-    ['const QB_EXCEPTIONS = [', 'const QB_EXCEPTIONS = (window.__weweData && window.__weweData.QB_EXCEPTIONS) || ['],
-  ];
+  const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS'];
+  const DATA_WRAPS: [string, string][] = WIRED.map((k) => [
+    `const ${k} = [`,
+    `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,
+  ]);
   return {
     name: 'wewe-local-cdn-resources',
     transformIndexHtml: {
