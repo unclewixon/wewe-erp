@@ -9,7 +9,10 @@ import { AppModule } from './app';
 (BigInt.prototype as any).toJSON = function () { return this.toString(); };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'], bodyParser: false });
+  const express = require('express');
+  app.use(express.json({ limit: '15mb' })); // DMS base64 uploads (10MB decoded cap)
+  app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.enableCors({ origin: true, credentials: true });
 

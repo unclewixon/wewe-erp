@@ -9,6 +9,7 @@ import { AuditService } from '../audit/audit.service';
 import { AuthGuard, CurrentUser, type AuthedUser } from '../auth/auth';
 import { WorkflowService } from '../workflow/workflow.service';
 import { canAct, canResubmit, canWithdraw, currentStageRole, type StageDef } from '../workflow/engine.logic';
+import { evaluateBudgetCheck } from '../modules/money/budgets';
 
 const LineSchema = z.object({
   description: z.string().min(1).max(300),
@@ -47,6 +48,22 @@ export class RequisitionsService {
     if (!type) throw new BadRequestException('REQUISITION transaction type is not configured');
 
     const amountKobo = dto.lines.reduce((sum, l) => sum + BigInt(l.qty) * BigInt(l.unitKobo), 0n);
+
+    // REQ-02: check budgeted lines against available (allocated − committed − actual).
+    // 'budget.checkMode' = 'block' rejects with per-line detail; 'warn' (default)
+    // proceeds but surfaces warnings in the response and the audit trail.
+    const budgetCheck = await evaluateBudgetCheck(dto.lines.map((l) => ({
+      budgetLineId: l.budgetLineId ?? null,
+      amountKobo: BigInt(l.qty) * BigInt(l.unitKobo),
+    })));
+    if (budgetCheck.violations.length > 0 && budgetCheck.mode === 'block') {
+      throw new BadRequestException({
+        statusCode: 400,
+        message: 'Budget check failed: one or more lines exceed the available budget',
+        violations: budgetCheck.violations,
+      });
+    }
+
     const ref = await this.nextRef(type.refPrefix);
     const [tx] = await db.insert(schema.transactions).values({
       ref, typeCode: 'REQUISITION', title: dto.title, initiatorId: user.id,
@@ -59,10 +76,16 @@ export class RequisitionsService {
     await this.audit.log({
       actorId: user.id, actorEmail: user.email, action: 'TX_CREATED',
       entityType: 'transaction', entityId: ref,
-      data: { title: dto.title, amountKobo: amountKobo.toString(), lines: dto.lines.length }, ip,
+      data: {
+        title: dto.title, amountKobo: amountKobo.toString(), lines: dto.lines.length,
+        ...(budgetCheck.violations.length > 0 ? { budgetWarnings: budgetCheck.violations } : {}),
+      }, ip,
     });
     if (dto.submit) await this.workflow.submit(tx.id, user, ip);
-    return this.get(tx.id, user);
+    const detail = await this.get(tx.id, user);
+    return budgetCheck.violations.length > 0
+      ? { ...detail, budgetWarnings: budgetCheck.violations }
+      : detail;
   }
 
   async list(user: AuthedUser, scope: 'mine' | 'queue' | 'all') {

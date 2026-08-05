@@ -3,16 +3,66 @@ import { eq } from 'drizzle-orm';
 import { db, schema } from '../db/client';
 import { AuditService } from '../audit/audit.service';
 import type { AuthedUser } from '../auth/auth';
-import { and, eq as eq2, gt, lte } from 'drizzle-orm';
+import { and, eq as eq2, gt, like, lte, sql } from 'drizzle-orm';
+import { bus } from '../events';
 import {
   canAct, canResubmit, canSubmit, canWithdraw, applyVerb, currentStageRole, resolveChain,
   type RoleGrant, type StageDef, type TxCtx, type Verb,
 } from './engine.logic';
 
+export type ApprovalHook = (tx: {
+  id: string; ref: string; typeCode: string; title: string;
+  amountKobo: bigint; departmentId: string; initiatorId: string;
+  donorCode: string | null; payload: unknown;
+}) => Promise<void>;
+
 /** DB-wired workflow engine. All state changes flow through here and are audit-logged. */
 @Injectable()
 export class WorkflowService {
   constructor(private readonly audit: AuditService) {}
+
+  /** Completion hooks per transaction type — run after final approval (e.g. QB posting, virement apply). */
+  private static hooks = new Map<string, ApprovalHook[]>();
+  static onFinalApproval(typeCode: string, hook: ApprovalHook) {
+    const list = WorkflowService.hooks.get(typeCode) ?? [];
+    list.push(hook);
+    WorkflowService.hooks.set(typeCode, list);
+  }
+
+  /** Generic ref generator: PREFIX-YYYY-NNNN. */
+  async nextRef(prefix: string): Promise<string> {
+    const year = new Date().getFullYear();
+    const [row] = await db.select({ n: sql<number>`count(*)` })
+      .from(schema.transactions).where(like(schema.transactions.ref, `${prefix}-${year}-%`));
+    return `${prefix}-${year}-${String(Number(row?.n ?? 0) + 1).padStart(4, '0')}`;
+  }
+
+  /**
+   * Generic transaction creation for ANY configured type (WFE-10 config-driven principle).
+   * Modules use this for advances, retirements, leave, virements, timesheets, payroll…
+   */
+  async createTransaction(user: AuthedUser, input: {
+    typeCode: string; title: string; amountKobo?: bigint; departmentId?: string;
+    donorCode?: string | null; payload?: unknown; submit?: boolean; ip?: string;
+  }) {
+    const type = await db.query.transactionTypes.findFirst({ where: eq(schema.transactionTypes.code, input.typeCode) });
+    if (!type) throw new BadRequestException(`Transaction type ${input.typeCode} is not configured`);
+    const departmentId = input.departmentId ?? user.departmentId;
+    if (!departmentId) throw new BadRequestException('No department for this transaction');
+    const ref = await this.nextRef(type.refPrefix);
+    const [tx] = await db.insert(schema.transactions).values({
+      ref, typeCode: input.typeCode, title: input.title, initiatorId: user.id,
+      departmentId, amountKobo: input.amountKobo ?? 0n, donorCode: input.donorCode ?? null,
+      status: 'DRAFT', payload: (input.payload as any) ?? null,
+    }).returning();
+    await this.audit.log({
+      actorId: user.id, actorEmail: user.email, action: 'TX_CREATED',
+      entityType: 'transaction', entityId: ref,
+      data: { typeCode: input.typeCode, title: input.title, amountKobo: (input.amountKobo ?? 0n).toString() }, ip: input.ip,
+    });
+    if (input.submit) await this.submit(tx.id, user, input.ip);
+    return (await db.query.transactions.findFirst({ where: eq(schema.transactions.id, tx.id) }))!;
+  }
 
   async loadCtx(txId: string): Promise<TxCtx & { ref: string }> {
     const tx = await db.query.transactions.findFirst({
@@ -80,6 +130,7 @@ export class WorkflowService {
       actorId: user.id, actorEmail: user.email, action: 'TX_SUBMITTED',
       entityType: 'transaction', entityId: ctx.ref, ip,
     });
+    bus.emit('tx.submitted', { txId, ref: ctx.ref, typeCode: tx!.typeCode, initiatorId: ctx.initiatorId, departmentId: ctx.departmentId, amountKobo: tx!.amountKobo.toString() });
   }
 
   async act(txId: string, user: AuthedUser, verb: Verb, comment?: string, ip?: string) {
@@ -109,6 +160,26 @@ export class WorkflowService {
       entityType: 'transaction', entityId: ctx.ref,
       data: { stage: ctx.currentStage, role, comment: comment ?? null, resulting: next.status, onBehalfOf }, ip,
     });
+    const full = (await db.query.transactions.findFirst({ where: eq(schema.transactions.id, txId) }))!;
+    bus.emit('tx.stage', { txId, ref: ctx.ref, typeCode: full.typeCode, verb, resulting: next.status, stageRole: role, actorId: user.id, initiatorId: ctx.initiatorId });
+    if (next.status === 'APPROVED') {
+      bus.emit('tx.approved', { txId, ref: ctx.ref, typeCode: full.typeCode });
+      for (const hook of WorkflowService.hooks.get(full.typeCode) ?? []) {
+        try {
+          await hook({
+            id: full.id, ref: full.ref, typeCode: full.typeCode, title: full.title,
+            amountKobo: full.amountKobo, departmentId: full.departmentId,
+            initiatorId: full.initiatorId, donorCode: full.donorCode, payload: full.payload,
+          });
+        } catch (e: any) {
+          // Hooks must never lose the approval; failures are loud in the audit log.
+          await this.audit.log({
+            action: 'HOOK_ERROR', entityType: 'transaction', entityId: full.ref,
+            data: { typeCode: full.typeCode, error: String(e?.message ?? e) },
+          });
+        }
+      }
+    }
     return next;
   }
 

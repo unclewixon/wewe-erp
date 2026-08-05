@@ -2,6 +2,7 @@
 import * as argon2 from 'argon2';
 import { db, pool, schema } from '../src/db/client';
 import { AuditService } from '../src/audit/audit.service';
+import { moduleSeedDefaults } from '../src/app';
 
 (BigInt.prototype as any).toJSON = function () { return this.toString(); };
 const N = (naira: number) => BigInt(Math.round(naira)) * 100n; // naira → kobo
@@ -10,7 +11,17 @@ async function main() {
   const audit = new AuditService();
 
   // wipe (FK order)
-  for (const t of ['audit_events', 'stage_events', 'requisition_lines', 'transactions',
+  for (const t of [
+    'notifications', 'email_outbox', 'qb_outbox', 'retirements', 'advances',
+    'budget_allocations', 'budget_versions', 'signature_signers', 'signature_requests',
+    'doc_links', 'doc_versions', 'documents', 'doc_folders',
+    'leave_requests', 'leave_balances', 'leave_types', 'staff_checklists',
+    'timesheets', 'payroll_items', 'payroll_runs', 'staff_profiles',
+    'rfq_quotes', 'rfqs', 'po_receipts', 'purchase_orders', 'contracts',
+    'asset_events', 'assets', 'inventory_moves', 'inventory_items',
+    'grant_deadlines', 'grants', 'audit_flags', 'findings',
+    'role_permissions', 'permissions', 'settings', 'delegations',
+    'audit_events', 'stage_events', 'requisition_lines', 'transactions',
     'transaction_types', 'budget_lines', 'sessions', 'user_roles', 'users', 'roles', 'departments']) {
     await pool.query(`DELETE FROM ${t}`);
   }
@@ -143,6 +154,8 @@ async function main() {
   await makeTx({ title: 'Community training refreshments — duplicate', initiator: chiamaka, departmentId: mne.id, lines: [{ d: 'Refreshments', q: 35, unit: 4_000, bl: 'MNE-DAT' }], approvals: 1, final: 'REJECTED', daysAgo: 8 });
   await makeTx({ title: 'Stationery restock — Programmes', initiator: amina, departmentId: prg.id, lines: [{ d: 'A4 paper (cartons)', q: 10, unit: 28_000, bl: 'FIN-OFF' }, { d: 'Toner cartridges', q: 4, unit: 45_000, bl: 'FIN-OFF' }], approvals: 0, final: 'DRAFT', daysAgo: 0 });
 
+  await moduleSeedDefaults();
+  console.log('Module defaults seeded (types, settings, permissions, leave types, grants, folders).');
   console.log('Seed complete.');
   console.log('Users (password: Password1!):');
   for (const u of [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin]) console.log(`  ${u.email} — ${u.title}`);

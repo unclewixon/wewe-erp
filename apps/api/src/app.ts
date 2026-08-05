@@ -9,6 +9,16 @@ import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, type
 import { WorkflowService } from './workflow/workflow.service';
 import { RequisitionsController, RequisitionsService } from './requisitions/requisitions';
 import { canAct, type StageDef } from './workflow/engine.logic';
+import * as money from './modules/money';
+import * as dms from './modules/dms';
+import * as people from './modules/people';
+import * as ops from './modules/ops';
+import * as governance from './modules/governance';
+import * as platform from './modules/platform';
+
+const MODULE_AREAS = [money, dms, people, ops, governance, platform] as const;
+export const moduleSeedDefaults = async () => { for (const m of MODULE_AREAS) await m.seedDefaults(); };
+for (const m of MODULE_AREAS) m.register();
 
 const LoginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 const DelegationSchema = z.object({
@@ -172,7 +182,14 @@ export class DelegationsController {
 }
 
 @Module({
-  controllers: [AuthController, MetaController, DashboardController, AuditController, RequisitionsController, DelegationsController],
-  providers: [AuditService, AuthService, AuthGuard, WorkflowService, RequisitionsService],
+  controllers: [
+    AuthController, MetaController, DashboardController, AuditController,
+    RequisitionsController, DelegationsController,
+    ...MODULE_AREAS.flatMap((m) => m.controllers as any[]),
+  ],
+  providers: [
+    AuditService, AuthService, AuthGuard, WorkflowService, RequisitionsService,
+    ...MODULE_AREAS.flatMap((m) => (m.providers ?? []) as any[]),
+  ],
 })
 export class AppModule {}

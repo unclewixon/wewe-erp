@@ -20,35 +20,36 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [ ] 2FA TOTP enrolment + verification (AUTH-02) — awaiting design (gap #1)
 - [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04) — awaiting design (gaps #2–4, #6)
 
-## Phase 2 — Workflow depth
+## Phase 2 — Workflow depth (BACKEND COMPLETE)
 - [x] Amount-based rules / thresholds (WFE-03): chain resolved & frozen at submission; auto-passed stages reported, never silent (config via TransactionType.stages)
 - [x] Delegation (WFE-05): date-bounded, max 30 days, no chains, SoD-safe (delegator-initiator and delegator-prior-approver blocked), on-behalf-of logged; endpoints /v1/delegations
-- [ ] Instant revocation reassignment (AUTH-05)
-- [ ] SLA timers + escalation via BullMQ (WFE-06); aging badges
-- [ ] Bulk actions (WFE-08); notifications in-app (NTF-01) + email via provider OAuth (NTF-02/03)
-- [ ] Workflow configuration UI (WFE-10)
+- [x] Instant revocation (AUTH-05): deactivate kills sessions + delegations, audit + notify
+- [x] SLA timers + escalation (WFE-06): in-process 60s scanner, 75% reminder / 100% escalation, deduped per stage (BullMQ/Redis = production upgrade path)
+- [x] Notifications in-app (NTF-01) via event bus + email outbox with dev transport (.eml to var/outbox; provider OAuth pending — NTF-02 stub noted in code)
+- [ ] Bulk actions endpoint (WFE-08) — engine supports it; batch endpoint pending
+- [x] Workflow configuration API (WFE-10 backend): transaction-types CRUD with validation; UI = verbatim design
 
-## Phase 3 — Money
-- [ ] Budget module: import, revisions/virement, commitment accounting (BUD-01..04); budget-check validation on submit + Finance stage (REQ-02)
-- [ ] Advances & travel (ADV-01..04); retirement with variance + receipts (RET-01..05)
-- [ ] QuickBooks: OAuth connect, CoA mapping, posting queue + exceptions, status sync (QBI-01..05)
+## Phase 3 — Money (BACKEND COMPLETE)
+- [x] Budgets: versions/allocations/activation, position (allocated/committed/actual/available), virements via VIREMENT workflow + hook (BUD-01..03); REQ-02 check in requisitions (block/warn per settings)
+- [x] Advances & travel: per-diem calc, disbursement, deadlines, outstanding register, overdue block (ADV-01..04); retirements: variance, refunds, partials, auto-close (RET-01..05)
+- [x] QuickBooks outbox: journal queue, exceptions, repost, sandbox posting (QBI core); live OAuth connect + CoA mapping screen = integration task with real WEWE credentials
 
-## Phase 4 — Documents & e-sign
-- [ ] Repository, versions, permissions, search+OCR (DMS-01..04); digitisation intake (DMS-05); retention (DMS-06)
-- [ ] E-signature series (DMS-08a–d)
+## Phase 4 — Documents & e-sign (BACKEND COMPLETE)
+- [x] Repository, versions, permissions, links, search (DMS-01..04; OCR = stub interface, engine to be chosen); retention/legal hold + dual-approved disposal workflow (DMS-06)
+- [x] E-signature series complete incl. external signers (token+OTP), certificates, hash verification (DMS-08a–d)
 
-## Phase 5 — People
-- [ ] HR core (HRM-01..05); timesheets (TLS-01..03); payroll decision + build (PAY-01..03)
+## Phase 5 — People (BACKEND COMPLETE)
+- [x] HR core: profiles w/ field-level masking, leave workflow + balances, checklists, letters (HRM-01..05); timesheets + LOE (TLS-01..03); payroll: PAYE/pension/NHF computation, runs, payslips, remittances, cost distribution (PAY-01..03)
 
-## Phase 6 — Depth modules
-- [ ] Procurement (PRC-01..05); fixed assets (AST-01..04); donor & grants (DGM-01..04, PBT-01)
-- [ ] Inventory & stores (INV-01..04: GRN, issues, counts, movement log) — design-driven addition; spec addendum needed
-- [ ] Audit suite completion: flags/queries UI, findings register, checklists, exports, auditor portal (AUD-02..06)
-- [ ] Reports & analytics (DSH-02..06)
+## Phase 6 — Depth modules (BACKEND COMPLETE)
+- [x] Procurement: vendors/RFQ/quotes/PO/receipts/contracts/thresholds/order-splitting (PRC-01..05); assets: register/assign/verify/dispose/depreciation (AST-01..04); grants: budget-vs-actual, FX, reports, calendar (DGM-01..04)
+- [x] Inventory & stores: items, GRN/issue/adjust/count, low-stock alerts (INV-01..04)
+- [x] Audit suite backend: flags/respond/close, findings, evidence packs, access & activity reports (AUD-02..05); external auditor portal accounts (AUD-06) pending
+- [x] Pipeline analytics + registers + exports (DSH-02..04 backend); scheduled reports + custom builder (DSH-05/06) pending
 
-## Phase 7 — Admin depth & hardening
-- [ ] Roles & Permissions module UI (matrix editor, scopes, SoD rules panel, effective-permissions resolver, view-as, change log)
-- [ ] Org structure effective-dating, policy settings, reference data UIs (ADM-02..04)
+## Phase 7 — Admin depth & hardening (BACKEND LARGELY COMPLETE)
+- [x] Roles & Permissions backend: 17×7 catalog, matrix get/set with SoD-pair blocking, resolver, change log (UI = verbatim design)
+- [x] Departments CRUD, settings with audit history, workflow config API (ADM-02..04 core; effective-dating refinement pending)
 - [ ] Mobile polish (MOB-01..03), PWA offline (MOB-04); NFR pass: perf budgets, pen-test prep, backups/DR runbook
 
 ## Standing quality gates
