@@ -2,6 +2,9 @@
 
 Feature IDs refer to the Features & Build Specification v1.1. Tick items as they land; keep this file honest.
 
+## Phase 0 — Standing rule: VERBATIM design
+The Claude Design bundle is used verbatim; the build designs nothing. Missing screens are logged in `docs/DESIGN_GAP_REPORT.md` and requested from Claude Design. Phase-1 interim screens are replaced by verbatim ports as each area is touched.
+
 ## Phase 1 — Foundation (IN PROGRESS)
 - [x] ADR-001 stack decision; monorepo scaffold
 - [x] Prisma schema: users, roles, permissions, departments, budget lines, transaction types, transactions, stages, audit events, sessions
@@ -12,8 +15,9 @@ Feature IDs refer to the Features & Build Specification v1.1. Tick items as they
 - [x] Workflow engine: config-driven five-stage chain, approve/reject/return/withdraw, SoD rules, restart-on-resubmit (WFE-01/02/04/09 core) + unit tests
 - [x] Requisitions vertical slice: draft→submit→five approvals→approved, lines, ref generator (REQ-01/03 core)
 - [x] Web: tokens.css from design handoff, Shell (282px sidebar, groups), sign-in, dashboard (live stats), requisitions queue/list, new-requisition form, transaction detail with ApprovalTracker
-- [ ] 2FA TOTP enrolment + verification (AUTH-02)
-- [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04)
+- [ ] Replace interim screens with VERBATIM ports from design bundle (shell, sign-in+OTP, dashboards, requisitions list/new/detail)
+- [ ] 2FA TOTP enrolment + verification (AUTH-02) — awaiting design (gap #1)
+- [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04) — awaiting design (gaps #2–4, #6)
 
 ## Phase 2 — Workflow depth
 - [ ] Amount-based rules / thresholds (WFE-03) — engine hook exists, config UI pending
@@ -36,6 +40,7 @@ Feature IDs refer to the Features & Build Specification v1.1. Tick items as they
 
 ## Phase 6 — Depth modules
 - [ ] Procurement (PRC-01..05); fixed assets (AST-01..04); donor & grants (DGM-01..04, PBT-01)
+- [ ] Inventory & stores (INV-01..04: GRN, issues, counts, movement log) — design-driven addition; spec addendum needed
 - [ ] Audit suite completion: flags/queries UI, findings register, checklists, exports, auditor portal (AUD-02..06)
 - [ ] Reports & analytics (DSH-02..06)
 
