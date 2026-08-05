@@ -21,6 +21,9 @@ function localCdnResources(): Plugin {
     `const ${k} = [`,
     `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,
   ]);
+  // PAGE_SPECS: per-route live override (Object.assign so unwired routes keep fixtures)
+  DATA_WRAPS.push(['const PAGE_SPECS = {', 'const PAGE_SPECS = Object.assign({']);
+  DATA_WRAPS.push([",'g:LIVE']] } }\n};", ",'g:LIVE']] } }\n}, window.__wewePageSpecs || {});"]);
   return {
     name: 'wewe-local-cdn-resources',
     transformIndexHtml: {

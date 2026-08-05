@@ -39,6 +39,10 @@ Plus **47 spec-driven secondary pages** (stats + table pattern) covering: requis
 18. Purchase Order branded PDF preview.
 19. HR letter generation screen + letter template.
 
+**Discovered during integration (Phase C write-wiring)**
+20. Transaction detail page is hard-bound to the fixture ref `REQ-2026-0187` (its route is a fixed entry in KNOWN and its content reads fixture consts). It needs template binding to the route parameter so any live ref renders. Until then, live rows can be listed and actioned from the queue but not opened in detail.
+21. Return/Reject need the comment drawer bound to the action (a note is mandatory in the engine); the current buttons are visual no-ops. Approve is wired live via the integration bridge; Return/Reject wait on this binding.
+
 ## Design exceeds the feature spec (adopt into the build plan)
 
 - **Inventory & stores module** (GRN, issues, counts, movement log) — not in Features Spec v1.1; added to BUILD_PLAN Phase 6 as INV-01…04 (spec addendum needed).

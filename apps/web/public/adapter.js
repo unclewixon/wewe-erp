@@ -40,6 +40,7 @@
     me = xhr('GET', '/v1/auth/me');
   }
   if (!me) return; // API down → design renders its fixtures
+  window.__weweUser = me.user && me.user.name;
 
   function naira(kobo) { try { return Number(BigInt(kobo || '0') / 100n); } catch (e) { return 0; } }
   function ddmmyyyy(iso) {
@@ -244,4 +245,90 @@
   });
 
   window.__weweData = data;
+})();
+
+/* ---- Phase C: live queue page + Approve write-bridge ---- */
+(function () {
+  function xhr(method, url, body) {
+    try {
+      var r = new XMLHttpRequest();
+      r.open(method, url, false); r.withCredentials = true;
+      if (body) r.setRequestHeader('content-type', 'application/json');
+      r.send(body ? JSON.stringify(body) : null);
+      if (r.status < 200 || r.status >= 300) return null;
+      return JSON.parse(r.responseText);
+    } catch (e) { return null; }
+  }
+  function fmtNaira(kobo) {
+    var k = BigInt(kobo || '0'); var whole = (k / 100n).toString(); var cents = (k % 100n).toString().padStart(2, '0');
+    return '₦' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + cents;
+  }
+  function ageHours(iso) { return Math.floor((Date.now() - new Date(iso).getTime()) / 3600000); }
+  function waiting(iso) { var h = ageHours(iso); return Math.floor(h / 24) + 'd ' + (h % 24) + 'h'; }
+  function slaBadge(iso) {
+    var h = ageHours(iso);
+    if (h >= 24) return 'r:OVERDUE ' + Math.max(1, Math.floor((h - 24) / 24) + 1) + 'D';
+    if (h >= 18) return 'a:DUE SOON';
+    return 'n:ON TIME';
+  }
+
+  var queue = xhr('GET', '/v1/requisitions?scope=queue');
+  window.__weweRefMap = {};
+  var all = xhr('GET', '/v1/requisitions?scope=all') || [];
+  all.forEach(function (t) { window.__weweRefMap[t.ref] = t.id; });
+
+  if (Array.isArray(queue)) {
+    queue.forEach(function (t) { window.__weweRefMap[t.ref] = t.id; });
+    var totalKobo = queue.reduce(function (s, t) { return s + BigInt(t.amountKobo || '0'); }, 0n);
+    var overdue = queue.filter(function (t) { return ageHours(t.updatedAt) >= 24; });
+    var oldest = queue.slice().sort(function (a, b) { return new Date(a.updatedAt) - new Date(b.updatedAt); })[0];
+    window.__wewePageSpecs = {
+      '/requisitions/queue': {
+        title: 'Awaiting my approval',
+        sub: queue.length + ' item' + (queue.length === 1 ? '' : 's') + ' in your queue worth ' + fmtNaira(totalKobo.toString()) +
+          (oldest ? ' · oldest has waited ' + waiting(oldest.updatedAt) : ''),
+        actions: ['Bulk approve', 'Export queue'],
+        stats: [
+          ['In my queue', String(queue.length), fmtNaira(totalKobo.toString()) + ' total value'],
+          ['Overdue at my stage', String(overdue.length), overdue.slice(0, 2).map(function (t) { return t.ref; }).join(' and ') || 'Nothing overdue'],
+          ['Live data', 'ON', 'Rows from the workflow engine'],
+          ['Signed in as', (window.__weweUser || ''), 'Change with ?as=persona'],
+        ],
+        table: {
+          title: 'Queue, oldest first',
+          cols: [['Reference', null, '104px'], ['Item', null, 'minmax(130px,1fr)'], ['Amount', 'r', '116px'], ['Waiting', 'r', '84px'], ['SLA', null, '112px'], ['', null, '188px']],
+          rows: queue.slice().sort(function (a, b) { return new Date(a.updatedAt) - new Date(b.updatedAt); })
+            .map(function (t) {
+              return [t.ref, t.title, fmtNaira(t.amountKobo), waiting(t.updatedAt), slaBadge(t.updatedAt), 'x:Approve|Return|Open'];
+            }),
+        },
+      },
+    };
+  }
+
+  // Write-bridge: an Approve button inside a row whose text carries a LIVE ref → real engine call.
+  // Return/Reject stay design-side until the comment drawer is bound (design gap — a note is mandatory).
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+    if (!btn || btn.textContent.trim() !== 'Approve') return;
+    var node = btn, ref = null;
+    for (var up = 0; up < 6 && node; up++) {
+      var m = (node.innerText || '').match(/\b((?:REQ|ADV|RET|VIR|PO|LVE|TSH|PAY)-\d{4}-\d{4})\b/);
+      if (m) { ref = m[1]; break; }
+      node = node.parentElement;
+    }
+    if (!ref || !window.__weweRefMap[ref]) return; // fixture row → leave to the design's own noop
+    ev.stopPropagation(); ev.preventDefault();
+    btn.disabled = true;
+    fetch('/v1/requisitions/' + window.__weweRefMap[ref] + '/action', {
+      method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ verb: 'approve' }),
+    }).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+      .then(function (res) {
+        if (res.ok) { console.info('[wewe] approved', ref, '→', res.body.status); location.reload(); }
+        else { console.warn('[wewe] approve blocked:', res.body.message); btn.disabled = false; }
+      })
+      .catch(function () { btn.disabled = false; });
+  }, true);
 })();
