@@ -163,6 +163,18 @@ export class RequisitionsService {
       },
     });
     if (!tx || tx.typeCode !== 'REQUISITION') throw new NotFoundException('Requisition not found');
+    // Object-level authorization: external auditors may only open in-scope records.
+    const auditorOnly = user.roles.length > 0 && user.roles.every((r) => r.code === 'EXTERNAL_AUDITOR');
+    if (auditorOnly) {
+      const scope = await db.query.auditorScopes.findFirst({
+        where: and(eq(schema.auditorScopes.userId, user.id), sql`${schema.auditorScopes.expiresAt} > now()`),
+      });
+      const inScope = scope
+        && (!scope.donorCode || tx.donorCode === scope.donorCode)
+        && (!scope.periodStart || (tx.submittedAt && tx.submittedAt >= scope.periodStart))
+        && (!scope.periodEnd || (tx.submittedAt && tx.submittedAt <= scope.periodEnd));
+      if (!inScope) throw new NotFoundException('Requisition not found'); // 404, not 403 — do not confirm existence
+    }
     const payload = (tx.payload ?? {}) as { chain?: StageDef[]; autoPassed?: StageDef[] };
     const chain = payload.chain ?? (tx.type.stages as StageDef[]);
     const ctx = {

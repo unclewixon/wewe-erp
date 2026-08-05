@@ -1,11 +1,12 @@
 import {
-  Body, Controller, Get, Module, Param, Post, Query, Req, Res, UseGuards, UnauthorizedException,
+  Body, Controller, Get, Module, NotFoundException, Param, Post, Query, Req, Res, UseGuards, UnauthorizedException,
 } from '@nestjs/common';
 import { and, desc, eq, gt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, schema } from './db/client';
 import { AuditService } from './audit/audit.service';
-import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, hasPermission, type AuthedUser } from './auth/auth';
+import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, hasPermission, loginRateLimited, recordLoginFailure, type AuthedUser } from './auth/auth';
+import { ForbiddenException } from '@nestjs/common';
 import { WorkflowService } from './workflow/workflow.service';
 import { BulkActionsService, RequisitionsController, RequisitionsService } from './requisitions/requisitions';
 import { canAct, priorApproversSinceLastSubmit, type StageDef } from './workflow/engine.logic';
@@ -35,8 +36,15 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: unknown, @Req() req: any, @Res({ passthrough: true }) res: any) {
+    if (loginRateLimited(req.ip)) { res.status(429); return { statusCode: 429, message: 'Too many attempts — wait a minute and try again' }; }
     const dto = LoginSchema.parse(body);
-    const result = await this.auth.login(dto.email, dto.password, req.ip);
+    let result;
+    try {
+      result = await this.auth.login(dto.email, dto.password, req.ip);
+    } catch (e) {
+      recordLoginFailure(req.ip); // only failed attempts count toward the per-IP throttle
+      throw e;
+    }
     if (result.kind === '2fa') return { requires2fa: true, pendingToken: result.pendingToken };
     res.cookie(SESSION_COOKIE, result.token, {
       httpOnly: true, sameSite: 'lax', secure: process.env.COOKIE_SECURE === '1', expires: result.expiresAt, path: '/',
@@ -200,10 +208,10 @@ export class TransactionsController {
 
   private async guardTx(user: AuthedUser, id: string, action: string) {
     const tx = await db.query.transactions.findFirst({ where: eq(schema.transactions.id, id) });
-    if (!tx) throw new UnauthorizedException('Transaction not found');
+    if (!tx) throw new NotFoundException('Transaction not found');
     const mod = MODULE_BY_TX_TYPE[tx.typeCode];
     if (mod && !(await hasPermission(user, mod, action)))
-      throw new UnauthorizedException(`Your role does not hold ${action} on ${mod} — see Roles & permissions`);
+      throw new ForbiddenException(`Your role does not hold ${action} on ${mod} — see Roles & permissions`);
     return tx;
   }
 

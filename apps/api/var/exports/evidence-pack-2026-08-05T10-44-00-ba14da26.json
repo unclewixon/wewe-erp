@@ -1,0 +1,726 @@
+{
+  "kind": "WEWE_EVIDENCE_PACK",
+  "generatedAt": "2026-08-05T10:44:00.222Z",
+  "generatedBy": {
+    "id": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+    "email": "ngozi.okafor@wewe.org",
+    "name": "Ngozi Okafor"
+  },
+  "filters": {
+    "from": null,
+    "to": null,
+    "donorCode": "USAID-LON-24",
+    "departmentId": null
+  },
+  "counts": {
+    "transactions": 5,
+    "requisitionLines": 8,
+    "stageEvents": 17,
+    "auditEvents": 17
+  },
+  "transactions": [
+    {
+      "id": "e4eea395-7ed7-4e99-97f4-ee610d97694a",
+      "ref": "REQ-2026-0006",
+      "typeCode": "REQUISITION",
+      "title": "Projector and screen for training hall",
+      "status": "RETURNED",
+      "currentStage": 0,
+      "amountKobo": "48000000",
+      "currency": "NGN",
+      "donorCode": "USAID-LON-24",
+      "department": {
+        "id": "f39b407c-456d-4cc8-8531-b8250f38dffa",
+        "name": "Programmes"
+      },
+      "initiator": {
+        "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+        "name": "Amina Yusuf",
+        "email": "amina.yusuf@wewe.org"
+      },
+      "submittedAt": "2026-08-01T10:42:32.753Z",
+      "createdAt": "2026-07-31T10:42:32.753Z",
+      "updatedAt": "2026-08-05T10:42:32.754Z",
+      "lines": [
+        {
+          "id": "198e77c5-af6f-4e1a-814d-749646ddd91a",
+          "description": "Projector (Epson EB-X51)",
+          "qty": 1,
+          "unitKobo": "38500000",
+          "totalKobo": "38500000",
+          "budgetLine": {
+            "id": "26ec6de0-5f30-4abb-8b1d-a4941b55cd32",
+            "code": "PRG-TRN",
+            "name": "Community training & workshops"
+          }
+        },
+        {
+          "id": "93a9ba81-e0d5-4bea-918b-535fdd5e0f35",
+          "description": "Projection screen",
+          "qty": 1,
+          "unitKobo": "9500000",
+          "totalKobo": "9500000",
+          "budgetLine": {
+            "id": "26ec6de0-5f30-4abb-8b1d-a4941b55cd32",
+            "code": "PRG-TRN",
+            "name": "Community training & workshops"
+          }
+        }
+      ],
+      "stageHistory": [
+        {
+          "action": "SUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+            "name": "Amina Yusuf"
+          },
+          "comment": null,
+          "at": "2026-08-01T10:42:32.753Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 0,
+          "role": "SUPERVISOR",
+          "actor": {
+            "id": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+            "name": "Tunde Balogun"
+          },
+          "comment": null,
+          "at": "2026-08-02T06:42:32.753Z"
+        },
+        {
+          "action": "RETURNED",
+          "stageIndex": 1,
+          "role": "INTERNAL_AUDIT",
+          "actor": {
+            "id": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+            "name": "Ngozi Okafor"
+          },
+          "comment": "Attach the vendor quote for the projector before we can proceed.",
+          "at": "2026-08-02T10:42:32.753Z"
+        }
+      ]
+    },
+    {
+      "id": "e252687f-65f1-423a-9de6-caf7654016ea",
+      "ref": "REQ-2026-0002",
+      "typeCode": "REQUISITION",
+      "title": "Widows skills workshop — venue & materials",
+      "status": "PENDING",
+      "currentStage": 1,
+      "amountKobo": "74000000",
+      "currency": "NGN",
+      "donorCode": "USAID-LON-24",
+      "department": {
+        "id": "f39b407c-456d-4cc8-8531-b8250f38dffa",
+        "name": "Programmes"
+      },
+      "initiator": {
+        "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+        "name": "Amina Yusuf",
+        "email": "amina.yusuf@wewe.org"
+      },
+      "submittedAt": "2026-08-02T10:42:32.726Z",
+      "createdAt": "2026-08-01T10:42:32.726Z",
+      "updatedAt": "2026-08-05T10:42:32.727Z",
+      "lines": [
+        {
+          "id": "7c42f9c4-0378-4942-ae72-6fdd98e388c4",
+          "description": "Hall rental (2 days)",
+          "qty": 2,
+          "unitKobo": "15000000",
+          "totalKobo": "30000000",
+          "budgetLine": {
+            "id": "26ec6de0-5f30-4abb-8b1d-a4941b55cd32",
+            "code": "PRG-TRN",
+            "name": "Community training & workshops"
+          }
+        },
+        {
+          "id": "e03de98d-6bef-4856-b96a-e414e168fe85",
+          "description": "Training materials pack",
+          "qty": 40,
+          "unitKobo": "750000",
+          "totalKobo": "30000000",
+          "budgetLine": {
+            "id": "26ec6de0-5f30-4abb-8b1d-a4941b55cd32",
+            "code": "PRG-TRN",
+            "name": "Community training & workshops"
+          }
+        },
+        {
+          "id": "ef8cbd81-2a67-4330-bd31-6f15f7407930",
+          "description": "Refreshments",
+          "qty": 40,
+          "unitKobo": "350000",
+          "totalKobo": "14000000",
+          "budgetLine": {
+            "id": "26ec6de0-5f30-4abb-8b1d-a4941b55cd32",
+            "code": "PRG-TRN",
+            "name": "Community training & workshops"
+          }
+        }
+      ],
+      "stageHistory": [
+        {
+          "action": "SUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+            "name": "Amina Yusuf"
+          },
+          "comment": null,
+          "at": "2026-08-02T10:42:32.726Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 0,
+          "role": "SUPERVISOR",
+          "actor": {
+            "id": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+            "name": "Tunde Balogun"
+          },
+          "comment": null,
+          "at": "2026-08-03T06:42:32.726Z"
+        }
+      ]
+    },
+    {
+      "id": "c97947cb-cd28-4554-9914-8e6770b45ed3",
+      "ref": "REQ-2026-0001",
+      "typeCode": "REQUISITION",
+      "title": "Field visit — Nasarawa cluster monitoring",
+      "status": "PENDING",
+      "currentStage": 0,
+      "amountKobo": "40500000",
+      "currency": "NGN",
+      "donorCode": "USAID-LON-24",
+      "department": {
+        "id": "f39b407c-456d-4cc8-8531-b8250f38dffa",
+        "name": "Programmes"
+      },
+      "initiator": {
+        "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+        "name": "Amina Yusuf",
+        "email": "amina.yusuf@wewe.org"
+      },
+      "submittedAt": "2026-08-04T10:42:32.716Z",
+      "createdAt": "2026-08-03T10:42:32.716Z",
+      "updatedAt": "2026-08-05T10:42:32.717Z",
+      "lines": [
+        {
+          "id": "b5c966a2-1c4b-473b-bc33-88c8323cecb9",
+          "description": "Vehicle hire (3 days)",
+          "qty": 3,
+          "unitKobo": "8500000",
+          "totalKobo": "25500000",
+          "budgetLine": {
+            "id": "ea25156d-da2e-492f-b2e7-1cb24b7c1815",
+            "code": "PRG-TRV",
+            "name": "Programme travel & fieldwork"
+          }
+        },
+        {
+          "id": "4e8bd26b-5d74-45f4-aa37-cdbc107562a6",
+          "description": "Per-diem, 2 officers",
+          "qty": 6,
+          "unitKobo": "2500000",
+          "totalKobo": "15000000",
+          "budgetLine": {
+            "id": "ea25156d-da2e-492f-b2e7-1cb24b7c1815",
+            "code": "PRG-TRV",
+            "name": "Programme travel & fieldwork"
+          }
+        }
+      ],
+      "stageHistory": [
+        {
+          "action": "SUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+            "name": "Amina Yusuf"
+          },
+          "comment": null,
+          "at": "2026-08-04T10:42:32.716Z"
+        }
+      ]
+    },
+    {
+      "id": "17e8b299-52ed-4e1a-ad5c-df3ab3136837",
+      "ref": "REQ-2026-0009",
+      "typeCode": "REQUISITION",
+      "title": "Verification sweep — training venue",
+      "status": "APPROVED",
+      "currentStage": 3,
+      "amountKobo": "70000000",
+      "currency": "NGN",
+      "donorCode": "USAID-LON-24",
+      "department": {
+        "id": "f39b407c-456d-4cc8-8531-b8250f38dffa",
+        "name": "Programmes"
+      },
+      "initiator": {
+        "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+        "name": "Amina Yusuf",
+        "email": "amina.yusuf@wewe.org"
+      },
+      "submittedAt": "2026-08-05T10:43:59.301Z",
+      "createdAt": "2026-08-05T10:43:59.295Z",
+      "updatedAt": "2026-08-05T10:43:59.415Z",
+      "lines": [
+        {
+          "id": "a995f2ea-3fe3-434c-92da-7925c96824e9",
+          "description": "Hall rental",
+          "qty": 2,
+          "unitKobo": "35000000",
+          "totalKobo": "70000000",
+          "budgetLine": null
+        }
+      ],
+      "stageHistory": [
+        {
+          "action": "SUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+            "name": "Amina Yusuf"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.302Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 0,
+          "role": "SUPERVISOR",
+          "actor": {
+            "id": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+            "name": "Tunde Balogun"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.320Z"
+        },
+        {
+          "action": "RETURNED",
+          "stageIndex": 1,
+          "role": "INTERNAL_AUDIT",
+          "actor": {
+            "id": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+            "name": "Ngozi Okafor"
+          },
+          "comment": "Attach the venue quote before we proceed.",
+          "at": "2026-08-05T10:43:59.341Z"
+        },
+        {
+          "action": "RESUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+            "name": "Amina Yusuf"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.357Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 0,
+          "role": "SUPERVISOR",
+          "actor": {
+            "id": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+            "name": "Tunde Balogun"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.369Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 1,
+          "role": "INTERNAL_AUDIT",
+          "actor": {
+            "id": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+            "name": "Ngozi Okafor"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.383Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 2,
+          "role": "FINANCE",
+          "actor": {
+            "id": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+            "name": "Ibrahim Musa"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.398Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 3,
+          "role": "FINAL_APPROVER",
+          "actor": {
+            "id": "8a7d91f0-1725-4603-ba10-d18e9ad69b5b",
+            "name": "Folake Adeyemi"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.416Z"
+        }
+      ]
+    },
+    {
+      "id": "ad8bcd62-2a28-49d5-8cbf-637773f355a9",
+      "ref": "VIR-2026-0001",
+      "typeCode": "VIREMENT",
+      "title": "Virement PRG-TRV → PRG-TRN",
+      "status": "APPROVED",
+      "currentStage": 1,
+      "amountKobo": "10000000",
+      "currency": "NGN",
+      "donorCode": "USAID-LON-24",
+      "department": {
+        "id": "f39b407c-456d-4cc8-8531-b8250f38dffa",
+        "name": "Programmes"
+      },
+      "initiator": {
+        "id": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+        "name": "Ibrahim Musa",
+        "email": "ibrahim.musa@wewe.org"
+      },
+      "submittedAt": "2026-08-05T10:43:59.773Z",
+      "createdAt": "2026-08-05T10:43:59.768Z",
+      "updatedAt": "2026-08-05T10:43:59.821Z",
+      "lines": [],
+      "stageHistory": [
+        {
+          "action": "SUBMITTED",
+          "stageIndex": 0,
+          "role": null,
+          "actor": {
+            "id": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+            "name": "Ibrahim Musa"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.774Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 0,
+          "role": "FINANCE",
+          "actor": {
+            "id": "b9a8f5c9-8972-4013-807d-128702451a09",
+            "name": "Fatima Bello"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.788Z"
+        },
+        {
+          "action": "APPROVED",
+          "stageIndex": 1,
+          "role": "FINAL_APPROVER",
+          "actor": {
+            "id": "8a7d91f0-1725-4603-ba10-d18e9ad69b5b",
+            "name": "Folake Adeyemi"
+          },
+          "comment": null,
+          "at": "2026-08-05T10:43:59.803Z"
+        }
+      ]
+    }
+  ],
+  "auditEvents": [
+    {
+      "id": 1102,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_CREATED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0001",
+      "data": {
+        "seeded": true
+      },
+      "ip": null,
+      "prevHash": "GENESIS",
+      "hash": "c85399c50aca3068557c6680e6142fc7d090b4fff9a0850c75119c32fc67cb90",
+      "createdAt": "2026-08-05T10:42:32.726Z"
+    },
+    {
+      "id": 1103,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_CREATED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0002",
+      "data": {
+        "seeded": true
+      },
+      "ip": null,
+      "prevHash": "c85399c50aca3068557c6680e6142fc7d090b4fff9a0850c75119c32fc67cb90",
+      "hash": "4054a23a5ac155085d72f904aec7d3a179a37214d1b049264066cd21237aa0ef",
+      "createdAt": "2026-08-05T10:42:32.733Z"
+    },
+    {
+      "id": 1107,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_CREATED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0006",
+      "data": {
+        "seeded": true
+      },
+      "ip": null,
+      "prevHash": "5385edbde577dc611f631a793a194516676c6d9bad1b0c6eeeb4cb1d34472ad5",
+      "hash": "d6c026eff5410e80e3670476af054a127350dfe795559ffe8d84edd965d3c2af",
+      "createdAt": "2026-08-05T10:42:32.759Z"
+    },
+    {
+      "id": 1121,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_CREATED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "lines": 1,
+        "title": "Verification sweep — training venue",
+        "amountKobo": "70000000"
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "9bb37532b24f32ea9a46075e20e81dc2bf12890a61df2cc9d914626127acd7b5",
+      "hash": "c3322901b8c4e8e0b10cbd67c50b341337379d2d1cb5e92e9b37df64ee236e4c",
+      "createdAt": "2026-08-05T10:43:59.298Z"
+    },
+    {
+      "id": 1122,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_SUBMITTED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": null,
+      "ip": "127.0.0.1",
+      "prevHash": "c3322901b8c4e8e0b10cbd67c50b341337379d2d1cb5e92e9b37df64ee236e4c",
+      "hash": "fd8f48d325a7a114fc1231de2f64ea2ad8de2aaef73f72d537b2cb20ad590f6a",
+      "createdAt": "2026-08-05T10:43:59.303Z"
+    },
+    {
+      "id": 1123,
+      "actorId": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+      "actorEmail": "tunde.balogun@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "SUPERVISOR",
+        "stage": 0,
+        "comment": null,
+        "resulting": "PENDING",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "fd8f48d325a7a114fc1231de2f64ea2ad8de2aaef73f72d537b2cb20ad590f6a",
+      "hash": "97998495925fecc4913e3af7ec690dc0264d46e294e49b1ca73d87f469de9c5d",
+      "createdAt": "2026-08-05T10:43:59.322Z"
+    },
+    {
+      "id": 1124,
+      "actorId": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+      "actorEmail": "ngozi.okafor@wewe.org",
+      "action": "TX_RETURNED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "INTERNAL_AUDIT",
+        "stage": 1,
+        "comment": "Attach the venue quote before we proceed.",
+        "resulting": "RETURNED",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "97998495925fecc4913e3af7ec690dc0264d46e294e49b1ca73d87f469de9c5d",
+      "hash": "1925d11ce8b9ff8d3ce41e94c97968db09e18cabbebf1cc89b03844d99add2e8",
+      "createdAt": "2026-08-05T10:43:59.342Z"
+    },
+    {
+      "id": 1125,
+      "actorId": "fa0799d8-65ed-4a5a-b137-22e72db1f036",
+      "actorEmail": "amina.yusuf@wewe.org",
+      "action": "TX_RESUBMITTED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": null,
+      "ip": "127.0.0.1",
+      "prevHash": "1925d11ce8b9ff8d3ce41e94c97968db09e18cabbebf1cc89b03844d99add2e8",
+      "hash": "2422c0ca389d226c008e65b43c4cd4964be42803cfe68a7e3637090881c903ee",
+      "createdAt": "2026-08-05T10:43:59.359Z"
+    },
+    {
+      "id": 1126,
+      "actorId": "be050c02-101f-4cf1-ad1f-f621a9741b59",
+      "actorEmail": "tunde.balogun@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "SUPERVISOR",
+        "stage": 0,
+        "comment": null,
+        "resulting": "PENDING",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "2422c0ca389d226c008e65b43c4cd4964be42803cfe68a7e3637090881c903ee",
+      "hash": "14d6b1207bf8dcf41587c9fe30510ef85b354e0b6a827991f9cba707f5213d2e",
+      "createdAt": "2026-08-05T10:43:59.370Z"
+    },
+    {
+      "id": 1127,
+      "actorId": "93875c59-a9b7-4aa7-bcac-9252209255d1",
+      "actorEmail": "ngozi.okafor@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "INTERNAL_AUDIT",
+        "stage": 1,
+        "comment": null,
+        "resulting": "PENDING",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "14d6b1207bf8dcf41587c9fe30510ef85b354e0b6a827991f9cba707f5213d2e",
+      "hash": "ed36e0bc1958dd82df7db8bfc0e3cdc48c614773de8f3b9fb6bd306e91103b9f",
+      "createdAt": "2026-08-05T10:43:59.384Z"
+    },
+    {
+      "id": 1128,
+      "actorId": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+      "actorEmail": "ibrahim.musa@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "FINANCE",
+        "stage": 2,
+        "comment": null,
+        "resulting": "PENDING",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "ed36e0bc1958dd82df7db8bfc0e3cdc48c614773de8f3b9fb6bd306e91103b9f",
+      "hash": "569d3284c9b681d0b125ee625469041449999db021ebad9948fbe6166c678f17",
+      "createdAt": "2026-08-05T10:43:59.401Z"
+    },
+    {
+      "id": 1129,
+      "actorId": "8a7d91f0-1725-4603-ba10-d18e9ad69b5b",
+      "actorEmail": "folake.adeyemi@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "REQ-2026-0009",
+      "data": {
+        "role": "FINAL_APPROVER",
+        "stage": 3,
+        "comment": null,
+        "resulting": "APPROVED",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "569d3284c9b681d0b125ee625469041449999db021ebad9948fbe6166c678f17",
+      "hash": "a1af466fc3d9c8c4a3388b2e8ce35ad3918eab0af9f7ad13a635e617646e5558",
+      "createdAt": "2026-08-05T10:43:59.417Z"
+    },
+    {
+      "id": 1157,
+      "actorId": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+      "actorEmail": "ibrahim.musa@wewe.org",
+      "action": "TX_CREATED",
+      "entityType": "transaction",
+      "entityId": "VIR-2026-0001",
+      "data": {
+        "title": "Virement PRG-TRV → PRG-TRN",
+        "typeCode": "VIREMENT",
+        "amountKobo": "10000000"
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "a22db9575686ea81e73902bde6b719978ce53bdb1d305cf36f26924b08cffa4a",
+      "hash": "f6bd972c9a2c48617886712741592ca1dd6e9ac9f97841a2ae231eddd9070236",
+      "createdAt": "2026-08-05T10:43:59.770Z"
+    },
+    {
+      "id": 1158,
+      "actorId": "ecabfdb4-cd80-4919-81b7-16e9767435bd",
+      "actorEmail": "ibrahim.musa@wewe.org",
+      "action": "TX_SUBMITTED",
+      "entityType": "transaction",
+      "entityId": "VIR-2026-0001",
+      "data": null,
+      "ip": "127.0.0.1",
+      "prevHash": "f6bd972c9a2c48617886712741592ca1dd6e9ac9f97841a2ae231eddd9070236",
+      "hash": "8a8cb911cba86d087ba9be29510c94ec495068f6d739dfe69d481556cd3a301c",
+      "createdAt": "2026-08-05T10:43:59.775Z"
+    },
+    {
+      "id": 1159,
+      "actorId": "b9a8f5c9-8972-4013-807d-128702451a09",
+      "actorEmail": "fatima.bello@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "VIR-2026-0001",
+      "data": {
+        "role": "FINANCE",
+        "stage": 0,
+        "comment": null,
+        "resulting": "PENDING",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "8a8cb911cba86d087ba9be29510c94ec495068f6d739dfe69d481556cd3a301c",
+      "hash": "c33e2d653d6a0b3271f3778589470f8f0b4987fc8badc2b27ea05a179ba0fbe3",
+      "createdAt": "2026-08-05T10:43:59.792Z"
+    },
+    {
+      "id": 1160,
+      "actorId": "8a7d91f0-1725-4603-ba10-d18e9ad69b5b",
+      "actorEmail": "folake.adeyemi@wewe.org",
+      "action": "TX_APPROVED",
+      "entityType": "transaction",
+      "entityId": "VIR-2026-0001",
+      "data": {
+        "role": "FINAL_APPROVER",
+        "stage": 1,
+        "comment": null,
+        "resulting": "APPROVED",
+        "onBehalfOf": null
+      },
+      "ip": "127.0.0.1",
+      "prevHash": "c33e2d653d6a0b3271f3778589470f8f0b4987fc8badc2b27ea05a179ba0fbe3",
+      "hash": "60aed90d215baf5adb98a39102952005ced10762dd9ebbae67d24082ba22da2f",
+      "createdAt": "2026-08-05T10:43:59.804Z"
+    },
+    {
+      "id": 1162,
+      "actorId": null,
+      "actorEmail": null,
+      "action": "VIREMENT_APPLIED",
+      "entityType": "transaction",
+      "entityId": "VIR-2026-0001",
+      "data": {
+        "destLine": "PRG-TRN",
+        "versionId": "df4c2a78-f889-47c2-8331-4a83cd524fef",
+        "amountKobo": "10000000",
+        "sourceLine": "PRG-TRV"
+      },
+      "ip": null,
+      "prevHash": "a2a7ff8c85ce0491390e998768c0c1140658679bd4de1fb39a3f6cb9a25506d0",
+      "hash": "9cea56ea6f605c68c6ca38459eef276e049ed3bacc48c3bbbb1f671d5f632b3b",
+      "createdAt": "2026-08-05T10:43:59.822Z"
+    }
+  ]
+}

@@ -12,8 +12,18 @@ import { AppModule } from './app';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'], bodyParser: false });
   const express = require('express');
+  const inst = app.getHttpAdapter().getInstance();
+  inst.disable('x-powered-by');                       // no stack disclosure
+  // Security response headers (defence in depth; TLS/HSTS handled at the proxy)
+  app.use((_req: any, res: any, next: any) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    next();
+  });
   app.use(express.json({ limit: '15mb' })); // DMS base64 uploads (10MB decoded cap)
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.urlencoded({ extended: true, limit: '15mb' }));
   app.use(cookieParser());
   // Production: set CORS_ORIGIN to the web origin; default stays permissive for dev.
   const corsOrigin = process.env.CORS_ORIGIN;
@@ -39,9 +49,11 @@ async function bootstrap() {
         });
         return;
       }
-      const status = (exception as any)?.getStatus?.() ?? 500;
-      const body = (exception as any)?.getResponse?.() ?? { statusCode: 500, message: 'Internal server error' };
-      if (status === 500) console.error(exception);
+      // body-parser errors carry their own HTTP status (e.g. 413 PayloadTooLarge)
+      const rawStatus = (exception as any)?.getStatus?.() ?? (exception as any)?.status ?? (exception as any)?.statusCode ?? 500;
+      const status = typeof rawStatus === 'number' ? rawStatus : 500;
+      const body = (exception as any)?.getResponse?.() ?? { statusCode: status, message: status === 413 ? 'Payload too large' : 'Internal server error' };
+      if (status >= 500) console.error(exception);
       res.status(status).json(typeof body === 'string' ? { statusCode: status, message: body } : body);
     },
   } as any);

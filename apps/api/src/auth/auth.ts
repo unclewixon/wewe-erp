@@ -53,6 +53,26 @@ export interface AuthedUser {
 export const SESSION_COOKIE = 'wewe_session';
 const SESSION_HOURS = 12; // AUTH-03: sessions are short-lived
 
+/**
+ * Per-IP login throttle (defence in depth on top of per-account lockout).
+ * Only FAILED attempts count — a NAT'd office where many staff share one IP must not
+ * lock out on successful sign-ins; brute force is a burst of failures.
+ */
+const loginFails = new Map<string, number[]>();
+const LOGIN_WINDOW_MS = 60_000, LOGIN_FAIL_MAX = 15;
+export function loginRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (loginFails.get(ip) ?? []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  return hits.length >= LOGIN_FAIL_MAX;
+}
+export function recordLoginFailure(ip: string): void {
+  const now = Date.now();
+  const hits = (loginFails.get(ip) ?? []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  hits.push(now);
+  loginFails.set(ip, hits);
+  if (loginFails.size > 5000) for (const [k, v] of loginFails) if (!v.some((t) => now - t < LOGIN_WINDOW_MS)) loginFails.delete(k);
+}
+
 @Injectable()
 export class AuthService {
   constructor(private readonly audit: AuditService) {}

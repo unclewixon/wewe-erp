@@ -74,5 +74,11 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Wired live: TXN_DETAIL, NOTIFICATIONS, SESSIONS_MINE (new /v1/auth/sessions endpoint), DELEGATIONS_MINE, BULK_QUEUE (real cap+flag rules), CHAIN_TYPES
 - [x] 35-route UI sweep clean; system-verify 67/67 and idempotent across reruns
 
+## Internal security assessment (pre-pentest hardening)
+- [x] Dependency audit: 25→ critical eliminated; prod-runtime pinned (js-yaml); dev-only advisories documented (not in the prod image)
+- [x] 7 findings fixed: auditor BOLA-by-id (HIGH), 401→403/404 status correctness, security headers (frame/nosniff/CSP), X-Powered-By removed, per-IP login throttle (failed-only, NAT-safe), 413 for oversized body
+- [x] 27 live attack probes green (scripts/security-probe.mjs): authn, BOLA/IDOR, SQLi, mass-assignment, audit immutability, headers, rate limit
+- [x] docs/SECURITY_ASSESSMENT.md for the external firm (NOT a substitute for the independent pen test — hardens ahead of it)
+
 ## Standing quality gates
 Engine/budget/QuickBooks logic always has tests · every endpoint permission-guarded + audit-logged · every screen uses shared components · feature-ID traceability maintained.
