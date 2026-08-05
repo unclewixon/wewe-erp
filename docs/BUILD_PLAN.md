@@ -16,7 +16,7 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Requisitions vertical slice: draft→submit→five approvals→approved, lines, ref generator (REQ-01/03 core)
 - [x] Web: tokens.css from design handoff, Shell (282px sidebar, groups), sign-in, dashboard (live stats), requisitions queue/list, new-requisition form, transaction detail with ApprovalTracker
 - [x] Interim build-side screens DELETED; apps/web now serves the design bundle byte-for-byte (cmp-guarded)
-- [ ] Data adapter: feed real API data into the verbatim render paths (no markup changes) — requisitions first
+- [x] Data adapter Phase A: serve-time fallback wrapping (TXNS/BUDGET_ROWS/QB_EXCEPTIONS) + pre-boot adapter fetching live requisitions, budget positions, QB exceptions; design byte-identical (cmp-guarded). Next phases: per-user auth bridge, writes (approve from UI), remaining consts (DASH, module fixtures)
 - [x] 2FA TOTP (AUTH-02): RFC-6238 impl (zero-dep, RFC-4226 test vectors), enrolment + backup codes, pending-login verify; enrolment SCREEN still awaiting design (gap #1)
 - [x] Progressive lockout + admin unlock (AUTH-04); session/profile UI awaiting design (gaps #2–4, #6)
 

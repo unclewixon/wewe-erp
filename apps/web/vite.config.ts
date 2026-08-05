@@ -14,15 +14,29 @@ function localCdnResources(): Plugin {
     'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js': '/vendor/react-dom.production.min.js',
     'https://unpkg.com/@babel/standalone@7.29.0/babel.min.js': '/vendor/babel.min.js',
   };
+  // Data-adapter fallback wrapping: fixture consts become `window.__weweData.X || <fixture>`.
+  // Serve-time only — the design file on disk stays byte-identical (cmp-guarded).
+  const DATA_WRAPS: [string, string][] = [
+    ['const TXNS = [', 'const TXNS = (window.__weweData && window.__weweData.TXNS) || ['],
+    ['const BUDGET_ROWS = [', 'const BUDGET_ROWS = (window.__weweData && window.__weweData.BUDGET_ROWS) || ['],
+    ['const QB_EXCEPTIONS = [', 'const QB_EXCEPTIONS = (window.__weweData && window.__weweData.QB_EXCEPTIONS) || ['],
+  ];
   return {
     name: 'wewe-local-cdn-resources',
     transformIndexHtml: {
       order: 'pre',
-      handler: () => [{
-        tag: 'script',
-        injectTo: 'head-prepend',
-        children: `window.__resources=${JSON.stringify(map)};`,
-      }],
+      handler: (html: string) => {
+        let out = html;
+        for (const [from, to] of DATA_WRAPS) out = out.replace(from, to);
+        return {
+          html: out,
+          tags: [
+            { tag: 'script', injectTo: 'head-prepend' as const, children: `window.__resources=${JSON.stringify(map)};` },
+            // adapter runs synchronously BEFORE support.js so live data exists at design boot
+            { tag: 'script', injectTo: 'head-prepend' as const, attrs: { src: '/adapter.js' } },
+          ],
+        };
+      },
     },
   };
 }
