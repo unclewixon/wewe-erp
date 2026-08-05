@@ -60,5 +60,12 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] scripts/backup.sh (nightly pg_dump + files, 14-day rotation) + quarterly restore drill w/ audit-chain verify
 - [x] docs/DEPLOYMENT.md runbook (first deploy, upgrades, integration flips, monitoring, security recap)
 
+## System verification (this phase)
+- [x] Engine fix (found by sweep): approvals before a return no longer block re-approval after resubmission (priorApproversSinceLastSubmit; unit-tested)
+- [x] Generic /v1/transactions surface: type-aware matrix checks (LEAVE approval = hr:APPROVE, not requisitions:APPROVE)
+- [x] Matrix defaults expanded to cover every real workflow; SoD-clean (disburse/settle mapped as APPROVE-stage operations)
+- [x] Seed: FK-safe wipe order, MNE supervisor mapping, second Finance officer (single-officer dept cannot route own items)
+- [x] scripts/system-verify.mjs (67 checks) + scripts/ui-sweep.mjs (21 routes) — both green; rerun before every release
+
 ## Standing quality gates
 Engine/budget/QuickBooks logic always has tests · every endpoint permission-guarded + audit-logged · every screen uses shared components · feature-ID traceability maintained.

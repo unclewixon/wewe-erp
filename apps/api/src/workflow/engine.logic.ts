@@ -118,6 +118,23 @@ export function canResubmit(actor: ActorCtx, tx: TxCtx): Decision {
   return { ok: true };
 }
 
+/**
+ * WFE-04: approvals BEFORE a return/resubmission do not block re-approval — the chain
+ * restarted and every approver reviews the edited version again. Only approvals since
+ * the most recent SUBMITTED/RESUBMITTED event count for the double-act rule.
+ */
+export function priorApproversSinceLastSubmit(
+  events: { action: string; actorId: string; createdAt: Date | string }[],
+): string[] {
+  const sorted = [...events].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  let current: string[] = [];
+  for (const e of sorted) {
+    if (e.action === 'SUBMITTED' || e.action === 'RESUBMITTED') current = [];
+    else if (e.action === 'APPROVED') current.push(e.actorId);
+  }
+  return current;
+}
+
 export function canSubmit(actor: ActorCtx, tx: TxCtx): Decision {
   if (actor.id !== tx.initiatorId) return { ok: false, reason: 'Only the initiator can submit' };
   if (tx.status !== 'DRAFT') return { ok: false, reason: `Cannot submit a ${tx.status} transaction` };

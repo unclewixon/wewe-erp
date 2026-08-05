@@ -37,6 +37,13 @@ async function grantedFor(roleCodes: string[]): Promise<Set<string>> {
 /** Called by the matrix admin endpoint after changes so enforcement is immediate. */
 export function invalidatePermissionCache(): void { permCache = null; }
 
+/** Reusable matrix check for handlers that resolve module dynamically (e.g. by transaction type). */
+export async function hasPermission(user: AuthedUser, module: string, action: string): Promise<boolean> {
+  if (user.roles.some((r) => r.code === 'SYSTEM_ADMIN')) return true;
+  const grants = await grantedFor(user.roles.map((r) => r.code));
+  return grants.has(`${module}:${action}`);
+}
+
 export interface AuthedUser {
   id: string; email: string; name: string; title: string | null;
   departmentId: string | null; departmentName: string | null;

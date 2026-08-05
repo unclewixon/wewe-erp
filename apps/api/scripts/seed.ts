@@ -18,7 +18,7 @@ async function main() {
     'doc_links', 'doc_versions', 'documents', 'doc_folders',
     'leave_requests', 'leave_balances', 'leave_types', 'staff_checklists',
     'timesheets', 'payroll_items', 'payroll_runs', 'staff_profiles',
-    'rfq_quotes', 'rfqs', 'po_receipts', 'purchase_orders', 'contracts',
+    'po_receipts', 'purchase_orders', 'rfq_quotes', 'rfqs', 'contracts',
     'asset_events', 'assets', 'vendors', 'inventory_moves', 'inventory_items',
     'grant_deadlines', 'grants', 'audit_flags', 'findings',
     'role_permissions', 'permissions', 'settings', 'delegations',
@@ -50,7 +50,7 @@ async function main() {
   const mkUser = (email: string, name: string, title: string, departmentId: string) =>
     ({ email, name, title, passwordHash: hash, departmentId });
 
-  const [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin, blessing, emeka, adeleke] = await db.insert(schema.users).values([
+  const [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin, blessing, emeka, adeleke, fatima] = await db.insert(schema.users).values([
     mkUser('amina.yusuf@wewe.org', 'Amina Yusuf', 'Programme Officer', prg.id),
     mkUser('tunde.balogun@wewe.org', 'Tunde Balogun', 'Head of Programmes', prg.id),
     mkUser('ngozi.okafor@wewe.org', 'Ngozi Okafor', 'Internal Auditor', grc.id),
@@ -61,6 +61,7 @@ async function main() {
     mkUser('blessing.adeyemi@wewe.org', 'Blessing Adeyemi', 'Human Resources Officer', fin.id),
     mkUser('emeka.nwosu@wewe.org', 'Emeka Nwosu', 'Procurement Officer', ops.id),
     mkUser('k.adeleke@auditfirm.ng', 'K. Adeleke', 'External Auditor', grc.id),
+    mkUser('fatima.bello@wewe.org', 'Fatima Bello', 'Finance Officer', fin.id),
   ]).returning();
 
   await db.insert(schema.userRoles).values([
@@ -68,6 +69,7 @@ async function main() {
     { userId: chiamaka.id, roleId: role('INITIATOR'), departmentId: null },
     { userId: tunde.id, roleId: role('INITIATOR'), departmentId: null },
     { userId: tunde.id, roleId: role('SUPERVISOR'), departmentId: prg.id }, // dept-scoped (WFE-02)
+    { userId: tunde.id, roleId: role('SUPERVISOR'), departmentId: mne.id }, // MNE routes to Tunde too — every dept must have a stage-2 approver
     { userId: ngozi.id, roleId: role('INTERNAL_AUDIT'), departmentId: null },
     { userId: ibrahim.id, roleId: role('FINANCE'), departmentId: null },
     { userId: folake.id, roleId: role('FINAL_APPROVER'), departmentId: null },
@@ -75,6 +77,8 @@ async function main() {
     { userId: blessing.id, roleId: role('HR_OFFICER'), departmentId: null },
     { userId: blessing.id, roleId: role('INITIATOR'), departmentId: null },
     { userId: emeka.id, roleId: role('INITIATOR'), departmentId: null },
+    { userId: fatima.id, roleId: role('FINANCE'), departmentId: null }, // second Finance officer — Finance-initiated items can route
+    { userId: fatima.id, roleId: role('INITIATOR'), departmentId: null },
   ]);
 
   // EXTERNAL_AUDITOR role row + K. Adeleke's scoped, expiring access (AUD-06)

@@ -8,7 +8,7 @@ import { db, schema } from '../db/client';
 import { AuditService } from '../audit/audit.service';
 import { AuthGuard, CurrentUser, type AuthedUser } from '../auth/auth';
 import { WorkflowService } from '../workflow/workflow.service';
-import { canAct, canResubmit, canWithdraw, currentStageRole, type StageDef } from '../workflow/engine.logic';
+import { canAct, canResubmit, canWithdraw, currentStageRole, priorApproversSinceLastSubmit, type StageDef } from '../workflow/engine.logic';
 import { evaluateBudgetCheck } from '../modules/money/budgets';
 
 const LineSchema = z.object({
@@ -132,7 +132,7 @@ export class RequisitionsService {
         id: tx.id, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
         status: tx.status, currentStage: tx.currentStage,
         chain,
-        priorApproverIds: tx.stageEvents.filter((e) => e.action === 'APPROVED').map((e) => e.actorId),
+        priorApproverIds: priorApproversSinceLastSubmit(tx.stageEvents),
       };
       if (scope === 'mine') return tx.initiatorId === user.id;
       if (scope === 'queue') return canAct(actor, ctx).ok;
@@ -168,7 +168,7 @@ export class RequisitionsService {
     const ctx = {
       id: tx.id, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
       status: tx.status, currentStage: tx.currentStage, chain,
-      priorApproverIds: tx.stageEvents.filter((e) => e.action === 'APPROVED').map((e) => e.actorId),
+      priorApproverIds: priorApproversSinceLastSubmit(tx.stageEvents),
     };
     const actor = { id: user.id, roles: user.roles };
     return {

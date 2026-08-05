@@ -128,3 +128,16 @@ describe('delegation (WFE-05)', () => {
     expect(d.ok).toBe(false);
   });
 });
+
+describe('return/resubmit restarts the double-act rule (found by system sweep)', () => {
+  it('an approver who acted before a return may approve again after resubmission', async () => {
+    const { priorApproversSinceLastSubmit } = await import('./engine.logic');
+    const ev = (action: string, actorId: string, t: number) => ({ action, actorId, createdAt: new Date(t) });
+    const events = [
+      ev('SUBMITTED', 'amina', 1), ev('APPROVED', 'tunde', 2), ev('RETURNED', 'ngozi', 3),
+      ev('RESUBMITTED', 'amina', 4),
+    ];
+    expect(priorApproversSinceLastSubmit(events)).toEqual([]); // tunde free to act again
+    expect(priorApproversSinceLastSubmit([...events, ev('APPROVED', 'tunde', 5)])).toEqual(['tunde']);
+  });
+});

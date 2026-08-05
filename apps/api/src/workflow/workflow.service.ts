@@ -6,7 +6,7 @@ import type { AuthedUser } from '../auth/auth';
 import { and, eq as eq2, gt, like, lte, sql } from 'drizzle-orm';
 import { bus } from '../events';
 import {
-  canAct, canResubmit, canSubmit, canWithdraw, applyVerb, currentStageRole, resolveChain,
+  canAct, canResubmit, canSubmit, canWithdraw, applyVerb, currentStageRole, priorApproversSinceLastSubmit, resolveChain,
   type RoleGrant, type StageDef, type TxCtx, type Verb,
 } from './engine.logic';
 
@@ -74,7 +74,7 @@ export class WorkflowService {
     // fall back to the type's full stage list for drafts.
     const payload = (tx.payload ?? {}) as { chain?: StageDef[] };
     const chain = payload.chain ?? (tx.type.stages as StageDef[]);
-    const priorApproverIds = tx.stageEvents.filter((e) => e.action === 'APPROVED').map((e) => e.actorId);
+    const priorApproverIds = priorApproversSinceLastSubmit(tx.stageEvents);
     return {
       id: tx.id, ref: tx.ref, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
       status: tx.status, currentStage: tx.currentStage, chain, priorApproverIds,

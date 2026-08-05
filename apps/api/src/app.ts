@@ -5,10 +5,10 @@ import { and, desc, eq, gt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, schema } from './db/client';
 import { AuditService } from './audit/audit.service';
-import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, type AuthedUser } from './auth/auth';
+import { AuthGuard, AuthService, CurrentUser, RequireRoles, SESSION_COOKIE, hasPermission, type AuthedUser } from './auth/auth';
 import { WorkflowService } from './workflow/workflow.service';
 import { BulkActionsService, RequisitionsController, RequisitionsService } from './requisitions/requisitions';
-import { canAct, type StageDef } from './workflow/engine.logic';
+import { canAct, priorApproversSinceLastSubmit, type StageDef } from './workflow/engine.logic';
 import * as money from './modules/money';
 import * as dms from './modules/dms';
 import * as people from './modules/people';
@@ -129,7 +129,7 @@ export class DashboardController {
       const ctx = {
         id: tx.id, initiatorId: tx.initiatorId, departmentId: tx.departmentId,
         status: tx.status, currentStage: tx.currentStage, chain: tx.type.stages as StageDef[],
-        priorApproverIds: tx.stageEvents.filter((e) => e.action === 'APPROVED').map((e) => e.actorId),
+        priorApproverIds: priorApproversSinceLastSubmit(tx.stageEvents),
       };
       if (canAct(actor, ctx).ok) queue += 1;
     }
@@ -165,6 +165,79 @@ export class AuditController {
   @Get('verify')
   verify() {
     return this.audit.verifyChain();
+  }
+}
+
+/** Matrix module governing each engine transaction type. */
+const MODULE_BY_TX_TYPE: Record<string, string> = {
+  REQUISITION: 'requisitions', ADVANCE: 'advances', RETIREMENT: 'retirements',
+  VIREMENT: 'budgets', LEAVE: 'hr', TIMESHEET: 'timesheets', PAYROLL: 'payroll',
+  DOC_DISPOSAL: 'documents', ASSET_DISPOSAL: 'assets',
+};
+
+/**
+ * Generic engine surface: act on ANY transaction type with type-aware permission
+ * mapping (a LEAVE approval checks hr:APPROVE, not requisitions:APPROVE).
+ * The requisitions controller remains the requisition-shaped convenience API.
+ */
+@Controller('v1/transactions')
+@UseGuards(AuthGuard)
+export class TransactionsController {
+  constructor(private readonly workflow: WorkflowService) {}
+
+  private async guardTx(user: AuthedUser, id: string, action: string) {
+    const tx = await db.query.transactions.findFirst({ where: eq(schema.transactions.id, id) });
+    if (!tx) throw new UnauthorizedException('Transaction not found');
+    const mod = MODULE_BY_TX_TYPE[tx.typeCode];
+    if (mod && !(await hasPermission(user, mod, action)))
+      throw new UnauthorizedException(`Your role does not hold ${action} on ${mod} — see Roles & permissions`);
+    return tx;
+  }
+
+  @Get(':id')
+  async get(@CurrentUser() user: AuthedUser, @Param('id') id: string) {
+    const tx = await this.guardTx(user, id, 'VIEW');
+    const ctx = await this.workflow.loadCtx(id);
+    const events = await db.query.stageEvents.findMany({
+      where: eq(schema.stageEvents.transactionId, id),
+      with: { actor: { columns: { name: true } } },
+    });
+    return {
+      id: tx.id, ref: tx.ref, typeCode: tx.typeCode, title: tx.title, status: tx.status,
+      currentStage: tx.currentStage, chain: ctx.chain.map((s) => s.role),
+      amountKobo: tx.amountKobo.toString(), donorCode: tx.donorCode,
+      history: events.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((e) => ({ action: e.action, stageIndex: e.stageIndex, role: e.role, actor: e.actor.name, comment: e.comment, at: e.createdAt })),
+    };
+  }
+
+  @Post(':id/action')
+  async action(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Body() body: unknown, @Req() req: any) {
+    const dto = z.object({ verb: z.enum(['approve', 'reject', 'return']), comment: z.string().max(2000).optional() }).parse(body);
+    await this.guardTx(user, id, 'APPROVE');
+    const next = await this.workflow.act(id, user, dto.verb, dto.comment, req.ip);
+    return { id, ...next };
+  }
+
+  @Post(':id/submit')
+  async submit(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {
+    await this.guardTx(user, id, 'SUBMIT');
+    await this.workflow.submit(id, user, req.ip);
+    return this.get(user, id);
+  }
+
+  @Post(':id/resubmit')
+  async resubmit(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {
+    await this.guardTx(user, id, 'SUBMIT');
+    await this.workflow.resubmit(id, user, req.ip);
+    return this.get(user, id);
+  }
+
+  @Post(':id/withdraw')
+  async withdraw(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {
+    await this.guardTx(user, id, 'SUBMIT');
+    await this.workflow.withdraw(id, user, req.ip);
+    return this.get(user, id);
   }
 }
 
@@ -221,7 +294,7 @@ export class DelegationsController {
 @Module({
   controllers: [
     AuthController, MetaController, DashboardController, AuditController,
-    RequisitionsController, DelegationsController,
+    RequisitionsController, DelegationsController, TransactionsController,
     ...MODULE_AREAS.flatMap((m) => m.controllers as any[]),
   ],
   providers: [

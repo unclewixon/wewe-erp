@@ -43,4 +43,6 @@ Feature IDs → test scenarios → verification status. "Verified (build)" = exe
 | MOB-01..03 | Responsive design bundle covers mobile routes (`/mobile`) | Design-verified; device pass in formal UAT |
 | NTF-01..03 | In-app feed from events; email outbox (dev transport); digest preference | Verified (build; provider OAuth pending) |
 
+| SYSTEM SWEEP | Scripted 67-check lifecycle walk across every module as 11 real personas (scripts/system-verify.mjs) + 21-route UI sweep (scripts/ui-sweep.mjs): 67/67 API checks pass, 0 blank routes, 0 JS errors, 0 API-log errors, audit chain verified | Verified (build) — rerun before every release |
+
 **Formal UAT protocol:** each row is executed by WEWE staff in their real roles on a staging deployment (see docs/DEPLOYMENT.md), evidence captured per scenario, Sev-1/2 defects block go-live per the acceptance gates in the Features Spec §17.

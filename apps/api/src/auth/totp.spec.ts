@@ -54,10 +54,13 @@ describe('permission map (matrix runtime enforcement)', () => {
   });
   it('maps methods and sub-actions to matrix actions', () => {
     expect(actionFor('GET', '/v1/vendors')).toBe('VIEW');
+    const id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
     expect(actionFor('POST', '/v1/requisitions')).toBe('CREATE');
-    expect(actionFor('POST', '/v1/requisitions/x/action')).toBe('APPROVE');
-    expect(actionFor('POST', '/v1/requisitions/x/submit')).toBe('SUBMIT');
-    expect(actionFor('POST', '/v1/vendors/x/blacklist')).toBe('EDIT');
-    expect(actionFor('PATCH', '/v1/vendors/x')).toBe('EDIT');
+    expect(actionFor('POST', '/v1/leave/requests')).toBe('CREATE');   // collection POST, nested path
+    expect(actionFor('POST', `/v1/requisitions/${id}/action`)).toBe('APPROVE');
+    expect(actionFor('POST', `/v1/requisitions/${id}/submit`)).toBe('SUBMIT');
+    expect(actionFor('POST', `/v1/advances/${id}/disburse`)).toBe('APPROVE'); // Finance-stage operation
+    expect(actionFor('POST', `/v1/vendors/${id}/blacklist`)).toBe('EDIT');
+    expect(actionFor('PATCH', `/v1/vendors/${id}`)).toBe('EDIT');
   });
 });

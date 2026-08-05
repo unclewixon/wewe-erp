@@ -39,19 +39,31 @@ export const MODULE_BY_PREFIX: [string, string][] = [
   ['/v1/auditor', 'admin'],
 ];
 
+/** Personal duties any authed user may perform; the owning service enforces specifics. */
+const PERSONAL_DUTY = [
+  /^\/v1\/transactions\//,                 // type-aware matrix check happens in the handler
+  /^\/v1\/audit-flags\/[^/]+\/respond$/,   // anyone named in a flag must be able to answer it
+  /^\/v1\/esign\/requests\/[^/]+\/(sign|decline)$/, // any staff can be a signer
+  /^\/v1\/checklists\/[^/]+\/items$/,      // checklist items assigned across roles
+];
+
 export function moduleFor(path: string): string | null {
+  const clean = path.split('?')[0];
+  if (PERSONAL_DUTY.some((re) => re.test(clean))) return null;
   for (const [prefix, mod] of MODULE_BY_PREFIX) if (path.startsWith(prefix)) return mod;
   return null;
 }
 
 export function actionFor(method: string, path: string): string {
   if (method === 'GET') return 'VIEW';
-  if (/\/(action|bulk-action)$/.test(path)) return 'APPROVE';
+  if (/\/(action|bulk-action|disburse|settle-refund)$/.test(path)) return 'APPROVE'; // Finance-stage operations
   if (/\/(submit|resubmit)$/.test(path)) return 'SUBMIT';
   if (/\/(export|run)(\?.*)?$/.test(path) || path.includes('evidence-packs')) return 'EXPORT';
   if (method === 'PATCH' || method === 'PUT') return 'EDIT';
   if (method === 'DELETE') return 'CONFIGURE';
-  // POST sub-actions (disburse, blacklist, settle-refund, cancel…) are EDIT; base POST creates
+  // POST on a collection (no id-like segment after /v1/<module>) is CREATE;
+  // POST sub-actions on an entity (disburse, blacklist, cancel…) are EDIT.
   const segs = path.split('?')[0].split('/').filter(Boolean);
-  return segs.length <= 2 ? 'CREATE' : 'EDIT';
+  const looksLikeId = (seg: string) => /\d/.test(seg) || seg.length > 20;
+  return segs.slice(1).some(looksLikeId) ? 'EDIT' : 'CREATE';
 }
