@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ZodError } from 'zod';
 import { AppModule } from './app';
 
@@ -14,7 +15,18 @@ async function bootstrap() {
   app.use(express.json({ limit: '15mb' })); // DMS base64 uploads (10MB decoded cap)
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.enableCors({ origin: true, credentials: true });
+  // Production: set CORS_ORIGIN to the web origin; default stays permissive for dev.
+  const corsOrigin = process.env.CORS_ORIGIN;
+  app.enableCors({ origin: corsOrigin ? corsOrigin.split(',') : true, credentials: true });
+  (app.getHttpAdapter().getInstance() as any).set?.('trust proxy', 1); // secure cookies behind TLS proxy
+
+  // API-01: the versioned REST surface is a product — document it.
+  const doc = SwaggerModule.createDocument(app, new DocumentBuilder()
+    .setTitle('WEWE ERP API')
+    .setDescription('Five-stage approval workflow ERP for WEWE. Session-cookie auth; all money as kobo strings.')
+    .setVersion('1.0')
+    .build());
+  SwaggerModule.setup('docs', app, doc);
 
   // zod errors → 400 with readable details
   app.useGlobalFilters({

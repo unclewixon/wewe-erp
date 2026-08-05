@@ -39,7 +39,7 @@ export class AuthController {
     const result = await this.auth.login(dto.email, dto.password, req.ip);
     if (result.kind === '2fa') return { requires2fa: true, pendingToken: result.pendingToken };
     res.cookie(SESSION_COOKIE, result.token, {
-      httpOnly: true, sameSite: 'lax', secure: false /* true behind TLS in production */, expires: result.expiresAt, path: '/',
+      httpOnly: true, sameSite: 'lax', secure: process.env.COOKIE_SECURE === '1', expires: result.expiresAt, path: '/',
     });
     const user = await this.auth.resolveSession(result.token);
     return { user };
@@ -50,7 +50,7 @@ export class AuthController {
   async verify2fa(@Body() body: unknown, @Req() req: any, @Res({ passthrough: true }) res: any) {
     const dto = z.object({ pendingToken: z.string().min(10), code: z.string().min(6).max(12) }).parse(body);
     const { token, expiresAt } = await this.auth.verify2fa(dto.pendingToken, dto.code, req.ip);
-    res.cookie(SESSION_COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: false, expires: expiresAt, path: '/' });
+    res.cookie(SESSION_COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: process.env.COOKIE_SECURE === '1', expires: expiresAt, path: '/' });
     const user = await this.auth.resolveSession(token);
     return { user };
   }

@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "seed": "ts-node --transpile-only scripts/seed.ts",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "start:prod": "node dist/src/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

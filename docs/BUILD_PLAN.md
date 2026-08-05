@@ -53,5 +53,12 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Departments CRUD, settings with audit history, workflow config API (ADM-02..04 core; effective-dating refinement pending)
 - [ ] Mobile polish (MOB-01..03), PWA offline (MOB-04); NFR pass: perf budgets, pen-test prep, backups/DR runbook
 
+## Deployment readiness (done this phase)
+- [x] OpenAPI at /docs (177 paths) · CORS/cookie hardening via env · trust proxy
+- [x] Production web build verified (serve-time transforms + verbatim guard baked into the image build)
+- [x] Dockerfiles (api, web+nginx) + docker-compose (db/api/web, volumes, healthchecks) + .env.example
+- [x] scripts/backup.sh (nightly pg_dump + files, 14-day rotation) + quarterly restore drill w/ audit-chain verify
+- [x] docs/DEPLOYMENT.md runbook (first deploy, upgrades, integration flips, monitoring, security recap)
+
 ## Standing quality gates
 Engine/budget/QuickBooks logic always has tests · every endpoint permission-guarded + audit-logged · every screen uses shared components · feature-ID traceability maintained.
