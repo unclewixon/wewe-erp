@@ -19,7 +19,7 @@ async function main() {
     'leave_requests', 'leave_balances', 'leave_types', 'staff_checklists',
     'timesheets', 'payroll_items', 'payroll_runs', 'staff_profiles',
     'rfq_quotes', 'rfqs', 'po_receipts', 'purchase_orders', 'contracts',
-    'asset_events', 'assets', 'inventory_moves', 'inventory_items',
+    'asset_events', 'assets', 'vendors', 'inventory_moves', 'inventory_items',
     'grant_deadlines', 'grants', 'audit_flags', 'findings',
     'role_permissions', 'permissions', 'settings', 'delegations',
     'audit_events', 'stage_events', 'requisition_lines', 'transactions',
@@ -170,6 +170,93 @@ async function main() {
 
   await moduleSeedDefaults();
   console.log('Module defaults seeded (types, settings, permissions, leave types, grants, folders).');
+
+  // ---------- demo enrichment: content for every module surface ----------
+  const day = 86400_000;
+  const ago = (d: number) => new Date(Date.now() - d * day);
+
+  // vendors
+  await db.insert(schema.vendors).values([
+    { name: 'Halogen Security Services Ltd', categories: ['Security'], contact: { email: 'ops@halogen.ng' }, tin: '01234567-0001', dueDiligence: { cac: true, taxClearance: true } },
+    { name: 'Kaduna Motors Ltd', categories: ['Vehicle maintenance'], contact: { email: 'service@kadunamotors.ng' }, dueDiligence: { cac: true, taxClearance: false } },
+    { name: 'Brightline Printers', categories: ['Printing'], contact: { email: 'hello@brightline.ng' } },
+    { name: 'Sahel Office Supplies', categories: ['Stationery'], contact: { email: 'sales@sahelsupplies.ng' }, dueDiligence: { cac: true, taxClearance: true } },
+  ]);
+
+  // assets
+  await db.insert(schema.assets).values([
+    { tag: 'WW/IT/0231', description: 'HP ProBook 450 G10', category: 'IT equipment', custodianId: chiamaka.id, location: 'Abuja office', fundingCode: 'EU-WISH-23', costKobo: N(730_000), acquiredAt: ago(400), usefulLifeMonths: 36 },
+    { tag: 'WW/VEH/0012', description: 'Toyota Hilux 2.5D', category: 'Vehicle', custodianId: tunde.id, location: 'Abuja pool', fundingCode: 'USAID-LON-24', costKobo: N(28_500_000), acquiredAt: ago(900), usefulLifeMonths: 60 },
+    { tag: 'WW/IT/0198', description: 'Canon imageRUNNER 2630', category: 'IT equipment', location: 'Front office', fundingCode: null, costKobo: N(1_450_000), acquiredAt: ago(700), usefulLifeMonths: 48 },
+    { tag: 'WW/GEN/0007', description: '20kVA generator', category: 'Generator', location: 'Abuja office', fundingCode: null, costKobo: N(6_800_000), acquiredAt: ago(1100), usefulLifeMonths: 48 },
+  ]);
+
+  // inventory
+  const inv = await db.insert(schema.inventoryItems).values([
+    { code: 'STK-0012', name: 'A4 photocopy paper (ream)', unit: 'ream', qtyOnHand: 64, reorderLevel: 40 },
+    { code: 'STK-0031', name: 'Caregiver training manual', unit: 'copy', qtyOnHand: 186, reorderLevel: 150 },
+    { code: 'STK-0044', name: 'Safeguarding poster (A2)', unit: 'sheet', qtyOnHand: 22, reorderLevel: 50 },
+  ]).returning();
+  await db.insert(schema.inventoryMoves).values([
+    { itemId: inv[0].id, kind: 'GRN', qty: 100, refText: 'PO-2026-0001', actorId: admin.id },
+    { itemId: inv[0].id, kind: 'ISSUE', qty: -36, refText: 'Programmes workshop', actorId: amina.id },
+    { itemId: inv[2].id, kind: 'ISSUE', qty: -28, refText: 'Enugu field office', actorId: chiamaka.id },
+  ]);
+
+  // findings + one open audit flag
+  await db.insert(schema.findings).values([
+    { ref: 'F-2026-0001', title: 'Per-diem rates applied inconsistently across departments', severity: 'HIGH', ownerId: ibrahim.id, dueDate: ago(-3), status: 'OPEN' },
+    { ref: 'F-2026-0002', title: 'Three POs raised without the required second quote', severity: 'HIGH', ownerId: emeka.id, dueDate: ago(-10), status: 'IN_PROGRESS' },
+    { ref: 'F-2026-0003', title: 'Asset verification variance — 1 laptop unlocated', severity: 'MEDIUM', ownerId: admin.id, dueDate: ago(-17), status: 'IN_PROGRESS' },
+  ]);
+  await db.insert(schema.auditFlags).values({
+    entityType: 'transaction', entityId: 'REQ-2026-0002', raisedById: ngozi.id, severity: 'MEDIUM',
+    question: 'The venue quote is above the framework rate — confirm the exception was approved.',
+  });
+
+  // advances: requested / disbursed+overdue / closed-with-retirement
+  const advTx = async (ref: string, title: string, who: typeof amina, amt: bigint, status: string, currentStage: number) => {
+    const [tx] = await db.insert(schema.transactions).values({
+      ref, typeCode: 'ADVANCE', title, initiatorId: who.id, departmentId: who.departmentId!,
+      amountKobo: amt, status: status as any, currentStage, submittedAt: ago(6),
+      payload: { chain: [{ role: 'SUPERVISOR' }, { role: 'INTERNAL_AUDIT' }, { role: 'FINANCE' }] },
+    }).returning();
+    await db.insert(schema.stageEvents).values({ transactionId: tx.id, stageIndex: 0, role: null, action: 'SUBMITTED', actorId: who.id, createdAt: ago(6) });
+    return tx;
+  };
+  const a1 = await advTx('ADV-2026-0001', 'Travel advance — Kano supervision visit', amina, N(280_000), 'PENDING', 0);
+  await db.insert(schema.advances).values({ txId: a1.id, staffId: amina.id, purpose: 'Kano supervision visit (4 nights)', travel: { destination: 'Kano', nights: 4 }, status: 'REQUESTED', balanceKobo: 0n });
+  const a2 = await advTx('ADV-2026-0002', 'Cash advance — Aba community dialogue', chiamaka, N(350_000), 'APPROVED', 2);
+  await db.insert(schema.advances).values({ txId: a2.id, staffId: chiamaka.id, purpose: 'Aba community dialogue logistics', status: 'DISBURSED', balanceKobo: N(350_000), disbursedAt: ago(20), disbursedRef: 'TRF-70021', retirementDeadline: ago(8) });
+  const a3 = await advTx('ADV-2026-0003', 'Advance — data verification transport', chiamaka, N(120_000), 'APPROVED', 2);
+  await db.insert(schema.advances).values({ txId: a3.id, staffId: chiamaka.id, purpose: 'Quarterly data verification transport', status: 'CLOSED', balanceKobo: 0n, disbursedAt: ago(30), disbursedRef: 'TRF-69544', retirementDeadline: ago(18) });
+
+  // leave: one approved (balance applied), one pending at HR stage
+  const lt = await db.select().from(schema.leaveTypes);
+  const annual = lt.find((t) => t.code === 'ANNUAL') ?? lt[0];
+  if (annual) {
+    const mkLeave = async (ref: string, who: typeof amina, days: number, status: string, stage: number) => {
+      const [tx] = await db.insert(schema.transactions).values({
+        ref, typeCode: 'LEAVE', title: `${annual.name} — ${who.name}`, initiatorId: who.id, departmentId: who.departmentId!,
+        amountKobo: 0n, status: status as any, currentStage: stage, submittedAt: ago(4),
+        payload: { chain: [{ role: 'SUPERVISOR' }, { role: 'HR_OFFICER' }] },
+      }).returning();
+      await db.insert(schema.stageEvents).values({ transactionId: tx.id, stageIndex: 0, role: null, action: 'SUBMITTED', actorId: who.id, createdAt: ago(4) });
+      await db.insert(schema.leaveRequests).values({ txId: tx.id, userId: who.id, leaveTypeId: annual.id, startDate: ago(-6), endDate: ago(-6 - days), days, handoverNote: 'Files handed to the team lead.' });
+      return tx;
+    };
+    await mkLeave('LVE-2026-0001', amina, 5, 'APPROVED', 1);
+    await mkLeave('LVE-2026-0002', chiamaka, 10, 'PENDING', 1);
+  }
+
+  // staff profiles with salaries (payroll-ready)
+  await db.insert(schema.staffProfiles).values([
+    { userId: amina.id, grade: 'PO-2', hireDate: ago(800), salaryKobo: N(450_000), allowances: [{ name: 'Transport', amountKobo: N(50_000).toString() }] },
+    { userId: tunde.id, grade: 'M-1', hireDate: ago(1500), salaryKobo: N(850_000) },
+    { userId: ibrahim.id, grade: 'M-1', hireDate: ago(1300), salaryKobo: N(900_000) },
+  ]);
+
+  console.log('Demo enrichment complete (vendors, assets, inventory, findings, flags, advances, leave, profiles).');
   console.log('Seed complete.');
   console.log('Users (password: Password1!):');
   for (const u of [amina, tunde, ngozi, ibrahim, folake, chiamaka, admin]) console.log(`  ${u.email} — ${u.title}`);

@@ -232,9 +232,11 @@
     var rows = xhr('GET', '/v1/admin/users');
     if (!Array.isArray(rows)) return null;
     return rows.map(function (u) {
-      var roles = Array.isArray(u.roles)
-        ? u.roles.map(function (r) { return ROLE_LABEL[r.code || r] || title(r.code || r); }).join(', ')
-        : '—';
+      var pretty = function (c) {
+        var code = String(c && c.code ? c.code : c);
+        return ROLE_LABEL[code] || code.split('_').map(title).join(' ');
+      };
+      var roles = Array.isArray(u.roles) ? u.roles.map(pretty).join(', ') : '—';
       return {
         name: u.name, email: u.email, roles: roles,
         dept: (u.department && u.department.name) || u.departmentName || '—',
@@ -496,5 +498,98 @@
         }),
       },
     };
+  }
+})();
+
+/* ---- Phase E: remaining persona dashboards (hr, procurement, admin, extaudit) ---- */
+(function () {
+  function xhr(u) {
+    try {
+      var r = new XMLHttpRequest(); r.open('GET', u, false); r.withCredentials = true; r.send(null);
+      return r.status >= 200 && r.status < 300 ? JSON.parse(r.responseText) : null;
+    } catch (e) { return null; }
+  }
+  var persona = new URLSearchParams(location.search).get('as') || 'admin';
+  if (['hr', 'procurement', 'admin', 'extaudit'].indexOf(persona) === -1) return;
+  var base = (window.__weweDash && window.__weweDash[persona]) || {};
+  var card = function (label, value, context) { return { label: label, value: String(value), delta: '', context: context }; };
+  var D = null;
+
+  if (persona === 'hr') {
+    var staff = xhr('/v1/staff') || [];
+    var leave = xhr('/v1/leave/requests?scope=all') || [];
+    var pendingLeave = leave.filter(function (l) { return String(l.status || l.txStatus || '').toUpperCase() !== 'APPROVED'; });
+    var expiring = xhr('/v1/staff/expiring-contracts') || [];
+    D = {
+      title: 'People today', soft: true,
+      subtitle: staff.length + ' staff on record · ' + pendingLeave.length + ' leave request' + (pendingLeave.length === 1 ? '' : 's') + ' in flight.',
+      cards: [
+        card('Staff on record', staff.length, 'Active directory'),
+        card('Leave in flight', pendingLeave.length, 'Awaiting Supervisor or HR'),
+        card('Contracts expiring', Array.isArray(expiring) ? expiring.length : 0, 'Within 60 days'),
+        card('Live data', 'ON', 'From the HR module'),
+      ],
+      banner: '', queueTitle: 'Leave awaiting HR', queueSubtitle: 'Stage 2 of the leave chain',
+      refs: [], meterTitle: 'Departments', meterSubtitle: 'Headcount share',
+      meters: [],
+    };
+  }
+  if (persona === 'procurement') {
+    var vendors = xhr('/v1/vendors') || [];
+    var rfqs = xhr('/v1/rfqs') || [];
+    var pos = xhr('/v1/purchase-orders') || [];
+    var contracts = xhr('/v1/contracts') || [];
+    D = {
+      title: 'Procurement pipeline', soft: true,
+      subtitle: vendors.length + ' vendors on the registry.',
+      cards: [
+        card('Vendors', vendors.length, vendors.filter(function (v) { return v.blacklisted; }).length + ' blacklisted'),
+        card('Open RFQs', (Array.isArray(rfqs) ? rfqs : []).filter(function (r) { return r.status === 'OPEN'; }).length, 'Awaiting quotes or selection'),
+        card('Open POs', (Array.isArray(pos) ? pos : []).filter(function (p) { return p.status !== 'CLOSED'; }).length, 'Awaiting delivery'),
+        card('Contracts', Array.isArray(contracts) ? contracts.length : 0, 'On the register'),
+      ],
+      banner: '', queueTitle: 'Latest vendors', queueSubtitle: 'Registry', refs: [],
+      meterTitle: 'Grant burn rate', meterSubtitle: 'Actual against budget by donor', meters: (base.meters || []),
+    };
+  }
+  if (persona === 'admin') {
+    var users = xhr('/v1/admin/users') || [];
+    var findings = xhr('/v1/findings') || [];
+    var qb = xhr('/v1/qb/outbox?status=ERROR') || [];
+    var chain = xhr('/v1/audit/verify') || { ok: false, checked: 0 };
+    D = {
+      title: 'System health', soft: true,
+      subtitle: users.length + ' accounts · audit chain ' + (chain.ok ? 'verified (' + chain.checked + ' events)' : 'CHECK FAILED'),
+      cards: [
+        card('User accounts', users.length, users.filter(function (u) { return u.active === false; }).length + ' deactivated'),
+        card('Audit chain', chain.ok ? 'OK' : 'FAIL', chain.checked + ' events verified'),
+        card('Open findings', (Array.isArray(findings) ? findings : []).filter(function (f) { return f.status === 'OPEN'; }).length, 'In the register'),
+        card('QuickBooks exceptions', Array.isArray(qb) ? qb.length : 0, qb.length ? 'Needs review' : 'Sandbox · all posted'),
+      ],
+      banner: chain.ok ? '' : 'Audit chain verification failed — investigate immediately.',
+      queueTitle: 'Recent audit events', queueSubtitle: 'Immutable log', refs: [],
+      meterTitle: 'Grant burn rate', meterSubtitle: 'Actual against budget by donor', meters: (base.meters || []),
+    };
+  }
+  if (persona === 'extaudit') {
+    var scope = xhr('/v1/auditor/my-scope');
+    var reqs = xhr('/v1/requisitions?scope=all') || [];
+    D = {
+      title: 'Auditor workspace', soft: true,
+      subtitle: scope ? 'Scope: ' + (scope.donorCode || 'all donors') + ' · access expires ' + new Date(scope.expiresAt).toLocaleDateString('en-GB') : 'No active scope.',
+      cards: [
+        card('Transactions in scope', reqs.length, scope && scope.donorCode ? scope.donorCode : 'All donors'),
+        card('Access', 'READ-ONLY', 'Enforced at the API'),
+        card('Scope expires', scope ? new Date(scope.expiresAt).toLocaleDateString('en-GB') : '—', 'Auto-revokes'),
+        card('Every view logged', 'ON', 'Audit trail records access'),
+      ],
+      banner: '', queueTitle: 'In-scope transactions', queueSubtitle: 'Read-only',
+      refs: reqs.slice(0, 6).map(function (t) { return t.ref; }),
+      meterTitle: 'Scope', meterSubtitle: '', meters: [],
+    };
+  }
+  if (D) {
+    window.__weweDash = window.__weweDash || {};
+    window.__weweDash[persona] = D;
   }
 })();
