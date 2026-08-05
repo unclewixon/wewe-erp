@@ -39,6 +39,7 @@ Feature IDs → test scenarios → verification status. "Verified (build)" = exe
 | DSH-01..04 | Role dashboards live (5+4 personas); pipeline analytics (median/p90/bottleneck); registers + exports | Verified (build + UI) |
 | DSH-05/06 | Scheduled report runs to role recipients; saved reports with whitelisted columns + CSV | Verified (build) |
 | ADM-01..05 | Users CRUD + invite; permission matrix with SoD-pair blocking + resolver; settings audit-logged; departments guarded delete; integration console | Verified (build) |
+| RBAC runtime | Matrix ENFORCES at request time: revoking a grant denies instantly (403 naming module+action); restoring re-allows instantly; SYSTEM_ADMIN break-glass bypass; personal surfaces (dashboard, notifications, own delegations) ungoverned by design | Verified (build) |
 | MOB-01..03 | Responsive design bundle covers mobile routes (`/mobile`) | Design-verified; device pass in formal UAT |
 | NTF-01..03 | In-app feed from events; email outbox (dev transport); digest preference | Verified (build; provider OAuth pending) |
 

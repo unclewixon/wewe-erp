@@ -3,6 +3,7 @@ import {
   base32Encode, base32Decode, hotp, totp, verifyTotp, generateTotpSecret,
   generateBackupCodes, hashBackupCode, lockoutMinutes,
 } from './totp';
+import { moduleFor, actionFor } from './permission-map';
 
 describe('TOTP (AUTH-02)', () => {
   it('base32 round-trips', () => {
@@ -41,5 +42,22 @@ describe('lockout (AUTH-04)', () => {
     expect(lockoutMinutes(7)).toBe(4);
     expect(lockoutMinutes(9)).toBe(16);
     expect(lockoutMinutes(10)).toBe(1440);
+  });
+});
+
+describe('permission map (matrix runtime enforcement)', () => {
+  it('maps paths to modules and unmapped personal surfaces to null', () => {
+    expect(moduleFor('/v1/requisitions/abc/action')).toBe('requisitions');
+    expect(moduleFor('/v1/purchase-orders')).toBe('procurement');
+    expect(moduleFor('/v1/dashboard')).toBeNull();
+    expect(moduleFor('/v1/notifications')).toBeNull();
+  });
+  it('maps methods and sub-actions to matrix actions', () => {
+    expect(actionFor('GET', '/v1/vendors')).toBe('VIEW');
+    expect(actionFor('POST', '/v1/requisitions')).toBe('CREATE');
+    expect(actionFor('POST', '/v1/requisitions/x/action')).toBe('APPROVE');
+    expect(actionFor('POST', '/v1/requisitions/x/submit')).toBe('SUBMIT');
+    expect(actionFor('POST', '/v1/vendors/x/blacklist')).toBe('EDIT');
+    expect(actionFor('PATCH', '/v1/vendors/x')).toBe('EDIT');
   });
 });

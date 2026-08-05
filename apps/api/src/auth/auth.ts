@@ -12,6 +12,30 @@ import type { RoleCode } from '../db/schema';
 import {
   generateTotpSecret, otpauthUri, verifyTotp, generateBackupCodes, hashBackupCode, lockoutMinutes,
 } from './totp';
+import { actionFor, moduleFor } from './permission-map';
+
+/** 15s in-memory cache of roleCode → Set("module:action") from role_permissions. */
+let permCache: { at: number; byRole: Map<string, Set<string>> } | null = null;
+async function grantedFor(roleCodes: string[]): Promise<Set<string>> {
+  if (!permCache || Date.now() - permCache.at > 15_000) {
+    const rows = await db.select({
+      code: schema.roles.code, module: schema.permissions.module, action: schema.permissions.action,
+    }).from(schema.rolePermissions)
+      .innerJoin(schema.roles, eq(schema.rolePermissions.roleId, schema.roles.id))
+      .innerJoin(schema.permissions, eq(schema.rolePermissions.permissionId, schema.permissions.id));
+    const byRole = new Map<string, Set<string>>();
+    for (const r of rows) {
+      if (!byRole.has(r.code)) byRole.set(r.code, new Set());
+      byRole.get(r.code)!.add(`${r.module}:${r.action}`);
+    }
+    permCache = { at: Date.now(), byRole };
+  }
+  const out = new Set<string>();
+  for (const c of roleCodes) for (const g of permCache.byRole.get(c) ?? []) out.add(g);
+  return out;
+}
+/** Called by the matrix admin endpoint after changes so enforcement is immediate. */
+export function invalidatePermissionCache(): void { permCache = null; }
 
 export interface AuthedUser {
   id: string; email: string; name: string; title: string | null;
@@ -177,6 +201,18 @@ export class AuthGuard implements CanActivate {
     if (required?.length) {
       const has = user.roles.some((r) => required.includes(r.code));
       if (!has) throw new ForbiddenException(`Requires one of: ${required.join(', ')}`);
+    }
+    // Granular permission matrix (Roles & Permissions module) — deny layer on top of
+    // role guards. SYSTEM_ADMIN bypasses (break-glass); unmapped paths are personal/meta.
+    const isAdmin = user.roles.some((r) => r.code === 'SYSTEM_ADMIN');
+    if (!isAdmin) {
+      const mod = moduleFor(String(req.path));
+      if (mod) {
+        const action = actionFor(String(req.method), String(req.path));
+        const grants = await grantedFor(user.roles.map((r) => r.code));
+        if (!grants.has(`${mod}:${action}`))
+          throw new ForbiddenException(`Your role does not hold ${action} on ${mod} — see Roles & permissions`);
+      }
     }
     return true;
   }

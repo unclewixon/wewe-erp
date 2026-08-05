@@ -10,7 +10,7 @@ import { and, desc, eq, gt, inArray, like, lte } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, schema } from '../../db/client';
 import { AuditService } from '../../audit/audit.service';
-import { AuthGuard, CurrentUser, RequireRoles, type AuthedUser } from '../../auth/auth';
+import { AuthGuard, CurrentUser, RequireRoles, invalidatePermissionCache, type AuthedUser } from '../../auth/auth';
 import type { RoleCode } from '../../db/schema';
 import {
   DEFAULT_ROLE_GRANTS, PERMISSION_ACTIONS, PERMISSION_MODULES, PERMISSION_SCOPES,
@@ -120,6 +120,7 @@ export class PermissionsController {
       entityType: 'role', entityId: dto.roleCode,
       data: { before, after: dto.grants }, ip: req.ip,
     });
+    invalidatePermissionCache();
     return { role: dto.roleCode, grants: dto.grants };
   }
 
