@@ -5,6 +5,7 @@
 import { WorkflowService } from '../../workflow/workflow.service';
 import { DocStorageService } from './storage';
 import { NullOcrService } from './ocr';
+import { TesseractOcrService } from './ocr.tesseract';
 import {
   DmsService, DocumentsController, FoldersController, LinksController, SearchController,
   disposalHook, seedRepositoryDefaults, DOC_DISPOSAL_TYPE,
@@ -16,7 +17,7 @@ export const controllers = [
   EsignController, EsignExternalController,
 ];
 
-export const providers = [DocStorageService, NullOcrService, DmsService, EsignService];
+export const providers = [DocStorageService, { provide: NullOcrService, useClass: TesseractOcrService }, DmsService, EsignService];
 
 /** Idempotent reference data: DOC_DISPOSAL type + root folder tree. */
 export async function seedDefaults(): Promise<void> {

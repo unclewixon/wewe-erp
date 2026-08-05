@@ -35,7 +35,7 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] QuickBooks outbox: journal queue, exceptions, repost, sandbox posting (QBI core); live OAuth connect + CoA mapping screen = integration task with real WEWE credentials
 
 ## Phase 4 — Documents & e-sign (BACKEND COMPLETE)
-- [x] Repository, versions, permissions, links, search (DMS-01..04; OCR = stub interface, engine to be chosen); retention/legal hold + dual-approved disposal workflow (DMS-06)
+- [x] Repository, versions, permissions, links, search (DMS-01..04; OCR LIVE: Tesseract 5 at upload + admin backfill, proven on scanned PNG and image-only PDF); retention/legal hold + dual-approved disposal workflow (DMS-06)
 - [x] E-signature series complete incl. external signers (token+OTP), certificates, hash verification (DMS-08a–d)
 
 ## Phase 5 — People (BACKEND COMPLETE)

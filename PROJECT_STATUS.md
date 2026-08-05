@@ -27,7 +27,7 @@ Production: `docker compose up -d --build` — see `docs/DEPLOYMENT.md`.
 | 21 missing screens/states (2 blocking: detail-page binding, comment drawer) | **Claude Design** | `docs/CLAUDE_DESIGN_PHASE2_REQUEST.md` — paste it to the design session |
 | QuickBooks live connection | Techtink + WEWE (Intuit credentials) | DEPLOYMENT.md §7 |
 | Real email sending | WEWE (Workspace/M365 OAuth grant) | DEPLOYMENT.md §7 |
-| OCR engine choice | Techtink (a Tesseract container is the cheap start) | DEPLOYMENT.md §7 |
+| ~~OCR engine~~ — DONE: Tesseract 5 live (upload-time + backfill endpoint) | — | closed |
 | Independent penetration test | Techtink to commission | NFRs, spec §14 |
 | Formal UAT with WEWE staff | WEWE + Techtink | `docs/UAT_MATRIX.md` |
 | Production deployment + backup cron + restore drill | Techtink ops | `docs/DEPLOYMENT.md` |

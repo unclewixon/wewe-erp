@@ -15,6 +15,7 @@ import { AuthGuard, CurrentUser, RequireRoles, type AuthedUser } from '../../aut
 import { WorkflowService } from '../../workflow/workflow.service';
 import { DocStorageService } from './storage';
 import { NullOcrService } from './ocr';
+import { TesseractOcrService } from './ocr.tesseract';
 import {
   base64DecodedBytes, canReadDocument, canReadFolder, canWriteFolder, escapeLike,
   isConfidentialReader, makeSnippet, MAX_UPLOAD_BYTES, type DmsUserCtx,
@@ -156,7 +157,29 @@ export class DmsService {
 
   async extractText(buf: Buffer, mime: string, supplied?: string | null): Promise<string | null> {
     if (supplied && supplied.trim().length > 0) return supplied;
-    return this.ocr.extract(buf, mime); // stub → null
+    return this.ocr.extract(buf, mime); // Tesseract via DI (see index.ts)
+  }
+
+  /** DMS-04 backfill: OCR every OCR-able document that has no text yet. Returns counts. */
+  async ocrBackfill(limit = 25): Promise<{ scanned: number; extracted: number }> {
+    const docs = await db.select().from(schema.documents)
+      .where(and(isNull(schema.documents.textContent), isNull(schema.documents.archivedAt)));
+    let scanned = 0, extracted = 0;
+    for (const d of docs) {
+      if (scanned >= limit) break;
+      if (!TesseractOcrService.isOcrable(d.mime)) continue;
+      scanned += 1;
+      try {
+        const bytes = await this.storage.read(d.storageKey);
+        if (!bytes) continue;
+        const text = await this.ocr.extract(bytes, d.mime);
+        if (text) {
+          await db.update(schema.documents).set({ textContent: text }).where(eq(schema.documents.id, d.id));
+          extracted += 1;
+        }
+      } catch { /* keep going — one bad file must not stall the batch */ }
+    }
+    return { scanned, extracted };
   }
 
   get storageSvc() { return this.storage; }
@@ -283,6 +306,18 @@ export class FoldersController {
 @Controller('v1/dms/documents')
 @UseGuards(AuthGuard)
 export class DocumentsController {
+  /** DMS-04: OCR backfill for documents uploaded before the engine existed (SYSTEM_ADMIN). */
+  @Post('ocr-backfill')
+  @RequireRoles('SYSTEM_ADMIN')
+  async ocrBackfill(@CurrentUser() user: AuthedUser, @Req() req: any) {
+    const result = await this.svc.ocrBackfill();
+    await this.svc.auditSvc.log({
+      actorId: user.id, actorEmail: user.email, action: 'DOC_OCR_BACKFILL',
+      entityType: 'document', entityId: 'batch', data: result, ip: req.ip,
+    });
+    return result;
+  }
+
   constructor(private readonly svc: DmsService) {}
 
   /** DMS-01: JSON upload — {name, mime, dataBase64 ≤10MB decoded, folderId?, docType?, tags?, textContent?}. */

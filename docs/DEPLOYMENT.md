@@ -60,7 +60,7 @@ Chains freeze at submission, so workflow-config/schema changes never corrupt in-
 |---|---|---|
 | QuickBooks | sandbox outbox (`qb.mode=sandbox` setting) | Intuit developer app + OAuth connect flow; set `qb.mode=live` and implement the posting client against the queued payloads |
 | Email | `.eml` files in `var/outbox` | WEWE's Google Workspace / M365 OAuth; replace the dev transport in `platform/email.ts` |
-| OCR | stub interface | pick an engine (Tesseract container is the cheap start) behind `OcrService` |
+| OCR | **LIVE — Tesseract 5** (images + rasterised PDFs at upload; `POST /v1/dms/documents/ocr-backfill` for pre-existing files; binaries in the api image) | done |
 | SMS/WhatsApp | not built | Phase 2 (NTF-05) |
 
 ## 8. Monitoring, minimum viable
