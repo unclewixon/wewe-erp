@@ -88,6 +88,19 @@ export class AuthController {
     return { ok: true };
   }
 
+  @Get('sessions')
+  async sessions(@Req() req: any) {
+    const token = req.cookies?.[SESSION_COOKIE];
+    const user = token ? await this.auth.resolveSession(token) : null;
+    if (!user) throw new UnauthorizedException('Not signed in');
+    const rows = await db.select().from(schema.sessions)
+      .where(and(eq(schema.sessions.userId, user.id), gt(schema.sessions.expiresAt, new Date())));
+    return rows.map((s) => ({
+      id: s.id, ip: s.ip ?? '—', createdAt: s.createdAt, expiresAt: s.expiresAt,
+      current: s.token === token,
+    }));
+  }
+
   @Get('me')
   async me(@Req() req: any) {
     const token = req.cookies?.[SESSION_COOKIE];

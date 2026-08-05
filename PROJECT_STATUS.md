@@ -24,7 +24,7 @@ Production: `docker compose up -d --build` — see `docs/DEPLOYMENT.md`.
 
 | Item | Owner | Reference |
 |---|---|---|
-| 21 missing screens/states (2 blocking: detail-page binding, comment drawer) | **Claude Design** | `docs/CLAUDE_DESIGN_PHASE2_REQUEST.md` — paste it to the design session |
+| ~~21 missing screens/states~~ — DONE: Phase 2 bundle integrated; detail page binds live refs, decision drawer drives the engine, 15 new routes, notifications/account/chain-editor wired | — | closed |
 | QuickBooks live connection | Techtink + WEWE (Intuit credentials) | DEPLOYMENT.md §7 |
 | Real email sending | WEWE (Workspace/M365 OAuth grant) | DEPLOYMENT.md §7 |
 | ~~OCR engine~~ — DONE: Tesseract 5 live (upload-time + backfill endpoint) | — | closed |
@@ -33,4 +33,4 @@ Production: `docker compose up -d --build` — see `docs/DEPLOYMENT.md`.
 | Production deployment + backup cron + restore drill | Techtink ops | `docs/DEPLOYMENT.md` |
 | Remaining fixture surfaces (mid-dashboard charts, secondary spec pages) | Integration (this codebase) — wire on demand via the established adapter pattern | `apps/web/public/adapter.js` |
 
-When Claude Design ships the Phase 2 bundle: drop it into `design/`, run `pnpm --filter web sync-design`, wire any new consts in the adapter, and the two P0 items unlock the full approve/return/reject cycle in the UI.
+Phase 2 bundle integrated 05/08/2026: full approve/return/reject cycle works from the UI (verified live). Remaining fixtures (BACKUP_CODES kept fixture deliberately — real codes only ever shown once at enrolment; CERT_SIGNERS/FULFIL_LINES/OB_LINES/STAGE_ACTOR wire on demand).

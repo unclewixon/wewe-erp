@@ -67,5 +67,12 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Seed: FK-safe wipe order, MNE supervisor mapping, second Finance officer (single-officer dept cannot route own items)
 - [x] scripts/system-verify.mjs (67 checks) + scripts/ui-sweep.mjs (21 routes) — both green; rerun before every release
 
+## Phase 2 design bundle — INTEGRATED
+- [x] All 21 gaps delivered by Claude Design; bundle swapped in byte-verified; all 16 transform anchors stable
+- [x] G20 live: /requisitions/:ref renders ANY live ref (verified: tracker, lines, comments from the API)
+- [x] G21 live: decision drawer -> window.__weweAct -> /v1/transactions/:id/action (verified: Return with note -> RETURNED)
+- [x] Wired live: TXN_DETAIL, NOTIFICATIONS, SESSIONS_MINE (new /v1/auth/sessions endpoint), DELEGATIONS_MINE, BULK_QUEUE (real cap+flag rules), CHAIN_TYPES
+- [x] 35-route UI sweep clean; system-verify 67/67 and idempotent across reruns
+
 ## Standing quality gates
 Engine/budget/QuickBooks logic always has tests · every endpoint permission-guarded + audit-logged · every screen uses shared components · feature-ID traceability maintained.

@@ -593,3 +593,117 @@
     window.__weweDash[persona] = D;
   }
 })();
+
+/* ---- Phase F: Phase-2 bundle wiring — detail data, writes, notifications, account ---- */
+(function () {
+  function xhr(method, url, body) {
+    try {
+      var r = new XMLHttpRequest(); r.open(method, url, false); r.withCredentials = true;
+      if (body) r.setRequestHeader('content-type', 'application/json');
+      r.send(body ? JSON.stringify(body) : null);
+      return r.status >= 200 && r.status < 300 ? JSON.parse(r.responseText) : null;
+    } catch (e) { return null; }
+  }
+  function fmtWhen(iso) {
+    if (!iso) return '';
+    var d = new Date(iso), now = new Date();
+    var hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return (d.toDateString() === now.toDateString() ? 'Today' :
+      String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear()) + ' · ' + hm;
+  }
+  var data = window.__weweData = window.__weweData || {};
+
+  // G20: TXN_DETAIL for live requisition refs (others synthesise from TXNS per the manifest)
+  try {
+    var all = xhr('GET', '/v1/requisitions?scope=all') || [];
+    var detail = {};
+    all.slice(0, 20).forEach(function (t) {
+      var d = xhr('GET', '/v1/requisitions/' + t.id);
+      if (!d) return;
+      var firstLine = (d.lines || [])[0];
+      detail[d.ref] = {
+        budgetLine: (firstLine && firstLine.budgetLine && firstLine.budgetLine.name) || '—',
+        allocated: 0, committed: 0,
+        lines: (d.lines || []).map(function (l) { return [l.description, l.qty, Number(l.unitKobo)]; }),
+        docs: [],
+        comments: (d.history || []).filter(function (h) { return h.comment; }).map(function (h) {
+          var tone = h.action === 'APPROVED' ? 'green' : (h.action === 'RETURNED' || h.action === 'REJECTED') ? 'amber' : 'neutral';
+          return [h.actor, h.comment, fmtWhen(h.at), tone];
+        }),
+      };
+    });
+    if (Object.keys(detail).length) data.TXN_DETAIL = detail;
+  } catch (e) { /* fixtures */ }
+
+  // G5: notification centre
+  try {
+    var n = xhr('GET', '/v1/notifications');
+    var rows = [];
+    (n && n.needsAction || []).forEach(function (x) { rows.push({ id: x.id, kind: 'action', title: x.title, body: x.body || '', when: fmtWhen(x.createdAt), unread: !x.readAt, to: '/requisitions' }); });
+    (n && n.updates || []).forEach(function (x) { rows.push({ id: x.id, kind: 'update', title: x.title, body: x.body || '', when: fmtWhen(x.createdAt), unread: !x.readAt, to: '/requisitions' }); });
+    if (rows.length) data.NOTIFICATIONS = rows;
+  } catch (e) { /* fixtures */ }
+
+  // G6: my sessions · G9: my delegations
+  try {
+    var ses = xhr('GET', '/v1/auth/sessions');
+    if (Array.isArray(ses) && ses.length) data.SESSIONS_MINE = ses.map(function (s) {
+      return { device: 'Web session', where: '—', ip: s.ip, last: fmtWhen(s.createdAt), current: s.current };
+    });
+  } catch (e) { /* fixtures */ }
+  try {
+    var dels = xhr('GET', '/v1/delegations');
+    if (Array.isArray(dels) && dels.length) data.DELEGATIONS_MINE = dels.map(function (d) {
+      var active = d.active && new Date(d.endsAt) > new Date();
+      return { to: d.delegateId, title: '', from: fmtWhen(d.startsAt), until: fmtWhen(d.endsAt), scope: 'All duties', state: active ? 'Active' : 'Ended', used: 0 };
+    });
+  } catch (e) { /* fixtures */ }
+
+  // G11: bulk-approve eligibility from the real queue + real exclusion rules
+  try {
+    var q = xhr('GET', '/v1/requisitions?scope=queue') || [];
+    var flags = xhr('GET', '/v1/audit-flags?status=OPEN') || [];
+    var flagged = {};
+    (Array.isArray(flags) ? flags : []).forEach(function (f) { if (f.entityType === 'transaction') flagged[f.entityId] = true; });
+    var CAP = 100000000; // ₦1m default bulk cap (settings 'bulk.maxItemKobo')
+    if (q.length) data.BULK_QUEUE = q.map(function (t) {
+      var over = Number(t.amountKobo) > CAP, fl = flagged[t.ref];
+      return {
+        ref: t.ref, title: t.title, amount: Number(BigInt(t.amountKobo) / 100n),
+        ok: !over && !fl,
+        reason: fl ? 'Open audit flag — resolve before acting' : over ? 'Above the bulk-approve cap — approve individually' : '',
+      };
+    });
+  } catch (e) { /* fixtures */ }
+
+  // G10: chain editor from live workflow config (admin persona; fixture otherwise)
+  try {
+    var types = xhr('GET', '/v1/admin/transaction-types');
+    if (Array.isArray(types) && types.length) {
+      var ct = {};
+      types.forEach(function (t) {
+        ct[t.code] = (t.stages || []).map(function (st) {
+          return { role: st.role, min: st.minAmountKobo ? Number(BigInt(st.minAmountKobo) / 100n) : 0, sla: st.slaHours || 24, note: '' };
+        });
+      });
+      data.CHAIN_TYPES = ct;
+    }
+  } catch (e) { /* fixtures */ }
+
+  // G21: the decision drawer's write hook — the design calls this on confirm
+  window.__weweAct = function (ref, verb, note) {
+    var id = window.__weweRefMap && window.__weweRefMap[ref];
+    if (!id) { console.warn('[wewe] __weweAct: fixture ref, no engine call:', ref); return false; }
+    fetch('/v1/transactions/' + id + '/action', {
+      method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ verb: verb, comment: note || undefined }),
+    }).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+      .then(function (res) {
+        if (res.ok) { console.info('[wewe] ' + verb + ' ' + ref + ' →', res.body.status); location.reload(); }
+        else console.warn('[wewe] ' + verb + ' blocked:', res.body.message);
+      })
+      .catch(function (e) { console.warn('[wewe] act failed', e); });
+    return true;
+  };
+})();

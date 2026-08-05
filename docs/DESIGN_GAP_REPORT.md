@@ -8,7 +8,9 @@ Sign-in with 2FA code entry (OTP step) · role switcher with **9 personas** incl
 
 Plus **47 spec-driven secondary pages** (stats + table pattern) covering: requisition queue & templates; advance new/travel/outstanding; budget import/virements/versions; payslips & remittances; QuickBooks mapping & exceptions; procurement RFQ/orders/contracts/vendors/PO; asset verification/transfers/disposals/depreciation; document signatures/digitisation/retention/e-sign; HR leave/onboarding/contracts; LOE; grant reports/calendar/programmes; audit findings/log/evidence; report pipeline/scheduled; inventory GRN/issues/counts; admin org/reference/policies.
 
-## Missing — request these from Claude Design (do NOT design in the build)
+## ~~Missing~~ — DELIVERED in the Phase 2 bundle (05/08/2026). All 21 gaps closed; see design/PHASE2-INTEGRATION.md for routes/consts. Original list kept for traceability:
+
+## Original request list (all delivered)
 
 **Authentication & account**
 1. 2FA enrolment screen (QR scan, confirm code, backup codes download) — enrolment is referenced in audit copy but has no screen.

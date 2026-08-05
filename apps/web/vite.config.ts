@@ -16,7 +16,7 @@ function localCdnResources(): Plugin {
   };
   // Data-adapter fallback wrapping: fixture consts become `window.__weweData.X || <fixture>`.
   // Serve-time only — the design file on disk stays byte-identical (cmp-guarded).
-  const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS'];
+  const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS', 'NOTIFICATIONS', 'SESSIONS_MINE', 'DELEGATIONS_MINE', 'BULK_QUEUE'];
   const DATA_WRAPS: [string, string][] = WIRED.map((k) => [
     `const ${k} = [`,
     `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,
@@ -27,6 +27,11 @@ function localCdnResources(): Plugin {
   DATA_WRAPS.push(['const DASH = {', 'const DASH = Object.assign({']);
   DATA_WRAPS.push(["]\n  }\n};\n\nconst PAGE_SPECS", "]\n  }\n}, window.__weweDash || {});\n\nconst PAGE_SPECS"]);
   DATA_WRAPS.push([",'g:LIVE']] } }\n};", ",'g:LIVE']] } }\n}, window.__wewePageSpecs || {});"]);
+  // Phase 2 object consts: per-key live override, fixture keys survive (manifest: partial coverage is safe)
+  DATA_WRAPS.push(['const TXN_DETAIL = {', 'const TXN_DETAIL = Object.assign({']);
+  DATA_WRAPS.push(["','amber']] }\n};", "','amber']] }\n}, (window.__weweData && window.__weweData.TXN_DETAIL) || {});"]);
+  DATA_WRAPS.push(['const CHAIN_TYPES = {', 'const CHAIN_TYPES = Object.assign({']);
+  DATA_WRAPS.push(["'Second signature, always required' }\n  ]\n};", "'Second signature, always required' }\n  ]\n}, (window.__weweData && window.__weweData.CHAIN_TYPES) || {});"]);
   return {
     name: 'wewe-local-cdn-resources',
     transformIndexHtml: {

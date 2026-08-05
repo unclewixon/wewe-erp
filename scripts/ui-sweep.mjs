@@ -1,7 +1,10 @@
 import { chromium } from 'playwright';
 const routes = ['#/dashboard', '#/requisitions', '#/requisitions/queue', '#/advances', '#/budgets', '#/quickbooks',
   '#/procurement', '#/inventory', '#/assets', '#/documents', '#/hr', '#/timesheets', '#/payroll',
-  '#/grants', '#/audit', '#/reports', '#/admin', '#/admin/roles', '#/design-system', '#/mobile', '#/system'];
+  '#/grants', '#/audit', '#/reports', '#/admin', '#/admin/roles', '#/design-system', '#/mobile', '#/system',
+  '#/auth/2fa', '#/auth/reset', '#/auth/setup', '#/auth/locked', '#/account/profile', '#/account/signature',
+  '#/account/notifications', '#/account/delegation', '#/admin/workflow/chain', '#/documents/certificate',
+  '#/sign/external', '#/print/travel-authority', '#/print/purchase-order', '#/print/hr-letter'];
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
