@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+page.on('console', m => console.log('CONSOLE', m.type(), m.text().slice(0, 200)));
+page.on('pageerror', e => console.log('PAGEERROR', String(e).slice(0, 300)));
+await page.goto('http://localhost:5180/WEWE%20ERP.dc.html');
+await page.waitForTimeout(3500);
+await page.screenshot({ path: '/tmp/probe-static.png' });
+console.log('body children:', await page.evaluate(() => document.body.innerHTML.length));
+await browser.close();

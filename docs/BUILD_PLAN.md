@@ -15,7 +15,8 @@ The Claude Design bundle is used verbatim; the build designs nothing. Missing sc
 - [x] Workflow engine: config-driven five-stage chain, approve/reject/return/withdraw, SoD rules, restart-on-resubmit (WFE-01/02/04/09 core) + unit tests
 - [x] Requisitions vertical slice: draft→submit→five approvals→approved, lines, ref generator (REQ-01/03 core)
 - [x] Web: tokens.css from design handoff, Shell (282px sidebar, groups), sign-in, dashboard (live stats), requisitions queue/list, new-requisition form, transaction detail with ApprovalTracker
-- [ ] Replace interim screens with VERBATIM ports from design bundle (shell, sign-in+OTP, dashboards, requisitions list/new/detail)
+- [x] Interim build-side screens DELETED; apps/web now serves the design bundle byte-for-byte (cmp-guarded)
+- [ ] Data adapter: feed real API data into the verbatim render paths (no markup changes) — requisitions first
 - [ ] 2FA TOTP enrolment + verification (AUTH-02) — awaiting design (gap #1)
 - [ ] Session management UI (AUTH-03 rest), lockout (AUTH-04) — awaiting design (gaps #2–4, #6)
 
