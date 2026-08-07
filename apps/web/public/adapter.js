@@ -355,57 +355,25 @@
     return false;
   };
 
-  // T-02: bulk approve. The design's confirmBulk only raises a toast — it never calls the engine,
-  // so "N items approved in one action." was announced while nothing at all was written. Act on
-  // the selected rows that carry a LIVE ref, then let the design close the modal and toast.
-  function refNear(node) {
-    for (var up = 0; up < 6 && node; up++) {
-      var m = (node.innerText || '').match(/\b((?:REQ|ADV|RET|VIR|PO|LVE|TSH|PAY)-\d{4}-\d{4})\b/);
-      if (m) return m[1];
-      node = node.parentElement;
-    }
-    return null;
-  }
-  // Selection has to be tracked as the user ticks it: the design keeps `selected` in component
-  // state we cannot read, and by the time the confirm modal is up the table is unmounted, so
-  // there are no checked boxes left to inspect.
-  var picked = [];
-  document.addEventListener('click', function (ev) {
-    var t = ev.target;
-    if (!t) return;
-    if (t.tagName === 'INPUT' && t.type === 'checkbox') {
-      var r = refNear(t);
-      if (r && window.__weweRefMap[r]) {
-        var at = picked.indexOf(r);
-        if (at === -1) picked.push(r); else picked.splice(at, 1);
-      }
-      return;
-    }
-    var btn = t.closest ? t.closest('button') : null;
-    if (!btn) return;
-    var label = btn.textContent.trim();
-    if (label === 'Clear') { picked = []; return; }
-    if (label !== 'Approve selected') return;
-    var refs = picked.slice();
-    if (!refs.length) return; // every selected row is a fixture → leave the design's behaviour alone
+  // T-02: bulk approve. Phase 1.8 routes confirmBulk through hook('BulkApprove', {ids, verb}),
+  // so the DOM-interception bridge this used to need is gone — we answer the hook directly.
+  // `ids` are REFS (the design's selection is keyed by ref), so map them through __weweRefMap.
+  // Returning a string makes the design toast the REAL count; returning false makes it say so.
+  window.__weweBulkApprove = function (p) {
+    var refs = (p && p.ids) || [];
+    var live = refs.filter(function (r) { return window.__weweRefMap && window.__weweRefMap[r]; });
+    if (!live.length) return false;
     var res = xhr('POST', '/v1/requisitions/bulk-action', {
-      ids: refs.map(function (r) { return window.__weweRefMap[r]; }), verb: 'approve',
+      ids: live.map(function (r) { return window.__weweRefMap[r]; }),
+      verb: (p && p.verb) || 'approve',
     });
-    if (!res || !res.succeeded) {
-      // Nothing was written: swallow the click so the design cannot claim a success that
-      // did not happen. The modal stays open, which is the honest outcome.
-      ev.stopPropagation(); ev.preventDefault();
-      console.warn('[wewe] bulk approve wrote nothing:', (res && res.results) || 'request failed');
-      return;
-    }
-    picked = [];
+    if (!res || !res.succeeded) return false;
     (res.results || []).forEach(function (r) { if (r.ok) window.__wewePatchTxnRow(r.ref, r.status); });
-    if (res.succeeded < res.requested) {
-      console.warn('[wewe] bulk approve partial — ' + res.succeeded + '/' + res.requested + ' written:',
-        res.results.filter(function (r) { return !r.ok; }));
-    }
-    console.info('[wewe] bulk approved ' + res.succeeded + '/' + res.requested);
-  }, true);
+    var n = res.succeeded;
+    return n === res.requested
+      ? n + (n === 1 ? ' item approved.' : ' items approved in one action.')
+      : n + ' of ' + res.requested + ' approved — ' + (res.requested - n) + ' could not be, and are unchanged.';
+  };
 })();
 
 /* ---- Phase D: live dashboards (active persona), grant totals, outstanding advances page ---- */
@@ -695,6 +663,10 @@
       if (!d) return;
       var firstLine = (d.lines || [])[0];
       detail[d.ref] = {
+        // Phase 1.9's decision panel renders from `d.permissions` and only falls back to guessing
+        // from the design's local persona when it is missing — which is why Withdraw and Resubmit
+        // never appeared. The engine already computes these per viewer; pass them straight through.
+        permissions: d.permissions || undefined,
         budgetLine: (firstLine && firstLine.budgetLine && firstLine.budgetLine.name) || '—',
         allocated: 0, committed: 0,
         lines: (d.lines || []).map(function (l) { return [l.description, l.qty, Number(l.unitKobo)]; }),
@@ -771,7 +743,12 @@
     // row has to be patched by then. It also lets the old location.reload() go — sign-in is
     // client-side design state with no persistence, so reloading dumped the approver back on the
     // login screen after every single approve, return or reject.
-    var res = xhr('POST', '/v1/transactions/' + id + '/action', { verb: verb, comment: note || undefined });
+    // Phase 1.8 added Withdraw and Resubmit to the decision panel and routes them through this
+    // same hook. They are NOT verbs on /action — the engine exposes them as their own endpoints
+    // (/action takes approve|reject|return only), so send each to the right place.
+    var res = (verb === 'withdraw' || verb === 'resubmit')
+      ? xhr('POST', '/v1/transactions/' + id + '/' + verb, note ? { comment: note } : {})
+      : xhr('POST', '/v1/transactions/' + id + '/action', { verb: verb, comment: note || undefined });
     if (!res) { console.warn('[wewe] ' + verb + ' ' + ref + ' was refused by the engine — nothing was written'); return false; }
     if (window.__wewePatchTxnRow) window.__wewePatchTxnRow(ref, res.status, res.currentStageRole);
     console.info('[wewe] ' + verb + ' ' + ref + ' →', res.status);

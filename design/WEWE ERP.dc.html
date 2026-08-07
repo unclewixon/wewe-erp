@@ -1175,16 +1175,36 @@
               <div style="display:flex; flex-direction:column; gap:12px;">
                 <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                   <div style="font-size:14px; font-weight:600; color:#1A1D21;">Your decision</div>
-                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px; line-height:1.5;">{{ det.decisionNote }}</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px; line-height:1.5;">{{ det.panel.note }}</div>
+
+                  <sc-if value="{{ det.panel.canResubmit }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ det.hasReturnNote }}" hint-placeholder-val="{{ true }}">
+                      <div style="margin-top:14px; padding:13px 15px; border-radius:11px; background:#FFF7ED; border:1px solid #FDE3C4;">
+                        <div style="font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8A4B0B;">What you were asked to change</div>
+                        <div style="font-size:12px; color:#8A4B0B; margin-top:7px; line-height:1.55; text-wrap:pretty;">{{ det.returnNote.body }}</div>
+                        <div style="font-size:11px; color:#A8763A; margin-top:6px;">{{ det.returnNote.who }} · {{ det.returnNote.when }}</div>
+                      </div>
+                    </sc-if>
+                  </sc-if>
+
                   <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">
-                    <sc-if value="{{ det.actionable }}" hint-placeholder-val="{{ true }}">
+                    <sc-if value="{{ det.panel.canAct }}" hint-placeholder-val="{{ true }}">
                       <button onClick="{{ onApproveDet }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Approve</button>
                     </sc-if>
-                    <sc-if value="{{ det.actionable }}" hint-placeholder-val="{{ true }}">
+                    <sc-if value="{{ det.panel.canAct }}" hint-placeholder-val="{{ true }}">
                       <button onClick="{{ onReturnDet }}" style="height:42px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; color:#1A1D21; font-size:13px; font-weight:600;" style-hover="background:#F7F8FA">Return for correction</button>
                     </sc-if>
-                    <sc-if value="{{ det.actionable }}" hint-placeholder-val="{{ true }}">
+                    <sc-if value="{{ det.panel.canAct }}" hint-placeholder-val="{{ true }}">
                       <button onClick="{{ onRejectDet }}" style="height:42px; width:100%; border:none; border-radius:10px; background:rgba(194,65,12,.1); color:#9C3309; font-size:13px; font-weight:600;" style-hover="background:rgba(194,65,12,.16)">Reject</button>
+                    </sc-if>
+                    <sc-if value="{{ det.panel.canResubmit }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ onResubmitDet }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Fix and resubmit</button>
+                    </sc-if>
+                    <sc-if value="{{ det.panel.canSubmit }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ onSubmitDet }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Submit for approval</button>
+                    </sc-if>
+                    <sc-if value="{{ det.panel.canWithdraw }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ onWithdrawDet }}" style="height:42px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; color:#1A1D21; font-size:13px; font-weight:600;" style-hover="background:#F7F8FA">Withdraw</button>
                     </sc-if>
                     <button onClick="{{ openComments }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#F3F4F5; color:#3B3B3B; font-size:13px; font-weight:600;" style-hover="background:#EBEDF0">{{ det.openCommentsLabel }}</button>
                   </div>
@@ -3834,7 +3854,12 @@
                 <div style="display:grid; grid-template-columns:200px minmax(0,1fr); gap:28px; align-items:start;">
                   <div>
                     <div style="padding:12px; border:1px solid #E3E5E8; border-radius:12px; background:#fff;">{{ qrSvg }}</div>
-                    <div style="font-size:11px; color:#9AA0A8; margin-top:10px; text-align:center; line-height:1.5;">Scan with Google Authenticator, Authy or 1Password</div>
+                    <sc-if value="{{ twoFaLive }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:11px; color:#166F31; font-weight:600; margin-top:10px; text-align:center; line-height:1.5;">Live secret · scan with Google Authenticator, Authy or 1Password</div>
+                    </sc-if>
+                    <sc-if value="{{ twoFaPlaceholderQr }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:11px; color:#8A4B0B; margin-top:10px; text-align:center; line-height:1.5;">Placeholder — the live secret loads from the server when you open this step</div>
+                    </sc-if>
                   </div>
                   <div>
                     <div style="font-size:15px; font-weight:600; color:#1A1D21;">Scan this code with your authenticator app</div>
@@ -5115,6 +5140,7 @@
                 <div style="display:flex; align-items:center; gap:12px; padding:20px 24px 14px 24px;">
                   <div style="flex:1;">
                     <div style="font-size:15px; font-weight:600; color:#1A1D21;">Preview — first 6 of {{ rbRowCount }} rows</div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;"><label style="font-size:12px; font-weight:500; color:#3B3B3B; flex:none;">Report name</label><input value="{{ rptName }}" onChange="{{ rbSetName }}" placeholder="e.g. Requisitions by department" style="flex:1; max-width:320px; height:34px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:12px; outline:none;" style-focus="border-color:#E0572E" /></div>
                     <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">{{ rbColCount }} columns · minimum {{ rbMinLabel }} · grouped by {{ rbGroup }}</div>
                   </div>
                   <button onClick="{{ noop }}" style="height:32px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;">Export preview</button>
@@ -6721,7 +6747,7 @@
 </sc-if>
 
 <sc-if value="{{ isExt }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed; inset:0; z-index:80; background:#EDEEF0; overflow-y:auto;">
+  <div style="position:fixed; inset:0; z-index:40; background:#EDEEF0; overflow-y:auto;">
     <div style="max-width:820px; margin:0 auto; padding:32px 24px 64px 24px;">
       <div style="display:flex; align-items:center; gap:12px; padding-bottom:20px;">
         <span style="width:34px; height:34px; border-radius:9px; background:#E0572E; color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center;">W</span>
@@ -7197,21 +7223,19 @@
         <sc-if value="{{ bulkDone }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="width:28px; height:28px; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
-            <div style="font-size:20px; font-weight:600; color:#1A1D21;">{{ bulkCount }} approved, {{ bulkExcluded }} skipped</div>
+            <div style="font-size:20px; font-weight:600; color:#1A1D21;">{{ bulkApprovedCount }} approved, {{ bulkSkipTotal }} skipped</div>
           </div>
           <div style="font-size:13px; color:#6B7280; margin-top:12px; line-height:1.6;">{{ bulkTotal }} released to the next stage. Your queue now shows only what genuinely needs you.</div>
 
           <div style="margin-top:20px; padding:16px 18px; border-radius:12px; background:#F7F8FA;">
             <div style="font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8A8F98;">Skipped, and why</div>
             <div style="display:flex; flex-direction:column; gap:11px; margin-top:12px;">
-              <div style="display:flex; gap:10px;">
-                <span style="font-size:12px; font-weight:600; color:#1A1D21; flex:none; font-variant-numeric:tabular-nums;">PO-2026-0064</span>
-                <span style="font-size:12px; color:#9C3309; line-height:1.5;">Above your ₦1,000,000.00 band — routed to the Managing Director</span>
-              </div>
-              <div style="display:flex; gap:10px;">
-                <span style="font-size:12px; font-weight:600; color:#1A1D21; flex:none; font-variant-numeric:tabular-nums;">RET-2026-0019</span>
-                <span style="font-size:12px; color:#9C3309; line-height:1.5;">Open audit query — Internal Audit must close it first</span>
-              </div>
+              <sc-for list="{{ bulkSkipRows }}" as="k" hint-placeholder-count="2">
+                <div style="display:flex; gap:10px;">
+                  <span style="font-size:12px; font-weight:600; color:#1A1D21; flex:none; font-variant-numeric:tabular-nums;">{{ k.ref }}</span>
+                  <span style="font-size:12px; color:#9C3309; line-height:1.5;">{{ k.reason }}</span>
+                </div>
+              </sc-for>
             </div>
           </div>
 
@@ -7396,28 +7420,26 @@
         <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Filed as version 1. A re-upload of the same name later creates v2 and keeps this one.</div>
 
         <div style="margin-top:20px; padding:30px; border:1.5px dashed #D3D6DB; border-radius:12px; background:#FAFBFC; text-align:center;">
-          <div style="font-size:14px; font-weight:600; color:#1A1D21;">Drop files here, or take a photo</div>
+          <div style="font-size:14px; font-weight:600; color:#1A1D21;">Choose files to upload</div>
           <div style="font-size:12px; color:#8A8F98; margin-top:6px;">PDF, JPG, PNG, DOCX or XLSX up to 10 MB each</div>
-          <button onClick="{{ noop }}" style="height:36px; margin-top:16px; padding:0 16px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;">Choose files</button>
+          <input type="file" multiple="{{ true }}" onChange="{{ upPick }}" style="display:block; margin:16px auto 0 auto; font-size:12px; color:#3B3B3B;" />
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
-            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
-            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Amendment 3 — signed copy.pdf</div><div style="font-size:11px; color:#9AA0A8;">812 KB · 6 pages</div></div>
-            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
+        <sc-if value="{{ upHasFiles }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+            <sc-for list="{{ upFiles }}" as="f" hint-placeholder-count="2">
+              <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
+                <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
+                <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.name }}</div><div style="font-size:11px; color:#9AA0A8;">{{ f.sizeLabel }}</div></div>
+                <sc-if value="{{ f.ready }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span></sc-if>
+                <button onClick="{{ f.onRemove }}" style="width:26px; height:26px; flex:none; border:none; border-radius:7px; background:transparent; color:#A8ADB5; font-size:12px;" style-hover="background:#FBEAE4; color:#C2410C">✕</button>
+              </div>
+            </sc-for>
           </div>
-          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
-            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
-            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Tranche 3 disbursement letter.pdf</div><div style="font-size:11px; color:#9AA0A8;">248 KB · 2 pages</div></div>
-            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
-            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
-            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Revised budget annex.xlsx</div><div style="font-size:11px; color:#9AA0A8;">184 KB</div></div>
-            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
-          </div>
-        </div>
+        </sc-if>
+        <sc-if value="{{ upNoFiles }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:14px; padding:14px 16px; border-radius:10px; background:#F7F8FA; font-size:12px; color:#9AA0A8; line-height:1.5;">No files chosen yet. The filename, type and contents are sent with the upload.</div>
+        </sc-if>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
           <div style="display:flex; flex-direction:column; gap:7px;">
@@ -7499,7 +7521,12 @@
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
           <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
-          <button onClick="{{ upSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Upload 3 files</button>
+          <sc-if value="{{ upHasFiles }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ upSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">{{ upCta }}</button>
+          </sc-if>
+          <sc-if value="{{ upNoFiles }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a file first</button>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -7578,7 +7605,7 @@
           <sc-if value="{{ refundNeedsRef }}" hint-placeholder-val="{{ true }}">
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Bank reference or receipt number</label>
-              <input placeholder="From the teller slip or transfer confirmation" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" />
+              <input value="{{ refundRef }}" onChange="{{ setRefundRef }}" placeholder="From the teller slip or transfer confirmation" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
               <span style="font-size:11px; color:#9AA0A8;">Attach the evidence — Internal Audit checks refunds against the bank statement</span>
             </div>
           </sc-if>
@@ -8015,7 +8042,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Full name</label>
-              <input placeholder="As on the offer letter" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" />
+              <input value="{{ stName }}" onChange="{{ setStName }}" placeholder="As on the offer letter" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Staff number</label>
@@ -8123,7 +8150,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">New joiner</label>
-              <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;"><option>Blessing Nwafor — Programme Officer</option><option>Kelechi Anyanwu — M&amp;E Assistant</option><option>Halima Bala — Finance Officer</option></select>
+              <select onChange="{{ setOnbUser }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;"><option>Blessing Nwafor — Programme Officer</option><option>Kelechi Anyanwu — M&amp;E Assistant</option><option>Halima Bala — Finance Officer</option></select>
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Start date</label>
@@ -8163,8 +8190,13 @@
 
     <sc-if value="{{ dlgRfq }}" hint-placeholder-val="{{ false }}">
       <div style="width:100%; max-width:620px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
-        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Raise a request for quotation</div>
-        <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Three written quotations are required above ₦500,000.00 under every current award</div>
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Create a request for quotation</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px;">The RFQ is created first; vendors submit their quotations against it afterwards. Three are required above ₦500,000.00.</div>
+        <div style="display:flex; flex-direction:column; gap:7px; margin-top:18px;">
+          <label style="font-size:13px; font-weight:500; color:#3B3B3B;">RFQ title</label>
+          <input value="{{ rfqTitle }}" onChange="{{ setRfqTitle }}" placeholder="e.g. Laptops for the M&amp;E team" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+          <sc-if value="{{ rfqTitleShort }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#9AA0A8;">At least 3 characters</span></sc-if>
+        </div>
         <div style="display:flex; flex-direction:column; gap:16px; margin-top:22px;">
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">From which approved requisition</label>
@@ -8182,7 +8214,7 @@
             </div>
           </div>
           <div>
-            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Invite vendors</label>
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Vendors you expect to quote</label>
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:9px;">
               <sc-for list="{{ rfqVendors }}" as="v" hint-placeholder-count="5">
                 <div style="display:flex; align-items:center; gap:11px; padding:11px 14px; border-radius:11px; background:{{ v.bg }};">
@@ -8219,7 +8251,7 @@
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
           <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
           <sc-if value="{{ rfqOk }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ rfqSend }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Send to {{ rfqCount }} vendors</button>
+            <button onClick="{{ rfqSend }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Create RFQ</button>
           </sc-if>
           <sc-if value="{{ rfqTooFew }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Needs three vendors</button>
@@ -8553,11 +8585,11 @@
             <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:16px;">
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Donor legal name</label>
-                <input placeholder="As it appears on the agreement" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" />
+                <input value="{{ dnName }}" onChange="{{ setDnName }}" placeholder="As it appears on the agreement" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
               </div>
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Short code</label>
-                <input placeholder="GATES-NUT-26" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" />
+                <input value="{{ dnCode }}" onChange="{{ setDnCode }}" placeholder="GATES-NUT-26" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; text-transform:uppercase; outline:none;" style-focus="border-color:#E0572E" />
                 <span style="font-size:11px; color:#9AA0A8;">Used on every requisition and report</span>
               </div>
             </div>
@@ -8589,11 +8621,11 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Award reference</label>
-                <input placeholder="From the agreement" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" />
+                <input value="{{ dnTitle }}" onChange="{{ setDnTitle }}" placeholder="From the agreement" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
               </div>
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Award value</label>
-                <input placeholder="₦0.00" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                <input value="{{ dnValue }}" onChange="{{ setDnValue }}" placeholder="0.00" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
               </div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -8816,7 +8848,12 @@
 
 <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed; top:22px; right:22px; z-index:70; display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:12px; background:#1A1D21; color:#fff; box-shadow:0 18px 40px rgba(16,24,40,.24); max-width:420px; animation:weweRise 180ms ease-out;">
-    <span style="width:22px; height:22px; flex:none; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+    <sc-if value="{{ toastOk }}" hint-placeholder-val="{{ true }}">
+      <span style="width:22px; height:22px; flex:none; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+    </sc-if>
+    <sc-if value="{{ toastBad }}" hint-placeholder-val="{{ false }}">
+      <span style="width:22px; height:22px; flex:none; border-radius:999px; background:#C2410C; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M8 8l8 8M16 8l-8 8"></path></svg></span>
+    </sc-if>
     <span style="font-size:13px; font-weight:500; line-height:1.45;">{{ toastText }}</span>
     <button onClick="{{ hideToast }}" style="border:none; background:transparent; color:rgba(255,255,255,.5); font-size:14px; padding:0 2px;">✕</button>
   </div>
@@ -9924,16 +9961,16 @@ const RFQ_VENDORS = [
 ];
 
 const RB_FIELDS = [
-  { key:'ref', label:'Reference', group:'Transaction', w:'104px', def:true },
-  { key:'title', label:'Item description', group:'Transaction', w:'minmax(110px,1fr)', def:true },
-  { key:'who', label:'Initiator', group:'People', w:'100px', def:true },
-  { key:'dept', label:'Department', group:'People', w:'100px', def:true },
-  { key:'donor', label:'Donor code', group:'Funding', w:'104px', def:true },
-  { key:'amount', label:'Amount', group:'Money', w:'112px', def:true, right:true },
-  { key:'date', label:'Date raised', group:'Transaction', w:'94px', def:true },
-  { key:'status', label:'Status', group:'Workflow', w:'84px', def:false },
-  { key:'stage', label:'Current stage', group:'Workflow', w:'104px', def:false },
-  { key:'aging', label:'Aging / SLA', group:'Workflow', w:'110px', def:false }
+  { key:'ref', api:'ref', label:'Reference', group:'Transaction', w:'104px', def:true },
+  { key:'title', api:'title', label:'Item description', group:'Transaction', w:'minmax(110px,1fr)', def:true },
+  { key:'who', api:'initiator', label:'Initiator', group:'People', w:'100px', def:true },
+  { key:'dept', api:'department', label:'Department', group:'People', w:'100px', def:true },
+  { key:'donor', api:'donorCode', label:'Donor code', group:'Funding', w:'104px', def:true },
+  { key:'amount', api:'amountKobo', label:'Amount', group:'Money', w:'112px', def:true, right:true },
+  { key:'date', api:'submittedAt', label:'Date raised', group:'Transaction', w:'94px', def:true },
+  { key:'status', api:'status', label:'Status', group:'Workflow', w:'84px', def:false },
+  { key:'stage', api:'currentStage', label:'Current stage', group:'Workflow', w:'104px', def:false },
+  { key:'aging', api:'updatedAt', label:'Aging / SLA', group:'Workflow', w:'110px', def:false }
 ];
 
 const INV_ITEMS = [
@@ -10013,6 +10050,25 @@ const QB_EXCEPTIONS = [
   { ref:'REQ-2026-0176', posted:'02/08/2026 · 17:12', err:'Class “M&E” inactive in QuickBooks', amount:88000 },
   { ref:'PO-2026-0061', posted:'01/08/2026 · 08:44', err:'Vendor “Kaduna Motors Ltd” not found', amount:340000 }
 ];
+
+const DELEGATE_OPTIONS = [
+  { id:'usr_fatima_bello', label:'Fatima Bello — Finance Officer' },
+  { id:'usr_amina_yusuf', label:'Dr. Amina Yusuf — Managing Director' },
+  { id:'usr_samuel_adeoye', label:'Samuel Adeoye — Accounts Assistant' },
+  { id:'usr_ibrahim_musa', label:'Ibrahim Musa — Finance Manager (you)' },
+  { id:'usr_fatima_bello', label:'Fatima Bello — already delegating to Samuel Adeoye' }
+];
+
+const DMS_FOLDER_IDS = {
+  'Grants / USAID-LON-24':'fld_usaid_lon_24', 'Grants / EU-WISH-23':'fld_eu_wish_23',
+  'Finance / Budgets':'fld_budgets', 'Finance / Payments & vouchers':'fld_payments',
+  'Finance / Payroll':'fld_payroll', 'Procurement':'fld_procurement',
+  'Human resources':'fld_hr', 'Governance & policy':'fld_policy', 'Audit & evidence':'fld_audit'
+};
+
+const ROLE_CODES = { 'Initiator':'INITIATOR', 'Supervisor':'SUPERVISOR', 'Internal Audit':'INTERNAL_AUDIT', 'Finance':'FINANCE', 'Final Approver':'FINAL_APPROVER', 'HR Officer':'HR_OFFICER', 'Procurement Officer':'PROCUREMENT_OFFICER', 'System Administrator':'SYSTEM_ADMIN', 'External Auditor':'EXTERNAL_AUDITOR', 'Store Officer':'STORE_OFFICER', 'M&E Officer':'ME_OFFICER' };
+
+const CHAIN_CODES = { 'Requisition':{ code:'REQUISITION', refPrefix:'REQ' }, 'Cash advance':{ code:'CASH_ADVANCE', refPrefix:'ADV' }, 'Retirement':{ code:'RETIREMENT', refPrefix:'RET' }, 'Purchase order':{ code:'PURCHASE_ORDER', refPrefix:'PO' }, 'Payroll run':{ code:'PAYROLL_RUN', refPrefix:'PAY' } };
 
 const DMS_TREE = [
   { label:'All documents', count:4182, depth:0 },
@@ -10222,72 +10278,48 @@ const PERM_CHANGES = [
   { who:'Segun Ola', when:'28/06/2026 · 14:22', what:'Requisitions · Approve', from:'Off', to:'On', state:'published' }
 ];
 
-const PERM_MODULES = [
-  { group:'Transactions', mod:'Requisitions', perms:['on','on','on','on','off','on','off'], scope:'Organisation' },
-  { group:'Transactions', mod:'Requisition templates', perms:['on','on','on','off','off','off','on'], scope:'Organisation' },
-  { group:'Transactions', mod:'Approval queue', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Transactions', mod:'Cash advances', perms:['on','on','on','on','on','on','off'], scope:'Organisation' },
-  { group:'Transactions', mod:'Retirements', perms:['on','on','on','on','on','on','off'], scope:'Organisation' },
-  { group:'Transactions', mod:'Outstanding advances register', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Transactions', mod:'Travel authorisation', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
+const PERM_CATALOG = {
+  modules: [
+    { code:'requisitions', label:'Requisitions', group:'Transactions' },
+    { code:'advances', label:'Advances', group:'Transactions' },
+    { code:'retirements', label:'Retirements', group:'Transactions' },
+    { code:'budgets', label:'Budgets', group:'Money' },
+    { code:'payroll', label:'Payroll', group:'Money' },
+    { code:'quickbooks', label:'QuickBooks', group:'Money' },
+    { code:'procurement', label:'Procurement', group:'Operations' },
+    { code:'inventory', label:'Inventory', group:'Operations' },
+    { code:'assets', label:'Assets', group:'Operations' },
+    { code:'documents', label:'Documents', group:'Operations' },
+    { code:'esign', label:'E-signature', group:'Operations' },
+    { code:'hr', label:'Human resources', group:'People' },
+    { code:'timesheets', label:'Timesheets', group:'People' },
+    { code:'grants', label:'Grants', group:'Governance' },
+    { code:'audit', label:'Audit', group:'Governance' },
+    { code:'reports', label:'Reports', group:'Reporting' },
+    { code:'admin', label:'Administration', group:'System' }
+  ],
+  actions: ['VIEW', 'CREATE', 'EDIT', 'SUBMIT', 'APPROVE', 'EXPORT', 'CONFIGURE'],
+  scopes: ['own', 'department', 'organisation']
+};
 
-  { group:'Money', mod:'Budgets', perms:['on','on','on','off','on','on','on'], scope:'Organisation' },
-  { group:'Money', mod:'Budget import & validation', perms:['on','on','on','off','off','on','on'], scope:'Organisation' },
-  { group:'Money', mod:'Virements', perms:['on','on','off','on','on','off','off'], scope:'Organisation' },
-  { group:'Money', mod:'Budget versions', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Money', mod:'Payroll runs', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Money', mod:'Payslips', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Money', mod:'Statutory remittances', perms:['on','on','on','off','on','on','off'], scope:'Organisation' },
-  { group:'Money', mod:'QuickBooks posting', perms:['on','on','off','on','off','on','off'], scope:'Organisation' },
-  { group:'Money', mod:'Account mapping', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-  { group:'Money', mod:'Exception queue', perms:['on','off','on','off','on','on','off'], scope:'Organisation' },
+const PERM_GRANTS = {
+  requisitions:['on','on','on','on','off','on','off'], advances:['on','on','on','on','on','on','off'],
+  retirements:['on','on','on','on','on','on','off'], budgets:['on','on','on','off','on','on','on'],
+  payroll:['on','off','off','off','on','on','off'], quickbooks:['on','on','off','on','off','on','off'],
+  procurement:['on','off','off','off','on','on','off'], inventory:['on','off','off','off','off','on','off'],
+  assets:['on','off','off','off','off','on','off'], documents:['on','on','on','off','off','on','off'],
+  esign:['on','on','off','off','off','off','off'], hr:['on','off','off','off','off','off','off'],
+  timesheets:['on','on','on','on','off','on','off'], grants:['on','off','off','off','off','on','off'],
+  audit:['on','off','off','off','off','on','off'], reports:['on','on','on','off','off','on','off'],
+  admin:['off','off','off','off','off','off','off']
+};
 
-  { group:'Operations', mod:'Procurement', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Vendor register', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Requests for quotation', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Purchase orders', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Inventory & stores', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Stock issues & receipts', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Stock counts & adjustments', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Fixed assets', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Asset verification', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Depreciation', perms:['on','off','off','off','on','on','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Documents', perms:['on','on','on','off','off','on','off'], scope:'Department' },
-  { group:'Operations', mod:'Electronic signature', perms:['on','on','off','off','off','off','off'], scope:'Organisation' },
-  { group:'Operations', mod:'Retention & legal hold', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-
-  { group:'People', mod:'Staff records', perms:['on','off','off','off','off','off','off'], scope:'Own' },
-  { group:'People', mod:'Bank & salary details', perms:['on','off','on','off','off','on','off'], scope:'Organisation' },
-  { group:'People', mod:'Onboarding', perms:['on','off','off','off','off','off','off'], scope:'Own' },
-  { group:'People', mod:'Contracts & renewals', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'People', mod:'Leave', perms:['on','on','off','on','off','off','off'], scope:'Own' },
-  { group:'People', mod:'Appraisals', perms:['on','off','off','off','off','off','off'], scope:'Own' },
-  { group:'People', mod:'Timesheets', perms:['on','on','on','on','off','on','off'], scope:'Own' },
-  { group:'People', mod:'Level of effort', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-
-  { group:'Governance', mod:'Donors & grants', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Donor reports', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Grant calendar', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Audit review queue', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Findings register', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Audit log', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'Governance', mod:'Evidence packs', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-
-  { group:'Reporting', mod:'Report library', perms:['on','on','on','off','off','on','off'], scope:'Organisation' },
-  { group:'Reporting', mod:'Custom report builder', perms:['on','on','on','off','off','on','off'], scope:'Organisation' },
-  { group:'Reporting', mod:'Scheduled reports', perms:['on','on','on','off','off','on','off'], scope:'Organisation' },
-  { group:'Reporting', mod:'Pipeline analytics', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-
-  { group:'System', mod:'Users', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-  { group:'System', mod:'Roles & permissions', perms:['off','off','off','off','off','off','off'], scope:'—' },
-  { group:'System', mod:'Forms & data capture', perms:['on','off','off','off','off','on','off'], scope:'Organisation' },
-  { group:'System', mod:'Form distribution & links', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-  { group:'System', mod:'Workflow configuration', perms:['on','off','off','off','off','off','off'], scope:'—' },
-  { group:'System', mod:'Organisation structure', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-  { group:'System', mod:'Reference data', perms:['on','off','off','off','off','off','off'], scope:'Organisation' },
-  { group:'System', mod:'User activity monitor', perms:['off','off','off','off','off','off','off'], scope:'—' }
-];
-const PERM_ACTIONS = ['View','Create','Edit','Submit','Approve','Export','Configure'];
+const PERM_MODULES = PERM_CATALOG.modules.map(m => ({
+  group:m.group, mod:m.label, code:m.code,
+  perms: PERM_GRANTS[m.code] || ['off','off','off','off','off','off','off'],
+  scope: { hr:'own', timesheets:'own' }[m.code] || 'organisation'
+}));
+const PERM_ACTIONS = PERM_CATALOG.actions.map(x => x.charAt(0) + x.slice(1).toLowerCase());
 
 const RET_LINES = [
   { desc:'Airfare Abuja–Kano (return)', budget:120000, actual:132500, receipt:'IMG_2231.jpg' },
@@ -10376,6 +10408,9 @@ class Component extends DCLogic {
     chainSel: 2,
     bulkSel: {},
     bulkDone: false,
+    bulkApproved: [],
+    bulkRefused: [],
+    toastError: false,
     fulfil: {},
     obMode: 'warn',
     nrPurpose: '',
@@ -10387,8 +10422,23 @@ class Component extends DCLogic {
     dmsSel: {},
     upConf: false,
     upOcr: true,
+    upFiles: [],
     otp: '',
     extOtp: '',
+    avLocation: 'Abuja head office',
+    onbUserId: 'usr_blessing_nwafor',
+    delFrom: '2026-08-08',
+    delUntil: '2026-08-22',
+    delActiveId: 'dlg_2026_0007',
+    refundRef: '',
+    permScope: {},
+    retSelected: '',
+    esignSelected: '',
+    otpUri: '',
+    rfqTitle: '',
+    rptName: '',
+    stName: '', stEmail: '', stRole: 'INITIATOR',
+    dnCode: '', dnName: '', dnTitle: '', dnCur: 'USD', dnValue: '',
     ceremonyStep: 1,
     ceremonyMethod: 'saved',
     extStep: 1,
@@ -10454,9 +10504,29 @@ class Component extends DCLogic {
       return { budgetLine:'General programme costs', allocated: Math.round(a * 2.6), committed: Math.round(a * 1.7),
         lines:[['Principal cost — ' + t.title, '1', Math.round(a * 0.72)], ['Associated travel and logistics', '1', Math.round(a * 0.2)], ['Incidentals', '1', a - Math.round(a * 0.72) - Math.round(a * 0.2)]],
         docs:[['Supporting documentation.pdf','264 KB'],['Approval note.pdf','92 KB']],
-        comments:[[t.who, 'Raised for approval against the ' + t.donor + ' workplan.', t.date + ' · 09:30', 'neutral']] };
+        comments: t.status === 'returned'
+          ? [[t.who, 'Raised for approval against the ' + t.donor + ' workplan.', t.date + ' · 09:30', 'neutral'],
+             [DEPT_HEAD[t.dept] || 'Tunde Balogun', 'Returned for correction — please attach the supporting quotation and confirm the budget line before this goes forward.', t.date + ' · 16:20', 'amber']]
+          : [[t.who, 'Raised for approval against the ' + t.donor + ' workplan.', t.date + ' · 09:30', 'neutral']] };
     })();
     return { txn:t, d };
+  }
+  readFiles(list) {
+    const files = Array.prototype.slice.call(list || []);
+    if (!files.length) return;
+    const sizeOf = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+    files.forEach(file => {
+      const rec = { name:file.name, mime:file.type || 'application/octet-stream', sizeLabel:sizeOf(file.size), dataBase64:'' };
+      this.setState({ upFiles: this.state.upFiles.concat([rec]) });
+      const fr = new FileReader();
+      fr.onload = () => {
+        const s = String(fr.result || '');
+        const b64 = s.indexOf(',') > -1 ? s.slice(s.indexOf(',') + 1) : s;
+        this.setState({ upFiles: this.state.upFiles.map(x => x === rec || x.name === rec.name && !x.dataBase64 ? Object.assign({}, x, { dataBase64:b64 }) : x) });
+      };
+      fr.onerror = () => this.toast('Could not read ' + file.name + '.');
+      fr.readAsDataURL(file);
+    });
   }
   openShare(url, label) {
     try {
@@ -10465,23 +10535,50 @@ class Component extends DCLogic {
     } catch (e) { /* popup blocked */ }
     this.toast('Could not open ' + label + ' — your browser blocked the window. Copy the link instead.');
   }
+  requestOtpUri() {
+    if (this.state.otpUri) return;
+    const fn = typeof window !== 'undefined' && window.__wewe2faSetup;
+    if (typeof fn !== 'function') return;
+    let res;
+    try { res = fn(); } catch (e) { this.toast('Could not start two-step setup — try again.'); return; }
+    const uri = res && (res.otpauthUri || res.otpauth_uri || res.uri);
+    if (uri) this.setState({ otpUri:uri });
+  }
+  fail(reason) {
+    this.setState({ toastError: true });
+    this.toast(reason || 'That did not go through. Nothing was saved.');
+    return false;
+  }
   hook(name, payload, fallbackMsg) {
     const fn = typeof window !== 'undefined' && window['__wewe' + name];
     if (typeof fn === 'function') {
       let res;
-      try { res = fn(payload); } catch (e) { this.toast('Could not complete that — the server rejected it. Nothing was saved.'); return true; }
-      this.toast(typeof res === 'string' && res ? res : 'Submitted.');
+      try { res = fn(payload); }
+      catch (e) { return this.fail((e && e.message) || 'The server refused that. Nothing was saved.'); }
+      if (res === false || res === null || res === undefined) return this.fail('That did not go through. Nothing was saved.');
+      if (res && typeof res === 'object' && res.ok === false) return this.fail(res.reason || res.message || 'That did not go through. Nothing was saved.');
+      this.setState({ toastError: false });
+      this.toast(typeof res === 'string' && res ? res : (fallbackMsg || 'Submitted.'));
       return true;
     }
+    this.setState({ toastError: false });
     if (fallbackMsg) this.toast(fallbackMsg);
     return false;
   }
   act(ref, verb, note) {
     const fn = typeof window !== 'undefined' && window.__weweAct;
     if (typeof fn === 'function') {
-      try { fn(ref, verb, note); } catch (e) { /* integration handler owns its errors */ }
-      this.toast(ref + ' — ' + verb + ' submitted.');
-      return;
+      let res;
+      try { res = fn(ref, verb, note); }
+      catch (e) { return this.fail((e && e.message) || 'The server refused that. ' + ref + ' is unchanged.'); }
+      if (res === false || res === null || res === undefined) {
+        const past = { approve:'approved', return:'returned', reject:'rejected', withdraw:'withdrawn', resubmit:'resubmitted', submit:'submitted' }[verb] || (verb + 'ed');
+        return this.fail(ref + ' was not ' + past + '. Nothing was saved.');
+      }
+      if (res && typeof res === 'object' && res.ok === false) return this.fail(res.reason || res.message || (ref + ' was refused. Nothing was saved.'));
+      this.setState({ toastError: false });
+      this.toast(typeof res === 'string' && res ? res : (ref + ' — ' + verb + ' submitted.'));
+      return true;
     }
     const msg = verb === 'approve' ? ref + ' approved. It moves to the next stage and the budget line is committed.'
       : verb === 'return' ? ref + ' returned to the initiator with your note. It re-enters your queue once resubmitted.'
@@ -10523,7 +10620,7 @@ class Component extends DCLogic {
       }
     }
     if (/bulk approve/i.test(l)) { this.setState({ dlg:{ kind:'bulk' }, bulkDone:false }); return; }
-    if (/^sign$/i.test(l)) { this.setState({ dlg:{ kind:'ceremony' }, ceremonyStep:1 }); return; }
+    if (/^sign$/i.test(l)) { this.setState({ dlg:{ kind:'ceremony', requestId:this.state.esignSelected || '' }, ceremonyStep:1 }); return; }
     if (/certificate/i.test(l)) { this.go('/documents/certificate'); return; }
     if (/re-upload|upload budget|import budget/i.test(l)) { this.setState({ dlg:{ kind:'upload', label:l } }); return; }
     if (/Build a report|Custom builder/i.test(l)) { this.go('/reports/builder'); return; }
@@ -10576,6 +10673,9 @@ class Component extends DCLogic {
     window.addEventListener('pointerup', () => { drawing = false; });
   }
 
+  componentDidUpdate() {
+    if (String(this.state.route || '').indexOf('/auth/2fa') === 0) this.requestOtpUri();
+  }
   componentDidMount() {
     const sync = () => {
       const h = (window.location.hash || '').replace(/^#/, '');
@@ -10754,7 +10854,25 @@ class Component extends DCLogic {
       dlgFilter: !!this.state.dlg && this.state.dlg.kind === 'filter',
       dlgCreate: !!this.state.dlg && this.state.dlg.kind === 'create',
       dlgRefund: !!this.state.dlg && this.state.dlg.kind === 'refund',
-      openRefund: () => this.setState({ dlg:{ kind:'refund' } }),
+      openRefund: () => this.setState({ dlg:{ kind:'refund', ref: this.state.retSelected || (TXNS.find(t => /^RET-/.test(t.ref)) || {}).ref || '' } }),
+      refundRef: this.state.refundRef,
+      setRefundRef: e => this.setState({ refundRef: e.target.value }),
+      stName: this.state.stName,
+      setStName: e => this.setState({ stName: e.target.value }),
+      stEmail: this.state.stEmail,
+      setStEmail: e => this.setState({ stEmail: e.target.value }),
+      dnName: this.state.dnName,
+      setDnName: e => this.setState({ dnName: e.target.value }),
+      dnCode: this.state.dnCode,
+      setDnCode: e => this.setState({ dnCode: String(e.target.value || '').toUpperCase().replace(/[^A-Z0-9-]/g, '') }),
+      dnTitle: this.state.dnTitle,
+      setDnTitle: e => this.setState({ dnTitle: e.target.value }),
+      dnValue: this.state.dnValue,
+      setDnValue: e => this.setState({ dnValue: e.target.value }),
+      rfqTitle: this.state.rfqTitle,
+      setRfqTitle: e => this.setState({ rfqTitle: e.target.value }),
+      rfqTitleOk: String(this.state.rfqTitle || '').trim().length >= 3,
+      rfqTitleShort: String(this.state.rfqTitle || '').trim().length < 3,
       refundModes: [
         ['Cash paid to the cashier', 'Receipted at the Abuja office and banked the same day'],
         ['Bank transfer to the organisation account', 'Reference required so Finance can match it on the statement'],
@@ -10764,9 +10882,11 @@ class Component extends DCLogic {
       refundNeedsRef: this.state.refundMode !== 2,
       refundPayroll: this.state.refundMode === 2,
       refundSave: () => {
-        const how = ['cash receipted at the office', 'bank transfer', 'deduction from August salary'][this.state.refundMode];
+        const method = ['CASH', 'BANK_TRANSFER', 'SALARY_DEDUCTION'][this.state.refundMode];
+        const rid = (this.state.dlg && this.state.dlg.ref) || this.state.retSelected || '';
+        const p = { retirementId:rid, refundSettledRef:this.state.refundRef, method };
         this.setState({ dlg:null });
-        this.hook('SettleRefund', { method:how }, 'Refund settlement recorded.');
+        this.hook('SettleRefund', p, 'Refund settlement recorded.');
       },
       dlgPsMail: !!this.state.dlg && this.state.dlg.kind === 'psmail',
       pm: (() => {
@@ -10796,10 +10916,10 @@ class Component extends DCLogic {
         if (!r) return { ref:'' };
         return { ref:r[0], item:r[1], who:r[2], qty:r[3], date:r[5] };
       })(),
-      ap2Approve: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.toast(r[0] + ' approved for ' + r[2] + '. It moves to payment processing and the budget line is committed.'); },
-      ap2Return: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.toast(r[0] + ' returned to the initiator with your note. It re-enters your queue once resubmitted.'); },
-      rvDo: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.toast(r[0] + ' reversed. ' + r[3] + ' × ' + r[1] + ' returned to stock and the movement is logged against your name.'); },
-      chDo: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.toast('Chase sent to ' + r[2] + ' and copied to their supervisor. A second chase escalates to Internal Audit.'); },
+      ap2Approve: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.act(r[0], 'approve', ''); },
+      ap2Return: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.act(r[0], 'return', String(this.state.actNote || '')); },
+      rvDo: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.hook('ReverseIssue', { issueRef:r[0], item:r[1], qty:r[3] }, r[0] + ' reversed and the stock returned.'); },
+      chDo: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.hook('ChaseReturn', { issueRef:r[0], custodian:r[2] }, 'Chase sent to ' + r[2] + '.'); },
       dlgPayslip: !!this.state.dlg && this.state.dlg.kind === 'payslip',
       dlgRemit: !!this.state.dlg && this.state.dlg.kind === 'remit',
       dlgTpl: !!this.state.dlg && this.state.dlg.kind === 'tpl',
@@ -10882,11 +11002,11 @@ class Component extends DCLogic {
       dlgQuick: !!this.state.dlg && this.state.dlg.kind === 'quick',
       openQuick: () => this.setState({ dlg:{ kind:'quick' } }),
       psEmail: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('EmailPayslip', { staff:n }, 'Payslip emailed.'); },
-      psQuery: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Query opened on ' + n + '’s August payslip. HR replies within two working days.'); },
+      psQuery: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('QueryPayslip', { staff:n, period:'2026-08' }, 'Query opened with HR.'); },
       rmPay: () => { const a = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('RaiseRemittancePayment', { authority:a }, 'Payment raised.'); },
       tplUse: () => { this.setState({ dlg:null }); this.go('/requisitions/new'); },
-      tplSave: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Template “' + n + '” saved. Everyone using it starts from the new version.'); },
-      tplCopy: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Copy of “' + n + '” created as a personal template.'); },
+      tplSave: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('SaveTemplate', { template:n }, 'Template saved.'); },
+      tplCopy: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('CopyTemplate', { template:n }, 'Copy created as a personal template.'); },
       isDark: this.state.dark, isLight: !this.state.dark,
       toggleDark: () => this.setState({ dark: !this.state.dark }),
       signOut: () => this.setState({ auth:'signin', dlg:null }),
@@ -10906,14 +11026,14 @@ class Component extends DCLogic {
       dlgVerify: !!this.state.dlg && this.state.dlg.kind === 'verify',
       dlgRole: !!this.state.dlg && this.state.dlg.kind === 'role',
       dlgPayApp: !!this.state.dlg && this.state.dlg.kind === 'payapp',
-      staffSave: () => { this.setState({ dlg:null }); this.hook('CreateStaff', {}, 'Staff record created and an invite sent.'); },
+      staffSave: () => { const p = { name:this.state.stName, email:this.state.stEmail, roles:[this.state.stRole] }; this.setState({ dlg:null }); this.hook('CreateStaff', p, 'Staff record created and an invite sent.'); },
       onbTasks: ONB_TASKS.map((t, i) => {
         const on = this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i];
         return { task:t[0], owner:t[1], due:t[2], on, off: !on, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
           onClick: () => { const s = Object.assign({}, this.state.onbSel); s[i] = !on; this.setState({ onbSel:s }); } };
       }),
       onbCount: ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length,
-      onbSave: () => { const n = ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length; this.setState({ dlg:null }); this.hook('StartOnboarding', { tasks:n }, n + ' onboarding tasks assigned.'); },
+      onbSave: () => { const n = ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length; const userId = this.state.onbUserId; this.setState({ dlg:null }); this.hook('StartOnboarding', { userId }, n + ' onboarding tasks assigned.'); },
       rfqVendors: RFQ_VENDORS.map((v, i) => {
         const on = this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i];
         return { name:v[0], note:v[1], blocked:!!v[3], on, off: !on, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
@@ -10922,8 +11042,8 @@ class Component extends DCLogic {
       rfqCount: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length,
       rfqOk: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length >= 3,
       rfqTooFew: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length < 3,
-      rfqSend: () => { const n = RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length; this.setState({ dlg:null }); this.hook('SendRfq', { vendors:n }, 'Request for quotation sent to ' + n + ' vendors.'); },
-      verifySend: () => { this.setState({ dlg:null }); this.hook('StartAssetVerification', {}, 'Verification campaign launched.'); },
+      rfqSend: () => { this.setState({ dlg:null }); this.hook('SendRfq', { title:this.state.rfqTitle }, 'Request for quotation created.'); },
+      verifySend: () => { const location = this.state.avLocation; this.setState({ dlg:null }); this.hook('StartAssetVerification', { location }, 'Verification campaign launched.'); },
       roleSave: () => { this.setState({ dlg:null }); this.hook('CreateRole', {}, 'Draft role created.'); },
       paySend: () => { this.setState({ dlg:null }); this.hook('SubmitPayroll', { period:'2026-08' }, 'Payroll sent for approval.'); },
       dlgIssue: !!this.state.dlg && this.state.dlg.kind === 'issue',
@@ -10994,7 +11114,7 @@ class Component extends DCLogic {
       dnBackLabel: this.state.dnStep === 1 ? 'Cancel' : 'Back',
       dnBack: () => { if (this.state.dnStep === 1) this.setState({ dlg:null }); else this.setState({ dnStep: this.state.dnStep - 1 }); },
       dnNext: () => this.setState({ dnStep: this.state.dnStep + 1 }),
-      dnSave: () => { this.setState({ dlg:null, dnStep:1 }); this.hook('CreateDonor', {}, 'Donor created as a draft.'); },
+      dnSave: () => { const p = { code:String(this.state.dnCode||'').toUpperCase(), donor:this.state.dnName, title:this.state.dnTitle, currency:this.state.dnCur, valueMinor:String(Math.round((parseFloat(String(this.state.dnValue).replace(/[^0-9.]/g,''))||0)*100)) }; this.setState({ dlg:null, dnStep:1 }); this.hook('CreateDonor', p, 'Donor created as a draft.'); },
       dlgRow: !!this.state.dlg && this.state.dlg.kind === 'row',
       dlgAction: !!this.state.dlg && this.state.dlg.kind === 'action',
       dlgEvent: !!this.state.dlg && this.state.dlg.kind === 'event',
@@ -11005,9 +11125,9 @@ class Component extends DCLogic {
       evMeta: this.state.dlg && this.state.dlg.ev ? this.state.dlg.ev[6] : '',
       evWhen: this.state.dlg && this.state.dlg.ev ? this.state.dlg.ev[0] + ' · ' + this.state.dlg.ev[1] : '',
       closeDlg: () => this.setState({ dlg:null }),
-      confirmDlgExport: () => { this.setState({ dlg:null }); this.toast('Export prepared — 214 rows, XLSX, ₦-formatted, sent to i.musa@wewe.org.ng.'); },
-      confirmDlgFilter: () => { this.setState({ dlg:null }); this.toast('Filter applied — Programmes · USAID-LON-24 · 01/07/2026 to 31/07/2026.'); },
-      confirmDlgCreate: () => { const l = this.state.dlg ? this.state.dlg.label : 'Record'; this.setState({ dlg:null }); this.toast(l + ' saved as draft REF-2026-0195 and routed to the Supervisor stage.'); },
+      confirmDlgExport: () => { this.setState({ dlg:null }); this.hook('Export', {}, 'Export started.'); },
+      confirmDlgFilter: () => { this.setState({ dlg:null, toastError:false }); this.toast('Filter applied.'); },
+      confirmDlgCreate: () => { const l = this.state.dlg ? this.state.dlg.label : 'Record'; this.setState({ dlg:null }); this.hook('CreateRecord', { label:l }, 'Saved.'); },
       goStaffRecord: () => { this.setState({ dlg:null }); this.go('/hr/staff'); },
       isStaff: base('/hr/staff'),
       goDash: () => this.go('/dashboard'),
@@ -11056,12 +11176,44 @@ class Component extends DCLogic {
           commentLabel: 'Comments (' + d.comments.length + ')',
           openCommentsLabel: 'Open comments (' + d.comments.length + ')',
           docsLabel: 'Documents (' + d.docs.length + ')',
-          decisionNote: t.status === 'pending'
-            ? 'You are acting as ' + stageName + '. Approving releases this to the next stage.'
-            : t.status === 'returned' ? 'This is with the initiator for correction. No decision is open to you.'
-            : t.status === 'approved' ? 'Fully approved and closed. The record is read-only.'
-            : 'Rejected. The record is read-only and the commitment has been released.',
+          panel: (() => {
+            const p = (d && d.permissions) || t.permissions || (() => {
+              const mine = t.who === person.name;
+              const myStage = { supervisor:1, audit:2, finance:3, approver:4 }[role];
+              return { canAct: t.status === 'pending' && !mine && myStage !== undefined && t.stage === myStage,
+                canWithdraw: t.status === 'pending' && mine,
+                canResubmit: t.status === 'returned' && mine, canSubmit: t.status === 'draft' && mine };
+            })();
+            const any = p.canAct || p.canWithdraw || p.canResubmit || p.canSubmit;
+            return {
+              canAct: !!p.canAct, canWithdraw: !!p.canWithdraw, canResubmit: !!p.canResubmit, canSubmit: !!p.canSubmit,
+              none: !any,
+              note: p.canAct ? 'You are acting as ' + stageName + '. Approving releases this to the next stage.'
+                : p.canResubmit ? 'This came back for correction. Fix what was asked, then send it on again.'
+                : p.canWithdraw ? 'This is with ' + stageName + '. You can pull it back while it is still pending.'
+                : p.canSubmit ? 'A draft. Submitting starts the approval chain.'
+                : t.status === 'pending' ? 'This is with ' + stageName + '. Nothing is open to you.'
+                : t.status === 'returned' ? 'This is with the initiator for correction. No decision is open to you.'
+                : t.status === 'approved' ? 'Fully approved and closed. The record is read-only.'
+                : 'Rejected. The record is read-only and the commitment has been released.'
+            };
+          })(),
+          perm: (() => {
+            const p = (d && d.permissions) || t.permissions;
+            if (p) return { canAct: !!p.canAct, canWithdraw: !!p.canWithdraw, canResubmit: !!p.canResubmit, canSubmit: !!p.canSubmit };
+            const mine = t.who === person.name;
+            const myStage = { supervisor:1, audit:2, finance:3, approver:4 }[role];
+            return {
+              canAct: t.status === 'pending' && !mine && myStage !== undefined && t.stage === myStage,
+              canWithdraw: t.status === 'pending' && mine,
+              canResubmit: t.status === 'returned' && mine,
+              canSubmit: t.status === 'draft' && mine
+            };
+          })(),
+          decisionNote: '',
           actionable: t.status === 'pending', locked: t.status !== 'pending',
+          returnNote: (() => { const c = (d.comments || []).slice().reverse().find(x => x[3] === 'amber'); return c ? { who:c[0], body:c[1], when:c[2] } : null; })(),
+          hasReturnNote: !!(d.comments || []).some(x => x[3] === 'amber'),
           allocatedF: money(d.allocated), committedF: money(committed), availF: money(avail),
           pct, tight: avail < d.allocated * 0.25,
           stages: STAGES.map((name, i) => ({
@@ -11074,6 +11226,9 @@ class Component extends DCLogic {
             green: c[3] === 'green', amber: c[3] === 'amber', neutral: c[3] === 'neutral' }))
         };
       })(),
+      onWithdrawDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'withdraw' }, actNote:'' }); },
+      onResubmitDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'resubmit' }, actNote:'' }); },
+      onSubmitDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'submit' }, actNote:'' }); },
       onApproveDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'approve' }, actNote:'' }); },
       onReturnDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'return' }, actNote:'' }); },
       onRejectDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'reject' }, actNote:'' }); },
@@ -11120,10 +11275,24 @@ class Component extends DCLogic {
       upToggleConf: () => this.setState({ upConf: !this.state.upConf }),
       upOcr: this.state.upOcr, upNoOcr: !this.state.upOcr,
       upToggleOcr: () => this.setState({ upOcr: !this.state.upOcr }),
+      upFiles: this.state.upFiles.map((f, i) => ({
+        name:f.name, sizeLabel:f.sizeLabel, ready: !!f.dataBase64,
+        onRemove: () => this.setState({ upFiles: this.state.upFiles.filter((x, n) => n !== i) })
+      })),
+      upHasFiles: this.state.upFiles.length > 0,
+      upNoFiles: this.state.upFiles.length === 0,
+      upCount: this.state.upFiles.length,
+      upCta: this.state.upFiles.length === 1 ? 'Upload 1 file' : 'Upload ' + this.state.upFiles.length + ' files',
+      upPick: e => this.readFiles(e.target.files),
       upSave: () => {
         const dest = this.state.dmsFolder === 'All documents' ? 'Grants / USAID-LON-24' : this.state.dmsFolder;
         this.setState({ dlg:null });
-        this.hook('UploadDocuments', { folder:dest, confidential:this.state.upConf, ocr:this.state.upOcr }, 'Documents uploaded.');
+        const folderId = DMS_FOLDER_IDS[dest] || '';
+        const files = this.state.upFiles;
+        if (!files.length) { this.toast('Choose at least one file first.'); return; }
+        files.forEach(f => this.hook('UploadDocuments', { name:f.name, mime:f.mime, dataBase64:f.dataBase64, folderId, confidential:this.state.upConf, ocr:this.state.upOcr }, null));
+        this.setState({ upFiles:[] });
+        this.toast(files.length === 1 ? 'Document uploaded.' : files.length + ' documents uploaded.');
       },
       isHr: base('/hr'),
       isTls: base('/timesheets'),
@@ -11174,7 +11343,7 @@ class Component extends DCLogic {
                 if (/^issue$/i.test(b)) { this.setState({ dlg:{ kind:'issue' }, stkItem:0, stkQty:12 }); return; }
                 if (/^view$/i.test(b) && /Email/.test(text)) { this.setState({ dlg:{ kind:'payslip', row:r } }); return; }
                 if (/^(view|prepare)$/i.test(b) && /Export|Prepare/.test(text)) { this.setState({ dlg:{ kind:'remit', row:r } }); return; }
-                if (/^sign$/i.test(b)) { this.setState({ dlg:{ kind:'ceremony' }, ceremonyStep:1 }); return; }
+                if (/^sign$/i.test(b)) { this.setState({ dlg:{ kind:'ceremony', requestId:String(r[0] || '') }, ceremonyStep:1, esignSelected:String(r[0] || '') }); return; }
                 if (/^certificate$/i.test(b)) { this.go('/documents/certificate'); return; }
                 if (/^(use|edit|copy)$/i.test(b)) { this.setState({ dlg:{ kind:'tpl', row:r, mode:b } }); return; }
                 if (/^docket$/i.test(b)) { this.setState({ dlg:{ kind:'docket', row:r } }); return; }
@@ -11221,26 +11390,39 @@ class Component extends DCLogic {
         if (!d || d.kind !== 'decide') return { ref:'', heading:'' };
         const t = TXNS.find(x => x.ref === d.ref) || { ref:d.ref, title:d.title || '—', amount:0, stage:3, who:'the initiator' };
         const verb = d.verb;
-        const need = verb !== 'approve';
+        const need = verb === 'return' || verb === 'reject';
         const note = String(this.state.actNote || '').trim();
         const stageName = t.stage >= 5 ? 'Complete' : STAGES[t.stage];
         return {
           ref:t.ref, title:t.title, amountF: money(t.amount || 0), stageName, initiator:t.who,
           isApprove: verb === 'approve', isReturn: verb === 'return', isReject: verb === 'reject',
-          heading: verb === 'approve' ? 'Approve ' + t.ref + '?' : verb === 'return' ? 'Return ' + t.ref + ' for correction' : 'Reject ' + t.ref + '?',
+          isWithdraw: verb === 'withdraw', isResubmit: verb === 'resubmit', isSubmit: verb === 'submit',
+          heading: verb === 'approve' ? 'Approve ' + t.ref + '?' : verb === 'return' ? 'Return ' + t.ref + ' for correction'
+            : verb === 'withdraw' ? 'Withdraw ' + t.ref + '?' : verb === 'resubmit' ? 'Resubmit ' + t.ref
+            : verb === 'submit' ? 'Submit ' + t.ref + ' for approval' : 'Reject ' + t.ref + '?',
           sub: verb === 'approve' ? 'Confirm you have checked the amount, the budget line and the supporting documents.'
             : verb === 'return' ? 'Say what needs fixing. The initiator sees your note and nothing else.'
+            : verb === 'withdraw' ? 'This pulls the transaction out of ' + stageName + '’s queue and back to you as a draft. You can resubmit it later.'
+            : verb === 'resubmit' ? 'This goes back into the chain at the stage that returned it. Say what you changed.'
+            : verb === 'submit' ? 'This starts the approval chain. You cannot edit it once it is moving.'
             : 'Rejection closes the transaction. Give the reason on the record.',
-          noteLabel: verb === 'approve' ? 'Note for the next approver' : verb === 'return' ? 'What needs correcting' : 'Reason for rejection',
+          noteLabel: verb === 'approve' ? 'Note for the next approver' : verb === 'return' ? 'What needs correcting'
+            : verb === 'withdraw' ? 'Why you are pulling it back' : verb === 'resubmit' ? 'What you changed'
+            : verb === 'submit' ? 'Note for your supervisor' : 'Reason for rejection',
           placeholder: verb === 'approve' ? 'Anything the next approver should know'
             : verb === 'return' ? 'Be specific — the initiator can only act on what you write here'
+            : verb === 'withdraw' ? 'Optional, but it explains the gap in the record'
+            : verb === 'resubmit' ? 'e.g. Supplier quote attached as requested'
+            : verb === 'submit' ? 'Optional context for the approver'
             : 'The policy or figure that makes this unapprovable',
           noteRequired: need, noteOptional: !need,
           noteMissing: need && note.length < 8,
           missingMsg: note.length === 0 ? 'A written note is required before you can ' + verb + ' a transaction.'
             : 'Give a little more detail — at least a full sentence.',
           canConfirm: !need || note.length >= 8,
-          confirmLabel: verb === 'approve' ? 'Approve ' + t.ref : verb === 'return' ? 'Return ' + t.ref : 'Reject ' + t.ref,
+          confirmLabel: verb === 'approve' ? 'Approve ' + t.ref : verb === 'return' ? 'Return ' + t.ref
+            : verb === 'withdraw' ? 'Withdraw ' + t.ref : verb === 'resubmit' ? 'Resubmit ' + t.ref
+            : verb === 'submit' ? 'Submit ' + t.ref : 'Reject ' + t.ref,
           approveNote: t.stage >= 4 ? 'This is the final signature. On approval the transaction is closed and released for payment.'
             : 'Approving passes this to ' + (STAGES[Math.min(4, (t.stage || 0) + 1)]) + '.'
         };
@@ -11253,7 +11435,7 @@ class Component extends DCLogic {
       },
       dlgShare: !!this.state.dlg && this.state.dlg.kind === 'share',
       shareName: this.state.dlg && this.state.dlg.name ? this.state.dlg.name : '',
-      shareSend: () => { const n = this.state.dlg.name; this.setState({ dlg:null }); this.toast('“' + n + '” sent to 11 recipients with a unique link each. Reminders go out after 3 days.'); },
+      shareSend: () => { const n = this.state.dlg.name; this.setState({ dlg:null }); this.hook('ShareForm', { form:n }, 'Invitations sent.'); },
       isPrintTA: base('/print/travel-authority'),
       isPrintPO: base('/print/purchase-order'),
       isPrintHR: base('/print/hr-letter'),
@@ -11274,7 +11456,7 @@ class Component extends DCLogic {
       ].map((r, i) => ({ n: i + 1, desc:r[0], qty:r[1], rate:money(r[2]), total:money(r[3]), bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
       poSub: money(4464000), poVat: money(334800), poTotal: money(4798800),
       isCert: base('/documents/certificate'),
-      isExt: base('/sign/external'),
+      isExt: auth === 'in' && base('/sign/external'),
       signers: CERT_SIGNERS.map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
       docHash: '9f2c4a7b1e8d63f05a9c2b47de81f36a0c5e7924b8d1a36f47c092e5b6a83d1c',
       hashOk: this.state.hashOk, hashBad: !this.state.hashOk,
@@ -11307,12 +11489,12 @@ class Component extends DCLogic {
       cer1: this.state.ceremonyStep === 1, cer2: this.state.ceremonyStep === 2, cer3: this.state.ceremonyStep === 3,
       cerNext: () => this.setState({ ceremonyStep: Math.min(3, this.state.ceremonyStep + 1) }),
       cerBack: () => this.setState({ ceremonyStep: Math.max(1, this.state.ceremonyStep - 1) }),
-      cerMethods: [['saved','Use my saved signature'],['draw','Draw it now'],['type','Type my name']].map(([k, label]) => ({
+      cerMethods: [['saved','Use my saved signature'],['drawn','Draw it now'],['typed','Type my name']].map(([k, label]) => ({
         label, on: this.state.ceremonyMethod === k, off: this.state.ceremonyMethod !== k,
         onClick: () => this.setState({ ceremonyMethod:k }) })),
-      cerSaved: this.state.ceremonyMethod === 'saved', cerDraw: this.state.ceremonyMethod === 'draw', cerType: this.state.ceremonyMethod === 'type',
-      cerMethodLabel: this.state.ceremonyMethod === 'saved' ? 'saved signature' : this.state.ceremonyMethod === 'draw' ? 'drawn signature' : 'typed signature',
-      cerSign: () => { this.setState({ dlg:null, ceremonyStep:1 }); this.hook('SignDocument', { method:this.state.ceremonyMethod }, 'Signature applied.'); this.go('/documents/certificate'); },
+      cerSaved: this.state.ceremonyMethod === 'saved', cerDraw: this.state.ceremonyMethod === 'drawn', cerType: this.state.ceremonyMethod === 'typed',
+      cerMethodLabel: this.state.ceremonyMethod === 'saved' ? 'saved signature' : this.state.ceremonyMethod === 'drawn' ? 'drawn signature' : 'typed signature',
+      cerSign: () => { const id = (this.state.dlg && this.state.dlg.requestId) || this.state.esignSelected || ''; this.setState({ dlg:null, ceremonyStep:1 }); this.hook('SignDocument', { requestId:id, method:this.state.ceremonyMethod }, 'Signature applied.'); this.go('/documents/certificate'); },
 
       ext1: this.state.extStep === 1, ext2: this.state.extStep === 2, ext3: this.state.extStep === 3, ext4: this.state.extStep === 4,
       extNext: () => this.setState({ extStep: Math.min(4, this.state.extStep + 1) }),
@@ -11340,7 +11522,9 @@ class Component extends DCLogic {
           conditional: n.min > 0, always: n.min === 0, stageNo: String(this.state.chainSel + 1) };
       })(),
       chainVersions: CHAIN_VERSIONS.map(v => ({ ...v, draft: !v.live })),
-      chainSave: () => this.hook('SaveWorkflowChain', { type:this.state.chainType }, 'Workflow chain saved as a new version.'),
+      chainSave: () => { const meta = CHAIN_CODES[this.state.chainType] || { code:'REQUISITION', refPrefix:'REQ' };
+        const stages = (CHAIN_TYPES[this.state.chainType] || []).map(x => { const st = { role: ROLE_CODES[x.role] || 'INITIATOR' }; if (x.min) st.minAmountKobo = String(x.min * 100); if (x.sla) st.slaHours = x.sla; return st; });
+        this.hook('SaveWorkflowChain', { code:meta.code, name:this.state.chainType, refPrefix:meta.refPrefix, stages }, 'Workflow chain saved as a new version.'); },
       chainTest: () => this.setState({ dlg:{ kind:'chaintest' } }),
 
       bulkRows: BULK_QUEUE.map((b, i) => {
@@ -11356,7 +11540,28 @@ class Component extends DCLogic {
       bulkNone: BULK_QUEUE.filter(b => b.ok && (this.state.bulkSel[b.ref] === undefined ? true : this.state.bulkSel[b.ref])).length === 0,
       bulkSome: BULK_QUEUE.filter(b => b.ok && (this.state.bulkSel[b.ref] === undefined ? true : this.state.bulkSel[b.ref])).length > 0,
       bulkDone: this.state.bulkDone, bulkPending: !this.state.bulkDone,
-      bulkRun: () => this.setState({ bulkDone:true }),
+      bulkRun: () => {
+        const ids = BULK_QUEUE.filter(b => b.ok && (this.state.bulkSel[b.ref] === undefined ? true : this.state.bulkSel[b.ref])).map(b => b.ref);
+        const fn = typeof window !== 'undefined' && window.__weweBulkApprove;
+        if (typeof fn === 'function') {
+          let res;
+          try { res = fn({ ids, verb:'approve' }); }
+          catch (e) { this.fail((e && e.message) || 'The batch was refused. Nothing was approved.'); return; }
+          if (res === false || res === null || res === undefined) { this.fail('The batch was refused. Nothing was approved.'); return; }
+          const approved = res && res.approved ? res.approved : ids;
+          const refused = (res && res.refused) || [];
+          this.setState({ bulkDone:true, bulkApproved:approved, bulkRefused:refused, toastError:false });
+          return;
+        }
+        this.setState({ bulkDone:true, bulkApproved:ids, bulkRefused:[] });
+      },
+      bulkApprovedCount: (this.state.bulkApproved || []).length,
+      bulkRefusedRows: (this.state.bulkRefused || []).map(r => ({ ref: r.ref || r, reason: r.reason || 'Refused by the engine' })),
+      bulkAnyRefused: (this.state.bulkRefused || []).length > 0,
+      bulkAllOk: (this.state.bulkRefused || []).length === 0,
+      bulkSkipRows: BULK_QUEUE.filter(b => !b.ok).map(b => ({ ref:b.ref, reason:b.reason }))
+        .concat((this.state.bulkRefused || []).map(r => ({ ref: r.ref || r, reason: r.reason || 'Refused by the engine' }))),
+      bulkSkipTotal: BULK_QUEUE.filter(b => !b.ok).length + (this.state.bulkRefused || []).length,
       bulkClose: () => this.setState({ dlg:null, bulkDone:false }),
       openBulk: () => this.setState({ dlg:{ kind:'bulk' }, bulkDone:false }),
 
@@ -11464,10 +11669,13 @@ class Component extends DCLogic {
       isPrefs: base('/account/notifications'),
       isDeleg: base('/account/delegation'),
 
-      otpUri: 'otpauth://totp/WEWE%20ERP:ibrahim.musa@wewe.org.ng?secret=JBSWY3DPEHPK3PXP&issuer=WEWE',
+      otpUri: this.state.otpUri || 'otpauth://totp/WEWE%20ERP:ibrahim.musa@wewe.org.ng?secret=JBSWY3DPEHPK3PXP&issuer=WEWE',
       otpSecret: 'JBSW Y3DP EHPK 3PXP',
+      otpUriLive: this.state.otpUri,
+      otpAwaitingUri: !this.state.otpUri,
+      otpHasUri: !!this.state.otpUri,
       qrSvg: (() => {
-        const uri = 'otpauth://totp/WEWE:ibrahim.musa@wewe.org.ng?secret=JBSWY3DPEHPK3PXP';
+        const uri = this.state.otpUri || 'otpauth://totp/WEWE:ibrahim.musa@wewe.org.ng?secret=JBSWY3DPEHPK3PXP';
         const N = 25;
         let h = 2166136261;
         for (let i = 0; i < uri.length; i++) { h ^= uri.charCodeAt(i); h = Math.imul(h, 16777619); }
@@ -11494,6 +11702,7 @@ class Component extends DCLogic {
         return React.createElement('svg', { width:'100%', viewBox:'-1 -1 27 27', style:{ display:'block' }, 'aria-label':'Authenticator QR code' },
           React.createElement('rect', { x:-1, y:-1, width:27, height:27, fill:'#fff' }), rects);
       })(),
+      twoFaLive: !!this.state.otpUri, twoFaPlaceholderQr: !this.state.otpUri,
       twoFa1: this.state.twoFaStep === 1, twoFa2: this.state.twoFaStep === 2, twoFa3: this.state.twoFaStep === 3,
       otp: this.state.otp,
       setOtp: e => this.setState({ otp: String(e.target.value || '').replace(/\D/g, '').slice(0, 6) }),
@@ -11508,7 +11717,7 @@ class Component extends DCLogic {
       notDemo: !(typeof window !== 'undefined' && /(\?|&)demo=1/.test(window.location.search || '')),
       twoFaNext: () => this.setState({ twoFaStep: Math.min(3, this.state.twoFaStep + 1) }),
       twoFaBack: () => this.setState({ twoFaStep: Math.max(1, this.state.twoFaStep - 1) }),
-      twoFaDone: () => { this.setState({ twoFaStep:1 }); this.hook('Enrol2fa', {}, 'Two-step verification is on.'); this.go('/account/profile'); },
+      twoFaDone: () => { const code = this.state.otp; this.setState({ twoFaStep:1 }); this.hook('Enrol2fa', { code }, 'Two-step verification is on.'); this.go('/account/profile'); },
       backupCodes: BACKUP_CODES.map((c, i) => ({ code:c, n: i + 1 })),
 
       reset1: this.state.resetStep === 1, reset2: this.state.resetStep === 2, reset3: this.state.resetStep === 3, reset4: this.state.resetStep === 4,
@@ -11564,8 +11773,8 @@ class Component extends DCLogic {
       delOk: !!this.state.delTo && this.state.delTo !== 'Ibrahim Musa — Finance Manager (you)' && this.state.delTo !== 'Fatima Bello — already delegating to Samuel Adeoye',
       delNone: !this.state.delTo,
       delActive: this.state.delActive,
-      delStart: () => { this.setState({ delActive:true }); this.hook('StartDelegation', { to:this.state.delTo }, 'Delegation started.'); },
-      delCancel: () => { this.setState({ delActive:false }); this.hook('CancelDelegation', {}, 'Delegation cancelled.'); },
+      delStart: () => { const d = DELEGATE_OPTIONS.find(x => x.label === this.state.delTo); this.setState({ delActive:true }); this.hook('StartDelegation', { delegateId: d ? d.id : '', startsAt:this.state.delFrom, endsAt:this.state.delUntil }, 'Delegation started.'); },
+      delCancel: () => { const id = this.state.delActiveId; this.setState({ delActive:false }); this.hook('CancelDelegation', { id }, 'Delegation cancelled.'); },
 
       isForms: base('/admin/forms'),
       isFb: base('/admin/forms/build'),
@@ -11640,6 +11849,8 @@ class Component extends DCLogic {
       fbShareX: () => this.openShare('https://twitter.com/intent/tweet?url=' + encodeURIComponent('https://wewe.org.ng/f/field-visit-26') + '&text=' + encodeURIComponent('Please complete this WEWE form'), 'X'),
       fbSendMail: () => this.setState({ dlg:{ kind:'share', name:'Field monitoring visit report' } }),
       fbSave: () => this.hook('SaveForm', { fields:this.state.fbFields, mapTo:this.state.fbMap }, 'Form saved.'),
+      rbSetName: e => this.setState({ rptName: e.target.value }),
+      rptName: this.state.rptName,
       fbPublish: () => this.hook('PublishForm', {}, 'Form published.'),
       isRb: base('/reports/builder'),
       rbStep1: this.state.rbStep === 1, rbStep2: this.state.rbStep === 2,
@@ -11687,7 +11898,7 @@ class Component extends DCLogic {
       rbGroup: this.state.rbGroup,
       rbGrouped: this.state.rbGroup !== 'No grouping',
       rbSaved: this.state.rbSaved,
-      rbSave: () => { this.setState({ rbSaved:true }); this.hook('SaveReport', { groupBy:this.state.rbGroup }, 'Report saved to the library.'); },
+      rbSave: () => { const cols = RB_FIELDS.filter(f => (this.state.rbCols[f.key] === undefined ? f.def : this.state.rbCols[f.key])).map(f => f.api); this.setState({ rbSaved:true }); this.hook('SaveReport', { name:this.state.rptName, columns:cols }, 'Report saved to the library.'); },
       rbSchedule: () => this.setState({ dlg:{ kind:'create', label:'Schedule this report' } }),
       isInv: base('/inventory'),
       isInvLog: base('/inventory/log'),
@@ -11758,8 +11969,8 @@ class Component extends DCLogic {
       apSignHr: this.state.apSign.hr, apSignHrNo: !this.state.apSign.hr,
       apSignAll: this.state.apSign.sup && this.state.apSign.hr,
       apNeedHr: this.state.apSign.sup && !this.state.apSign.hr,
-      apSignSupDo: () => { this.setState({ apSign: Object.assign({}, this.state.apSign, { sup:true }) }); this.toast('Signed as supervisor. Ngozi Okafor and HR have been notified.'); },
-      apSignHrDo: () => { this.setState({ apSign: Object.assign({}, this.state.apSign, { hr:true }) }); this.toast('HR sign-off recorded. The appraisal is final and filed to the staff record.'); },
+      apSignSupDo: () => { const ok = this.hook('SignAppraisal', { cycle:'H1-2026', staffId:'usr_ngozi_okafor', asRole:'SUPERVISOR' }, 'Signed as supervisor.'); if (ok !== false || typeof window === 'undefined' || !window.__weweSignAppraisal) this.setState({ apSign: Object.assign({}, this.state.apSign, { sup:true }) }); },
+      apSignHrDo: () => { const ok = this.hook('SignAppraisal', { cycle:'H1-2026', staffId:'usr_ngozi_okafor', asRole:'HR_OFFICER' }, 'HR sign-off recorded.'); if (ok !== false || typeof window === 'undefined' || !window.__weweSignAppraisal) this.setState({ apSign: Object.assign({}, this.state.apSign, { hr:true }) }); },
       apReopen: () => this.setState({ apSign:{ sup:false, hr:false } }),
       wfStages: (() => {
         const amt = this.state.wfAmount;
@@ -11808,7 +12019,7 @@ class Component extends DCLogic {
       reqTabs: [['all','All','214'],['mine','Mine','38'],['queue','Awaiting me','6'],['returned','Returned','3']]
         .map(([k, label, n]) => ({ label, n, on: tab === k, off: tab !== k, onClick: () => this.setState({ reqTab:k, selected:[] }) })),
       dlgUpload: !!this.state.dlg && this.state.dlg.kind === 'upload',
-      confirmDlgUpload: () => { this.setState({ dlg:null }); this.toast('FY2026-budget-v8.xlsx uploaded — 148 rows read, validation running.'); },
+      confirmDlgUpload: () => { this.setState({ dlg:null }); this.hook('UploadBudget', { fiscalYear:'FY2026' }, 'Budget file uploaded — validation running.'); },
       reqHistory: REQ_HISTORY.map(h => ({ ...h, initials:this.initials(h.who), green:h.tone==='green', amber:h.tone==='amber', neutral:h.tone==='neutral' })),
       comments: REQ_COMMENTS.map(c => ({ ...c, initials:this.initials(c.who) })),
       trackerStages, advanced: adv, notAdvanced: !adv,
@@ -11832,7 +12043,7 @@ class Component extends DCLogic {
       qbAllClear: this.state.qbFixed.length === QB_EXCEPTIONS.length,
       qbHasOpen: this.state.qbFixed.length < QB_EXCEPTIONS.length,
       qbFailedValue: money(QB_EXCEPTIONS.filter(q => this.state.qbFixed.indexOf(q.ref) === -1).reduce((s, q) => s + q.amount, 0)),
-      qbRepostAll: () => { this.setState({ qbFixed: QB_EXCEPTIONS.map(q => q.ref) }); this.toast('All exceptions reposted — 3 journals created, ₦1,048,000.00 now in QuickBooks.'); },
+      qbRepostAll: () => { const refs = QB_EXCEPTIONS.map(q => q.ref); const ok = this.hook('RepostQuickBooks', { refs }, 'All exceptions queued for reposting.'); if (ok !== false || typeof window === 'undefined' || !window.__weweRepostQuickBooks) this.setState({ qbFixed: refs }); },
       dlgQbFix: !!this.state.dlg && this.state.dlg.kind === 'qbfix',
       confirmQbFix: () => {
         const m = Object.assign({}, this.state.qbMap); m.perdiem = true;
@@ -11873,7 +12084,7 @@ class Component extends DCLogic {
           isPending: st === 'pending', isBlocked: st === 'blocked', isMissing: st === 'missing',
           isApproved: st === 'approved', isQueried: st === 'queried',
           actionable: st === 'pending' || st === 'blocked',
-          onApprove: () => { const a = Object.assign({}, this.state.tsA); a[s.name] = 'approved'; this.setState({ tsA:a }); this.toast(s.name + '’s timesheet approved — 40 hours charged to USAID-LON-24, EU-WISH-23 and FCDO-ACE-25.'); },
+          onApprove: () => { const ok = this.hook('ApproveTimesheet', { staff:s.name, period:'01-15/08/2026' }, s.name + '’s timesheet approved.'); if (ok !== false || typeof window === 'undefined' || !window.__weweApproveTimesheet) { const a = Object.assign({}, this.state.tsA); a[s.name] = 'approved'; this.setState({ tsA:a }); } },
           onQuery: () => { const a = Object.assign({}, this.state.tsA); a[s.name] = 'queried'; this.setState({ tsA:a }); this.toast('Returned to ' + s.name + ' with a query. She keeps the draft and can resubmit.'); },
           onRemind: () => this.toast('Reminder sent to ' + s.name + ' — timesheet due today.') };
       }),
@@ -11910,9 +12121,9 @@ class Component extends DCLogic {
           let g = groups[groups.length - 1];
           if (!g || g.group !== m.group) { g = { group:m.group, rows:[] }; groups.push(g); }
           g.rows.push({
-            mod:m.mod, scope:m.scope, bg: ri % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
-            noScope: m.scope === '—', hasScope: m.scope !== '—',
-            onScope: () => this.toast(m.mod + ' — scope selector: Own · Department · Organisation.'),
+            mod:m.mod, scope: (this.state.permScope[m.code] || m.scope), bg: ri % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+            noScope: false, hasScope: true,
+            onScope: () => { const v = Object.assign({}, this.state.permScope); const cur = v[m.code] || m.scope; v[m.code] = PERM_CATALOG.scopes[(PERM_CATALOG.scopes.indexOf(cur) + 1) % PERM_CATALOG.scopes.length]; this.setState({ permScope:v }); },
             cells: m.perms.map((p, ci) => {
               const key = this.state.selRole + ':' + ri + ':' + ci;
               const flipped = this.state.perms[key];
@@ -11945,8 +12156,19 @@ class Component extends DCLogic {
       openPublish: () => this.setState({ modal:'publish' }),
       modalViewAs: this.state.modal === 'viewas',
       modalPublish: this.state.modal === 'publish',
-      confirmPublish: () => { this.setState({ modal:null }); this.hook('PublishRole', {}, 'Role changes published.'); },
-      confirmViewAs: () => { this.setState({ modal:null, role:'finance', route:'/dashboard' }, () => { window.location.hash = '/dashboard'; }); this.toast('Viewing as Ibrahim Musa — read-only simulation.'); },
+      confirmPublish: () => {
+        const roleName = ROLE_DEFS[this.state.selRole].name;
+        const roleCode = ROLE_CODES[roleName] || roleName.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+        const grants = [];
+        PERM_MODULES.forEach((m, ri) => m.perms.forEach((p, ci) => {
+          const k = this.state.selRole + ':' + ri + ':' + ci;
+          const on = this.state.perms[k] === undefined ? p === 'on' : this.state.perms[k];
+          if (on) grants.push({ module:m.code, action:PERM_CATALOG.actions[ci], scope:m.scope });
+        }));
+        this.setState({ modal:null });
+        this.hook('PublishRole', { roleCode, grants }, 'Role changes published.');
+      },
+      confirmViewAs: () => { this.setState({ modal:null, role:'finance', route:'/dashboard', toastError:false }, () => { window.location.hash = '/dashboard'; }); this.toast('Viewing as Ibrahim Musa — read-only simulation.'); },
       colToggle: PERM_ACTIONS.map((a, ci) => ({ label:a, onClick: () => this.toggleColumn(ci) })),
       roleMembers: stripe(ROLE_MEMBERS.map(m => ({ ...m, initials:this.initials(m.name), notPrimary: !m.primary }))),
       resolved: stripe(RESOLVED.map(r => ({ ...r, granted: r.via !== 'Not granted', denied: r.via === 'Not granted', hasNote: !!r.note }))),
@@ -11988,6 +12210,15 @@ class Component extends DCLogic {
       addTs: () => this.addTsRow(),
       openKpi: () => this.setState({ dlg:{ kind:'kpi' } }),
       openStaff: () => this.setState({ dlg:{ kind:'staff' } }),
+      onbUsers: [
+        { id:'usr_blessing_nwafor', label:'Blessing Nwafor — Programme Officer' },
+        { id:'usr_kelechi_anyanwu', label:'Kelechi Anyanwu — M&E Assistant' },
+        { id:'usr_halima_bala', label:'Halima Bala — Finance Officer' }
+      ].map(u => ({ label:u.label, on: this.state.onbUserId === u.id, onClick: () => this.setState({ onbUserId:u.id }) })),
+      setOnbUser: e => {
+        const map = { 'Blessing Nwafor — Programme Officer':'usr_blessing_nwafor', 'Kelechi Anyanwu — M&E Assistant':'usr_kelechi_anyanwu', 'Halima Bala — Finance Officer':'usr_halima_bala' };
+        this.setState({ onbUserId: map[e.target.value] || '' });
+      },
       openPayApp: () => this.setState({ dlg:{ kind:'payapp' } }),
       openRfq: () => this.setState({ dlg:{ kind:'rfq' } }),
       openVerify: () => this.setState({ dlg:{ kind:'verify' } }),
@@ -12020,11 +12251,11 @@ class Component extends DCLogic {
       openReturn: () => this.setState({ modal:'return' }),
       openSign: () => this.setState({ modal:'sign' }),
       openBulk: () => this.setState({ modal:'bulk' }),
-      confirmApprove: () => { this.setState({ modal:null, advanced:true }); this.toast('REQ-2026-0187 approved — now with the Final Approver.'); },
+      confirmApprove: () => { const ref = (this.state.dlg && this.state.dlg.ref) || (detBundle && detBundle.txn.ref) || ''; this.setState({ modal:null, advanced:true }); this.act(ref, 'approve', ''); },
       confirmReject: () => { this.setState({ modal:null }); this.toast('REQ-2026-0187 rejected. The initiator has been notified.'); },
       confirmReturn: () => { this.setState({ modal:null }); this.toast('Returned to Ngozi Okafor for correction.'); },
-      confirmSign: () => { this.setState({ modal:null }); this.toast('Signature applied. Certificate page generated.'); },
-      confirmBulk: () => { this.setState({ modal:null, selected:[] }); this.toast(this.state.selected.length + ' items approved in one action.'); },
+      confirmSign: () => { const id = this.state.esignSelected || ''; this.setState({ modal:null }); this.hook('SignDocument', { requestId:id, method:this.state.ceremonyMethod }, 'Signature applied.'); },
+      confirmBulk: () => { const ids = (this.state.selected || []).slice(); this.setState({ modal:null, selected:[] }); if (!ids.length) { this.setState({ toastError:false }); this.toast('Nothing was selected.'); return; } this.hook('BulkApprove', { ids, verb:'approve' }, ids.length + (ids.length === 1 ? ' item approved.' : ' items approved in one action.')); },
 
       drawerComments: this.state.drawer === 'comments',
       drawerNotif: this.state.drawer === 'notif',
@@ -12034,6 +12265,8 @@ class Component extends DCLogic {
       openNotif: () => this.setState({ drawer: this.state.drawer === 'notif' ? null : 'notif' }),
 
       toastOpen: !!this.state.toast, toastText: this.state.toast || '',
+      toastBad: !!this.state.toast && !!this.state.toastError,
+      toastOk: !!this.state.toast && !this.state.toastError,
       hideToast: () => this.setState({ toast:null }),
       signPad: el => { this._pad = el; if (el) this.initPad(el); },
       clearPad: () => { if (this._pad) { const c = this._pad.getContext('2d'); c.clearRect(0,0,this._pad.width,this._pad.height); } },
