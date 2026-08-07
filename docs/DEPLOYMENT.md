@@ -50,7 +50,7 @@ docker run --rm -v <apivar-volume>:/var/data -v $PWD:/b alpine tar xzf /b/wewe-e
 ## 6. Upgrades
 ```bash
 git pull
-docker compose build && docker compose up -d          # zero-config restart
+docker compose build && docker compose up -d --force-recreate web   # --force-recreate: `up -d` alone can keep the old web container running even after a rebuild
 DATABASE_URL=... pnpm --filter api db:push            # only when the release notes say "schema change"
 ```
 Chains freeze at submission, so workflow-config/schema changes never corrupt in-flight approvals. Roll back = `git checkout <previous tag>` + rebuild; schema rollbacks are restore-from-backup (drizzle push is forward-only — treat schema releases with respect).

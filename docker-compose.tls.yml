@@ -1,0 +1,30 @@
+# WEWE ERP — HTTPS overlay. Puts Caddy in front of the web container with automatic
+# Let's Encrypt certificates. Use alongside the base compose file:
+#
+#   # in .env:  DOMAIN=erp.weweng.org  WEB_PORT=8080  COOKIE_SECURE=1  WEB_ORIGIN=https://erp.weweng.org
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d
+#
+# WEB_PORT=8080 keeps the web container off host :80 so Caddy can bind 80/443.
+services:
+  api:
+    environment:
+      COOKIE_SECURE: "1"
+      CORS_ORIGIN: ${WEB_ORIGIN}
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on: [web]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env for TLS}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -9,11 +9,11 @@ import { BudgetsController, BudgetsService } from './budgets';
 import { VirementsController, VirementsService, applyVirementHook } from './virements';
 import { AdvancesController, AdvancesService } from './advances';
 import { RetirementsController, RetirementsService, applyRetirementHook } from './retirements';
-import { QbController, QbService } from './qb';
+import { QbController, QbOAuthController, QbService } from './qb';
 import { MONEY_SETTING_DEFAULTS } from './settings.util';
 
 export const controllers = [
-  BudgetsController, VirementsController, AdvancesController, RetirementsController, QbController,
+  BudgetsController, VirementsController, AdvancesController, RetirementsController, QbController, QbOAuthController,
 ];
 export const providers = [
   BudgetsService, VirementsService, AdvancesService, RetirementsService, QbService,

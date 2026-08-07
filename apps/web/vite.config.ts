@@ -16,7 +16,9 @@ function localCdnResources(): Plugin {
   };
   // Data-adapter fallback wrapping: fixture consts become `window.__weweData.X || <fixture>`.
   // Serve-time only — the design file on disk stays byte-identical (cmp-guarded).
-  const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS', 'NOTIFICATIONS', 'SESSIONS_MINE', 'DELEGATIONS_MINE', 'BULK_QUEUE'];
+  const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS', 'NOTIFICATIONS', 'SESSIONS_MINE', 'DELEGATIONS_MINE', 'BULK_QUEUE',
+    // Phase G — extended live reads (payroll, timesheets, procurement, documents/e-sign, admin permissions, retirements)
+    'PAYROLL', 'TIMESHEET', 'RFQ_VENDORS', 'QUOTES', 'DOCS', 'SIGNERS', 'CERT_SIGNERS', 'RESOLVED', 'PERM_CHANGES', 'RET_LINES'];
   const DATA_WRAPS: [string, string][] = WIRED.map((k) => [
     `const ${k} = [`,
     `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,
@@ -32,6 +34,18 @@ function localCdnResources(): Plugin {
   DATA_WRAPS.push(["','amber']] }\n};", "','amber']] }\n}, (window.__weweData && window.__weweData.TXN_DETAIL) || {});"]);
   DATA_WRAPS.push(['const CHAIN_TYPES = {', 'const CHAIN_TYPES = Object.assign({']);
   DATA_WRAPS.push(["'Second signature, always required' }\n  ]\n};", "'Second signature, always required' }\n  ]\n}, (window.__weweData && window.__weweData.CHAIN_TYPES) || {});"]);
+  // FIX (serve-time, design file stays byte-identical): the register rows hardcode the demo
+  // detail ref REQ-2026-0187, which doesn't exist under live data → clicking a requisition
+  // opened a blank detail. Open the row's OWN ref instead (the adapter wires real detail for
+  // every live requisition), and make detailFor tolerant so any stray 0187 link never blanks.
+  DATA_WRAPS.push([
+    "onClick: () => this.go('/requisitions/REQ-2026-0187')",
+    "onClick: () => this.go('/requisitions/' + t.ref)",
+  ]);
+  DATA_WRAPS.push([
+    "    const t = TXNS.find(x => x.ref === ref);\n    if (!t) return null;",
+    "    let t = TXNS.find(x => x.ref === ref) || TXNS[0];\n    if (!t) return null;",
+  ]);
   return {
     name: 'wewe-local-cdn-resources',
     transformIndexHtml: {

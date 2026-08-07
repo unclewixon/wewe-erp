@@ -3,5 +3,5 @@ export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
   dialect: 'postgresql',
-  dbCredentials: { url: 'postgresql://wewe:wewe_dev@localhost:5432/wewe_erp' },
+  dbCredentials: { url: process.env.DATABASE_URL || 'postgresql://wewe:wewe_dev@localhost:5432/wewe_erp' },
 });

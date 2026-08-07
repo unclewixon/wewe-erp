@@ -707,3 +707,487 @@
     return true;
   };
 })();
+
+/* ---- Phase G: extended live-read wiring ----
+ * payroll, timesheets, procurement (RFQ vendors + quote comparison), documents/e-sign,
+ * admin permission matrix + change log, retirement lines. Self-contained helpers so it
+ * runs independently of Phase B's closure; writes into the shared window.__weweData so
+ * the vite WIRED wraps (const X = (window.__weweData && window.__weweData.X) || [ … ])
+ * pick these up at design boot. Each wire() no-ops to the design fixture on any failure. */
+(function () {
+  var data = window.__weweData = window.__weweData || {};
+  function xhr(method, url, body) {
+    try {
+      var r = new XMLHttpRequest();
+      r.open(method, url, false); r.withCredentials = true;
+      if (body) r.setRequestHeader('content-type', 'application/json');
+      r.send(body ? JSON.stringify(body) : null);
+      if (r.status < 200 || r.status >= 300) return null;
+      return JSON.parse(r.responseText);
+    } catch (e) { return null; }
+  }
+  function naira(kobo) { try { return Number(BigInt(kobo || '0') / 100n); } catch (e) { return 0; } }
+  function ddmmyyyy(iso) { if (!iso) return '—'; var d = new Date(iso); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+  function whenText(iso) {
+    if (!iso) return '';
+    var d = new Date(iso), now = new Date();
+    var hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    if (d.toDateString() === now.toDateString()) return 'Today · ' + hm;
+    return ddmmyyyy(iso) + ' · ' + hm;
+  }
+  function title(s) { return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1).toLowerCase(); }
+  var ROLE_LABEL = { SUPERVISOR: 'Supervisor', INTERNAL_AUDIT: 'Internal Audit', FINANCE: 'Finance', FINAL_APPROVER: 'Final Approver', HR_OFFICER: 'HR' };
+  var me = xhr('GET', '/v1/auth/me') || {};
+  function wire(key, fn) { try { var v = fn(); if (v && (!Array.isArray(v) || v.length)) data[key] = v; } catch (e) { /* fixture fallback */ } }
+
+  // ---- payroll: newest run's payslip rows ----
+  wire('PAYROLL', function () {
+    var runs = xhr('GET', '/v1/payroll/runs');
+    if (!Array.isArray(runs) || !runs.length) return null;
+    var run = xhr('GET', '/v1/payroll/runs/' + runs[0].id);
+    if (!run || !Array.isArray(run.items) || !run.items.length) return null;
+    return run.items.map(function (i) {
+      return { name: i.user, gross: naira(i.grossKobo), tax: naira(i.payeKobo), pension: naira(i.pensionEmployeeKobo), net: naira(i.netKobo), var: '+₦0.00' };
+    });
+  });
+
+  // ---- timesheets: my current sheet's project rows ----
+  wire('TIMESHEET', function () {
+    var sheets = xhr('GET', '/v1/timesheets?scope=mine');
+    if (!Array.isArray(sheets) || !sheets.length) return null;
+    var ts = sheets[0]; var rows = ts && ts.rows;
+    if (!Array.isArray(rows) || !rows.length) return null;
+    return rows.map(function (r) {
+      return { proj: r.projectCode, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, pct: r.percent };
+    });
+  });
+
+  // ---- procurement: vendor shortlist for the RFQ builder — [name, note, defaultSelected, blocked] ----
+  wire('RFQ_VENDORS', function () {
+    var rows = xhr('GET', '/v1/vendors');
+    if (!Array.isArray(rows)) return null;
+    return rows.map(function (v) {
+      var cat = (Array.isArray(v.categories) && v.categories[0]) || 'General supplies';
+      var dd = v.dueDiligenceStatus; // 'COMPLETE' | 'EXPIRED' | 'INCOMPLETE'
+      var ddText = dd === 'COMPLETE'
+        ? ('due diligence valid' + (v.dueDiligence && v.dueDiligence.expiresAt
+            ? ' to ' + new Date(v.dueDiligence.expiresAt).getFullYear() : ''))
+        : dd === 'EXPIRED' ? 'due diligence lapsed' : 'due diligence documents pending';
+      var blocked = Boolean(v.blacklisted) || dd !== 'COMPLETE';
+      // NOTE: design's "· N awards ·" segment has NO API source — omitted, not invented.
+      return [v.name, cat + ' · ' + ddText, !blocked, blocked];
+    });
+  });
+
+  // ---- procurement: quote comparison sheet — { vendor, unit, total, delivery, warranty, score, chosen } ----
+  wire('QUOTES', function () {
+    var rfqs = xhr('GET', '/v1/rfqs');
+    if (!Array.isArray(rfqs) || !rfqs.length) return null;
+    var pick = rfqs.filter(function (r) { return (r.quoteCount || 0) > 0; })
+      .sort(function (a, b) {
+        var aw = a.status === 'SELECTED' ? 1 : 0, bw = b.status === 'SELECTED' ? 1 : 0;
+        return (bw - aw) || ((b.quoteCount || 0) - (a.quoteCount || 0));
+      })[0];
+    if (!pick) return null;
+    var cmp = xhr('GET', '/v1/rfqs/' + pick.id + '/comparison');
+    if (!cmp || !Array.isArray(cmp.quotes) || !cmp.quotes.length) return null;
+    return cmp.quotes.map(function (q) {
+      var line0 = Array.isArray(q.lines) && q.lines[0];
+      return {
+        vendor: q.vendor && q.vendor.name,
+        unit: line0 ? naira(line0.unitKobo) : naira(q.totalKobo),
+        total: naira(q.totalKobo),
+        chosen: Boolean(q.selected),
+        delivery: '—',   // NO API field
+        warranty: '—',   // NO API field
+        score: null,     // NO scoring field in the API
+      };
+    });
+  });
+
+  // ---- documents: library rows walked from the folder tree ----
+  wire('DOCS', function () {
+    function fmtBytes(n) {
+      n = Number(n) || 0;
+      if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+      if (n >= 1024) return Math.round(n / 1024) + ' KB';
+      return n + ' B';
+    }
+    var tree = xhr('GET', '/v1/dms/folders');
+    if (!Array.isArray(tree)) return null;
+    var folders = [];
+    (function walk(nodes, prefix, ancConf) {
+      nodes.forEach(function (n) {
+        var path = prefix ? prefix + ' / ' + n.name : n.name;
+        var conf = ancConf || !!n.confidential;
+        folders.push({ id: n.id, path: path, conf: conf });
+        if (Array.isArray(n.children)) walk(n.children, path, conf);
+      });
+    })(tree, '', false);
+    var nameById = {};
+    var people = xhr('GET', '/v1/admin/users') || xhr('GET', '/v1/staff') || [];
+    (Array.isArray(people) ? people : []).forEach(function (u) { if (u.id) nameById[u.id] = u.name; });
+    var out = [];
+    folders.forEach(function (f) {
+      var docs = xhr('GET', '/v1/dms/folders/' + f.id + '/documents');
+      if (!Array.isArray(docs)) return;
+      docs.forEach(function (d) {
+        if (d.name === '[DISPOSED]') return;
+        out.push({
+          name: d.name, folder: f.path, size: fmtBytes(d.sizeBytes),
+          ver: 'v' + d.currentVersion, by: nameById[d.uploadedById] || '—',
+          when: ddmmyyyy(d.createdAt), conf: !!d.confidential || f.conf,
+        });
+      });
+    });
+    return out;
+  });
+
+  // ---- e-sign: in-progress ceremony signer panel ----
+  wire('SIGNERS', function () {
+    var reqs = xhr('GET', '/v1/esign/requests');
+    if (!Array.isArray(reqs) || !reqs.length) return null;
+    var r = reqs.filter(function (x) { return x.status === 'OPEN'; })[0] || reqs[0];
+    if (!r || !Array.isArray(r.signers)) return null;
+    var titleByName = {};
+    var people = xhr('GET', '/v1/admin/users') || xhr('GET', '/v1/staff') || [];
+    (Array.isArray(people) ? people : []).forEach(function (u) { if (u.name) titleByName[u.name] = u.title; });
+    return r.signers.map(function (s) {
+      var signed = s.status === 'SIGNED';
+      return {
+        name: s.name,
+        role: s.internal ? (titleByName[s.name] || 'Internal signer') : 'External signer',
+        state: signed ? 'signed' : 'pending',
+        when: signed ? whenText(s.signedAt) : 'Invited ' + ddmmyyyy(r.createdAt),
+      };
+    });
+  });
+
+  // ---- e-sign: completed certificate signers ----
+  wire('CERT_SIGNERS', function () {
+    var reqs = xhr('GET', '/v1/esign/requests');
+    if (!Array.isArray(reqs)) return null;
+    var done = reqs.filter(function (x) { return x.status === 'COMPLETED' && x.certificate; });
+    if (!done.length) return null;
+    var cert = done[0].certificate;
+    var methodMap = { drawn: 'Drawn', typed: 'Typed', saved: 'Saved signature' };
+    var titleByName = {};
+    var people = xhr('GET', '/v1/admin/users') || xhr('GET', '/v1/staff') || [];
+    (Array.isArray(people) ? people : []).forEach(function (u) { if (u.name) titleByName[u.name] = u.title; });
+    return (cert.signers || []).map(function (s) {
+      var external = s.verification === 'email-otp';
+      return {
+        name: s.name,
+        role: titleByName[s.name] || (external ? 'External signer' : 'Internal signer'),
+        method: methodMap[s.method] || title(s.method),
+        verified: external ? 'Email one-time code' : 'Password + authenticator',
+        when: whenText(s.signedAt),
+        ip: s.ip || '—',
+        done: true,
+      };
+    });
+  });
+
+  // ---- admin: this user's resolved permission matrix ----
+  wire('RESOLVED', function () {
+    var uid = me.user && me.user.id;
+    if (!uid) return null;
+    var res = xhr('GET', '/v1/admin/permissions/resolve/' + uid);
+    if (!res || !Array.isArray(res.permissions)) return null;
+    var SCOPE = { own: 'Own', department: 'Department', organisation: 'Organisation' };
+    var prettyRole = function (code) { return ROLE_LABEL[code] || String(code).split('_').map(title).join(' '); };
+    return res.permissions.map(function (p) {
+      return {
+        perm: title(p.module) + ' · ' + title(p.action),
+        scope: SCOPE[p.scope] || p.scope,
+        via: (Array.isArray(p.via) ? p.via.map(prettyRole).join(', ') : '') + ' (system role)',
+        note: '',
+      };
+    });
+  });
+
+  // ---- admin: permission change log (diff before/after grant sets) ----
+  wire('PERM_CHANGES', function () {
+    var rows = xhr('GET', '/v1/admin/permissions/changes');
+    if (!Array.isArray(rows) || !rows.length) return null;
+    var SCOPE = { own: 'Own', department: 'Department', organisation: 'Organisation' };
+    var keyOf = function (g) { return g.module + ':' + g.action; };
+    var out = [];
+    rows.forEach(function (r) {
+      var who = r.actorEmail ? r.actorEmail.split('@')[0].split('.').map(title).join(' ') : 'System';
+      var when = whenText(r.createdAt);
+      var before = {}, after = {};
+      ((r.data && r.data.before) || []).forEach(function (g) { before[keyOf(g)] = g.scope; });
+      ((r.data && r.data.after) || []).forEach(function (g) { after[keyOf(g)] = g.scope; });
+      Object.keys(after).forEach(function (k) {
+        var m = k.split(':'), label = title(m[0]) + ' · ' + title(m[1]);
+        if (!(k in before)) out.push({ who: who, when: when, what: label, from: 'Off', to: 'On', state: 'published' });
+        else if (before[k] !== after[k]) out.push({ who: who, when: when, what: label + ' · scope',
+          from: SCOPE[before[k]] || before[k], to: SCOPE[after[k]] || after[k], state: 'published' });
+      });
+      Object.keys(before).forEach(function (k) {
+        if (!(k in after)) { var m = k.split(':');
+          out.push({ who: who, when: when, what: title(m[0]) + ' · ' + title(m[1]), from: 'On', to: 'Off', state: 'published' }); }
+      });
+    });
+    return out.length ? out : null;
+  });
+
+  // ---- retirements: first live retirement's expense lines (budget=actual, no variance source) ----
+  wire('RET_LINES', function () {
+    var rets = xhr('GET', '/v1/retirements?scope=all') || [];
+    for (var i = 0; i < rets.length; i++) {
+      var d = xhr('GET', '/v1/retirements/' + rets[i].id);
+      var lines = (d && d.lines) || [];
+      if (!lines.length) continue;
+      return lines.map(function (l) {
+        var actual = naira(l.amountKobo);
+        return { desc: l.description, budget: actual, actual: actual, receipt: l.receiptRef || '—' };
+      });
+    }
+    return null;
+  });
+})();
+
+/* ---- Phase G: live procurement register pages (PO + contracts) ---- */
+(function () {
+  function xhr(u) { try { var r = new XMLHttpRequest(); r.open('GET', u, false); r.withCredentials = true; r.send(null); return r.status >= 200 && r.status < 300 ? JSON.parse(r.responseText) : null; } catch (e) { return null; } }
+  function fmtNaira(kobo) { var k = BigInt(kobo || '0'); var w = (k / 100n).toString(); var c = (k % 100n).toString().padStart(2, '0'); return '₦' + w.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + c; }
+  function ddmmyyyy(iso) { if (!iso) return '—'; var d = new Date(iso); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+  window.__wewePageSpecs = window.__wewePageSpecs || {};
+
+  // --- /procurement/orders ---
+  var pos = xhr('/v1/purchase-orders');
+  if (Array.isArray(pos) && pos.length) {
+    var BADGE = { CLOSED: 'g:CLOSED', PARTIAL: 'a:PART DELIVERED', OPEN: 'n:OPEN', CANCELLED: 'r:CANCELLED' };
+    var open = pos.filter(function (p) { return p.status !== 'CLOSED' && p.status !== 'CANCELLED'; });
+    var openTotal = open.reduce(function (s, p) { return s + BigInt(p.totalKobo || '0'); }, 0n);
+    window.__wewePageSpecs['/procurement/orders'] = {
+      title: 'Purchase orders',
+      sub: fmtNaira(openTotal.toString()) + ' committed across ' + open.length + ' open order' + (open.length === 1 ? '' : 's') + ' · partial deliveries tracked per line',
+      actions: ['Export PO register'],
+      stats: [
+        ['Open orders', String(open.length), fmtNaira(openTotal.toString())],
+        ['Closed', String(pos.filter(function (p) { return p.status === 'CLOSED'; }).length), 'Delivered in full'],
+        ['Partial deliveries', String(pos.filter(function (p) { return p.status === 'PARTIAL'; }).length), 'Awaiting balance'],
+        ['Live data', 'ON', 'Rows from the procurement module'],
+      ],
+      table: {
+        title: 'Purchase orders',
+        cols: [['PO number', null, '130px'], ['Vendor', null, 'minmax(160px,1fr)'], ['Description', null, 'minmax(160px,1fr)'], ['Value', 'r', '140px'], ['Received', 'r', '110px'], ['Status', null, '140px']],
+        rows: pos.map(function (p) {
+          var lines = Array.isArray(p.lines) ? p.lines : [];
+          var ordered = lines.reduce(function (s, l) { return s + Number(l.qty || 0); }, 0);
+          var got = lines.reduce(function (s, l) { return s + Number(l.receivedQty || 0); }, 0);
+          var pct = ordered ? Math.round(got / ordered * 100) : 0;
+          return [p.ref, p.vendorName || '—', (lines[0] && lines[0].description) || p.ref, fmtNaira(p.totalKobo), pct + '%', BADGE[p.status] || ('n:' + p.status)];
+        }),
+      },
+    };
+  }
+
+  // --- /procurement/contracts ---
+  var cons = xhr('/v1/contracts');
+  if (Array.isArray(cons) && cons.length) {
+    var now = Date.now(), soon = 60 * 86400000;
+    var active = cons.filter(function (c) { return c.status === 'ACTIVE'; });
+    var valTotal = active.reduce(function (s, c) { return s + BigInt(c.valueKobo || '0'); }, 0n);
+    var paidTotal = active.reduce(function (s, c) { return s + BigInt(c.paidKobo || '0'); }, 0n);
+    var expiring = active.filter(function (c) { return c.endDate && (new Date(c.endDate).getTime() - now) <= soon; });
+    window.__wewePageSpecs['/procurement/contracts'] = {
+      title: 'Contracts',
+      sub: 'Payments are metered against contract value · expiry alerts fire 60 days out',
+      actions: ['New contract'],
+      stats: [
+        ['Active contracts', String(active.length), fmtNaira(valTotal.toString()) + ' value'],
+        ['Expiring in 60 days', String(expiring.length), expiring.length ? (expiring[0].vendorName || '') : 'None'],
+        ['Drawn to date', fmtNaira(paidTotal.toString()), valTotal > 0n ? Math.round(Number(paidTotal * 100n) / Number(valTotal)) + '% of value' : ''],
+        ['Live data', 'ON', 'Rows from the procurement module'],
+      ],
+      table: {
+        title: 'Contract register',
+        cols: [['Reference', null, '130px'], ['Vendor / scope', null, 'minmax(180px,1fr)'], ['Value', 'r', '150px'], ['Paid to date', 'r', '150px'], ['Drawn', 'r', '90px'], ['Expires', null, '130px']],
+        rows: cons.map(function (c) {
+          var val = BigInt(c.valueKobo || '0'), paid = BigInt(c.paidKobo || '0');
+          var pct = val > 0n ? Math.round(Number(paid * 100n) / Number(val)) : 0;
+          var end = c.endDate ? new Date(c.endDate).getTime() : null;
+          var badge = (c.status === 'EXPIRED' || (end && end <= now)) ? 'r:' + ddmmyyyy(c.endDate)
+            : (end && (end - now) <= soon) ? 'a:' + ddmmyyyy(c.endDate)
+            : 'n:' + (c.endDate ? ddmmyyyy(c.endDate) : '—');
+          return [c.ref, (c.vendorName || '—') + ' — ' + c.title, fmtNaira(c.valueKobo), fmtNaira(c.paidKobo), pct + '%', badge];
+        }),
+      },
+    };
+  }
+})();
+
+/* ---- Phase G: live virement register (/budgets/virements) ---- */
+(function () {
+  function xhr(u) { try { var r = new XMLHttpRequest(); r.open('GET', u, false); r.withCredentials = true; r.send(null); return r.status >= 200 && r.status < 300 ? JSON.parse(r.responseText) : null; } catch (e) { return null; } }
+  function fmtNaira(kobo) { var k = BigInt(kobo || '0'); var neg = k < 0n; if (neg) k = -k; var w = (k / 100n).toString(); var c = (k % 100n).toString().padStart(2, '0'); return (neg ? '-' : '') + '₦' + w.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + c; }
+  function sumKobo(rows, f) { return rows.reduce(function (s, r) { return s + BigInt(f(r) || '0'); }, 0n); }
+  function ddmmyyyy(iso) { if (!iso) return '—'; var d = new Date(iso); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+
+  var vs = xhr('/v1/virements');
+  if (Array.isArray(vs) && vs.length) {
+    var fromName = function (v) { return v.fromLineName || v.fromLine || (v.fromBudgetLine && v.fromBudgetLine.name) || '—'; };
+    var toName = function (v) { return v.toLineName || v.toLine || (v.toBudgetLine && v.toBudgetLine.name) || '—'; };
+    var STATE = { PENDING: 'a:AT FINANCE', AT_FINANCE: 'a:AT FINANCE', AT_MD: 'a:AT MD', APPROVED: 'g:APPROVED', DECLINED: 'r:DECLINED', REJECTED: 'r:DECLINED' };
+    var open = vs.filter(function (v) { return ['APPROVED', 'DECLINED', 'REJECTED'].indexOf(v.status) === -1; });
+    var openTotal = sumKobo(open, function (v) { return v.amountKobo; });
+    var approved = vs.filter(function (v) { return v.status === 'APPROVED'; });
+    var declined = vs.filter(function (v) { return v.status === 'DECLINED' || v.status === 'REJECTED'; });
+    window.__wewePageSpecs = window.__wewePageSpecs || {};
+    window.__wewePageSpecs['/budgets/virements'] = {
+      title: 'Virement requests',
+      sub: 'Moving budget between lines requires Finance and Final Approver sign-off',
+      actions: ['New virement'],
+      stats: [
+        ['Open requests', String(open.length), fmtNaira(openTotal.toString()) + ' in movement'],
+        ['Approved', String(approved.length), fmtNaira(sumKobo(approved, function (v) { return v.amountKobo; }).toString())],
+        ['Declined', String(declined.length), declined.length ? 'See register' : 'None'],
+        ['Live data', 'ON', 'Rows from the budgets module'],
+      ],
+      table: {
+        title: 'Virement register',
+        cols: [['Reference', null, '120px'], ['From line', null, 'minmax(160px,1fr)'], ['To line', null, 'minmax(160px,1fr)'], ['Amount', 'r', '140px'], ['Raised', null, '110px'], ['Status', null, '140px']],
+        rows: vs.map(function (v) {
+          return [v.ref || v.id, fromName(v), toName(v), fmtNaira(v.amountKobo), ddmmyyyy(v.createdAt), STATE[v.status] || ('n:' + (v.status || '—'))];
+        }),
+      },
+    };
+  }
+})();
+
+/* ---- Phase H: write-hook bridge ----
+ * The Phase 2.4 design calls window['__wewe'+Name](payload) SYNCHRONOUSLY at each submit
+ * point and shows the returned string as a toast; a THROW shows "nothing was saved.".
+ * We define handlers for the hooks whose real API DTO can be satisfied from the payload the
+ * design passes (verified against the NestJS/Zod routes). Every write is synchronous so the
+ * toast reflects the REAL server result; on non-2xx the helper throws the server's message,
+ * so a failed write is shown honestly and nothing is faked.
+ *
+ * Wired: CreateRequisition, SaveRequisitionDraft, SubmitPayroll, SubmitTimesheet, ApplyLegalHold.
+ * Intentionally NOT wired (design payload lacks a required field / the endpoint doesn't exist):
+ *   SettleRefund (no retirement id), EmailPayslip + RaiseRemittancePayment (no such route),
+ *   CreateStaff/StartOnboarding/CreateObjective (no ids; objectives has no backend),
+ *   SendRfq (needs title), StartAssetVerification (needs location), CreateDonor (needs code/donor/…),
+ *   UploadDocuments (no file bytes), CreateEvidencePack (endpoint bundles txns, not docs),
+ *   SignDocument (no esign request id), SaveWorkflowChain/CreateRole/PublishRole/SaveForm/
+ *   PublishForm/SaveReport (thin payloads / no forms endpoint), SignOutOtherSessions/SaveSignature/
+ *   Enrol2fa/StartDelegation/CancelDelegation (no self-serve route / no TOTP code / no ids).
+ * Those keep the design's honest "Submitted."/"Saved." fallback until the design enriches the
+ * payloads (loose-end A1 follow-up) or the missing endpoints are added. */
+(function () {
+  function req(method, url, body) {
+    var r = new XMLHttpRequest();
+    r.open(method, url, false); r.withCredentials = true;
+    if (body !== undefined) r.setRequestHeader('content-type', 'application/json');
+    r.send(body !== undefined ? JSON.stringify(body) : null);
+    var parsed = null; try { parsed = JSON.parse(r.responseText); } catch (e) { /* non-JSON */ }
+    if (r.status < 200 || r.status >= 300) {
+      var m = parsed && (parsed.message || parsed.error);
+      if (Array.isArray(m)) m = m.join('; ');
+      if (parsed && Array.isArray(parsed.issues)) m = parsed.issues.map(function (i) { return i.message; }).join('; ');
+      throw new Error(m || ('The server rejected it (HTTP ' + r.status + ')'));
+    }
+    return parsed;
+  }
+  function post(url, body) { return req('POST', url, body === undefined ? {} : body); }
+  function put(url, body) { return req('PUT', url, body === undefined ? {} : body); }
+  function patch(url, body) { return req('PATCH', url, body === undefined ? {} : body); }
+  function get(url) { return req('GET', url); }
+  var me = get('/v1/auth/me') || {};
+
+  // ---- Requisitions: create + submit for approval ----
+  window.__weweCreateRequisition = function (p) {
+    var budgetLineId = null;
+    if (p.budgetLine) {
+      try {
+        var positions = get('/v1/budgets/position');
+        var match = (positions || []).find(function (b) { return b.name === p.budgetLine; });
+        if (match) budgetLineId = match.budgetLineId;
+      } catch (e) { budgetLineId = null; } // optional field — omit if the lookup is unavailable
+    }
+    var lines = p.lines.map(function (l) {
+      var line = { description: l.desc, qty: l.qty, unitKobo: String(Math.round(l.unit * 100)) };
+      if (budgetLineId) line.budgetLineId = budgetLineId;
+      return line;
+    });
+    var res = post('/v1/requisitions', { title: p.purpose, lines: lines, submit: true });
+    return 'Requisition ' + res.ref + ' submitted for approval.';
+  };
+
+  // ---- Requisitions: save draft (no submit) ----
+  window.__weweSaveRequisitionDraft = function (p) {
+    var lines = p.lines.map(function (l) {
+      return { description: l.desc, qty: l.qty, unitKobo: String(Math.round(l.unit * 100)) };
+    });
+    var res = post('/v1/requisitions', { title: p.purpose, lines: lines });
+    return 'Draft ' + res.ref + ' saved.';
+  };
+
+  // ---- Payroll: compute the run, then release it for approval ----
+  window.__weweSubmitPayroll = function (p) {
+    var run = post('/v1/payroll/runs', { period: p.period });
+    try {
+      post('/v1/payroll/runs/' + run.id + '/release', {});
+    } catch (e) {
+      return 'Payroll for ' + p.period + ' was computed and saved as a draft, but sending it for approval failed: ' + e.message;
+    }
+    return 'Payroll for ' + p.period + ' sent for approval.';
+  };
+
+  // ---- Timesheets: apportion entered hours to whole-percent effort, submit ----
+  window.__weweSubmitTimesheet = function (p) {
+    var byCode = {}, order = [];
+    (p.rows || []).forEach(function (r) {
+      if (!r || !r.proj || !String(r.proj).trim() || !Array.isArray(r.d)) return;
+      var hours = r.d.reduce(function (a, b) { return a + (Number(b) || 0); }, 0);
+      if (hours <= 0) return;
+      var code = String(r.proj).split(' — ')[0].trim().slice(0, 40); // token before the em-dash
+      if (!code) return;
+      if (byCode[code] === undefined) { byCode[code] = 0; order.push(code); }
+      byCode[code] += hours;
+    });
+    if (!order.length) throw new Error('Timesheet is empty — enter hours against at least one project before submitting.');
+    if (order.length > 100) throw new Error('Too many projects to express as whole-percent effort — please consolidate.');
+    var total = order.reduce(function (s, c) { return s + byCode[c]; }, 0);
+    var base = 100 - order.length; // reserve a 1% floor per kept row
+    var shares = order.map(function (c) { return byCode[c] / total * base; });
+    var pct = shares.map(function (s) { return Math.floor(s); });
+    var rem = base - pct.reduce(function (a, b) { return a + b; }, 0);
+    order.map(function (c, i) { return { i: i, frac: shares[i] - pct[i] }; })
+      .sort(function (a, b) { return b.frac - a.frac; })
+      .slice(0, rem)
+      .forEach(function (o) { pct[o.i]++; });
+    var rows = order.map(function (c, i) { return { projectCode: c, percent: pct[i] + 1 }; });
+    var now = new Date();
+    var period = now.getUTCFullYear() + '-' + String(now.getUTCMonth() + 1).padStart(2, '0');
+    var ts = post('/v1/timesheets', { period: period, rows: rows });
+    try {
+      post('/v1/timesheets/' + ts.id + '/submit', {});
+    } catch (e) {
+      return 'Timesheet for ' + period + ' was saved as a draft, but submitting it for approval failed: ' + e.message;
+    }
+    return 'Timesheet for ' + period + ' submitted for approval.';
+  };
+
+  // ---- Documents: apply a legal hold (resolve doc names → ids first, exact-match guarded) ----
+  window.__weweApplyLegalHold = function (p) {
+    var names = (p && p.documents) || [];
+    if (!names.length) throw new Error('No documents selected');
+    var ids = [];
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i];
+      var res = get('/v1/dms/search?q=' + encodeURIComponent(name));
+      var hits = ((res && res.results) || []).filter(function (r) { return r.name === name; });
+      if (hits.length !== 1) throw new Error('Could not uniquely identify "' + name + '" on the server');
+      ids.push(hits[0].id);
+    }
+    for (var j = 0; j < ids.length; j++) {
+      post('/v1/dms/documents/' + ids[j] + '/legal-hold', { on: true });
+    }
+    return 'Legal hold applied to ' + ids.length + (ids.length === 1 ? ' document.' : ' documents.');
+  };
+})();

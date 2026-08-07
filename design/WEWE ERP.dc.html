@@ -83,34 +83,29 @@
 </helmet>
 
 <sc-if value="{{ showAuth }}" hint-placeholder-val="{{ true }}">
-  <div data-screen-label="Sign in" style="min-height:100vh; display:grid; grid-template-columns:1.05fr .95fr; background:#E4E5E8;">
-    <div style="display:flex; flex-direction:column; justify-content:space-between; padding:56px 64px;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="width:38px; height:38px; border-radius:12px; background:#E0572E; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; letter-spacing:.02em;">W</div>
-        <div style="font-size:14px; font-weight:600; color:#1A1D21;">WEWE ERP</div>
-      </div>
-      <div style="max-width:520px;">
-        <div style="font-size:13px; font-weight:500; color:#8A8F98; letter-spacing:.08em; text-transform:uppercase; margin-bottom:18px;">Widows and Orphans Empowerment Organisation</div>
-        <div style="font-size:40px; line-height:1.15; font-weight:600; color:#1A1D21; letter-spacing:-.02em; text-wrap:pretty;">One approval chain. Five stages. Zero paper.</div>
-        <div style="font-size:16px; line-height:1.6; color:#6B7280; margin-top:20px; text-wrap:pretty;">Requisitions, advances, retirements, budgets, procurement and grants — every transaction visible from initiation to final approval.</div>
-      </div>
-      <div style="font-size:12px; color:#8A8F98;">Built by Techtink Solutions Ltd · Abuja, Nigeria</div>
-    </div>
+  <div data-screen-label="Sign in" style="position:relative; min-height:100vh; background:#F5F1EA; overflow:hidden;">
+    <div style="width:100%; min-height:100vh; display:grid; grid-template-columns:1.04fr .96fr; background:#F5F1EA;">
 
-    <div style="display:flex; align-items:center; justify-content:center; padding:40px;">
-      <div style="width:100%; max-width:400px; background:#fff; border-radius:20px; padding:32px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 18px 40px rgba(16,24,40,.07);">
-        <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; padding:56px 5vw 52px 7vw;">
+        <div style="width:100%; max-width:398px; display:flex; align-items:center; gap:11px;">
+          <div style="width:34px; height:34px; border-radius:11px; background:#E0572E; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">W</div>
+          <div style="font-size:14px; font-weight:600; color:#1A1D21; letter-spacing:.01em;">WEWE ERP</div>
+        </div>
+
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:30px 0;">
+          <div style="width:100%; max-width:398px;">
+<sc-if value="{{ isSignin }}" hint-placeholder-val="{{ true }}">
           <div>
-            <div style="font-size:20px; font-weight:600; color:#1A1D21;">Sign in</div>
-            <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Use your WEWE work email address.</div>
-            <div style="display:flex; flex-direction:column; gap:16px; margin-top:26px;">
+            <div style="font-size:40px; font-weight:700; color:#1A1D21; letter-spacing:-.025em; line-height:1.1;">Welcome back</div>
+            <div style="font-size:15px; color:#8A8177; margin-top:12px; line-height:1.55;">One approval chain. Five stages. Zero paper.</div>
+            <div style="display:flex; flex-direction:column; gap:16px; margin-top:32px;">
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Email address</label>
-                <input value="n.okafor@wewe.org.ng" style="height:44px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                <input value="n.okafor@wewe.org.ng" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
               </div>
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Password</label>
-                <input type="password" value="························" style="height:44px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                <input type="password" value="························" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
               </div>
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#6B7280; white-space:nowrap;"><input type="checkbox" style="accent-color:#E0572E; width:15px; height:15px; flex:none;" />Keep me signed in</label>
@@ -118,16 +113,16 @@
               </div>
               <button onClick="{{ toSecondFactor }}" style="height:46px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600; box-shadow:0 1px 2px rgba(16,24,40,.08); transition:background 180ms ease-out;" style-hover="background:#C8481F">Continue</button>
             </div>
-            <div style="margin-top:22px; padding-top:18px; border-top:1px solid #EEF0F3; font-size:12px; color:#8A8F98; line-height:1.6;">Prototype: any credentials work. You will pick a persona after sign-in.</div>
+            <div style="margin-top:22px; padding-top:18px; border-top:1px solid #E4DCD1; font-size:12px; color:#8A8177; line-height:1.6;">Use your WEWE work email. A six-digit code follows for roles that touch money.</div>
           </div>
         </sc-if>
 
-        <sc-if value="{{ is2fa }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ is2fa }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="Two-factor">
-            <div style="font-size:20px; font-weight:600; color:#1A1D21;">Two-step verification</div>
-            <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.6;">Enter the 6-digit code from your authenticator app for <span style="color:#3B3B3B; font-weight:500;">n.okafor@wewe.org.ng</span>.</div>
-            <input value="{{ otp }}" onChange="{{ onOtp }}" maxLength="6" style="margin-top:24px; width:100%; height:56px; border-radius:12px; border:1px solid #E3E5E8; background:#F7F8FA; text-align:center; font-size:26px; font-weight:600; letter-spacing:.34em; color:#1A1D21; outline:none; font-variant-numeric:tabular-nums;" />
-            <div style="font-size:12px; color:#8A8F98; margin-top:10px;">Code refreshes every 30 seconds.</div>
+            <div style="font-size:34px; font-weight:700; color:#1A1D21; letter-spacing:-.02em; line-height:1.12;">Two-step verification</div>
+            <div style="font-size:13px; color:#8A8177; margin-top:6px; line-height:1.6;">Enter the 6-digit code from your authenticator app for <span style="color:#3B3B3B; font-weight:500;">n.okafor@wewe.org.ng</span>.</div>
+            <input value="{{ otp }}" onChange="{{ onOtp }}" maxLength="6" style="margin-top:24px; width:100%; height:56px; border-radius:12px; border:1px solid #DFD6C9; background:#EFEAE1; text-align:center; font-size:26px; font-weight:600; letter-spacing:.34em; color:#1A1D21; outline:none; font-variant-numeric:tabular-nums;" />
+            <div style="font-size:12px; color:#8A8177; margin-top:10px;">Code refreshes every 30 seconds.</div>
             <button onClick="{{ signIn }}" style="margin-top:22px; width:100%; height:46px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600;" style-hover="background:#C8481F">Verify and sign in</button>
             <div style="display:flex; gap:18px; margin-top:18px; font-size:13px;">
               <a href="#/dashboard">Use a backup code</a>
@@ -135,6 +130,15 @@
             </div>
           </div>
         </sc-if>
+          </div>
+        </div>
+
+        <div style="width:100%; max-width:398px; font-size:12px; color:#9A9086; line-height:1.6;">Built by Techtink Solutions Ltd · Abuja, Nigeria</div>
+      </div>
+
+      <div style="position:relative; overflow:visible; background:transparent;">
+        <img src="shots/login-bg.jpg" alt="A widow supported by WEWE programmes" style="position:absolute; top:0; bottom:0; right:0; left:-55%; width:155%; height:100%; object-fit:cover; object-position:58% center; display:block; -webkit-mask-image:linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,.10) 36%, rgba(0,0,0,.28) 46%, rgba(0,0,0,.52) 58%, rgba(0,0,0,.76) 72%, rgba(0,0,0,.94) 86%, rgba(0,0,0,1) 100%); mask-image:linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,.10) 36%, rgba(0,0,0,.28) 46%, rgba(0,0,0,.52) 58%, rgba(0,0,0,.76) 72%, rgba(0,0,0,.94) 86%, rgba(0,0,0,1) 100%);" />
+
       </div>
     </div>
   </div>
@@ -238,11 +242,11 @@
             <span style="width:32px; height:32px; border-radius:999px; background:#1A1D21; color:#fff; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center;">{{ personInitials }}</span>
             <span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.25;">
               <span style="font-size:12px; font-weight:600; color:#1A1D21;">{{ roleLabel }}</span>
-              <span style="font-size:11px; color:#8A8F98;">Switch persona</span>
+              <span style="font-size:11px; color:#8A8F98;">{{ personTitle }}</span>
             </span>
-            <span style="color:#9AA0A8; font-size:10px;">▾</span>
+            <sc-if value="{{ demoMode }}" hint-placeholder-val="{{ false }}"><span style="color:#9AA0A8; font-size:10px;">▾</span></sc-if>
           </button>
-          <sc-if value="{{ switcherOpen }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ switcherDemo }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute; right:0; top:52px; width:308px; background:#fff; border-radius:16px; padding:8px; z-index:40; box-shadow:0 1px 2px rgba(16,24,40,.06), 0 24px 48px rgba(16,24,40,.14); animation:weweRise 160ms ease-out;">
               <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9AA0A8; padding:10px 12px 8px 12px;">Demo as</div>
               <sc-for list="{{ roleList }}" as="r" hint-placeholder-count="5">
@@ -714,7 +718,7 @@
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
               <div>
                 <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Requisitions</div>
-                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">214 requisitions raised this financial year · ₦187,420,000.00 total value</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ txnSummary }}</div>
               </div>
               <div style="display:flex; gap:8px;">
                 <button onClick="{{ noop }}" style="height:40px; padding:0 16px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Export</button>
@@ -743,6 +747,12 @@
               <div style="display:grid; grid-template-columns:34px 104px minmax(160px,1fr) 116px 96px 128px 132px 32px; column-gap:12px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
                 <div></div><div>Reference</div><div>Item</div><div style="text-align:right;">Amount</div><div>Raised</div><div>Status</div><div>Stage</div><div></div>
               </div>
+              <sc-if value="{{ reqNone }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:56px 24px; text-align:center;">
+                  <div style="font-size:15px; font-weight:600; color:#1A1D21;">{{ reqEmptyTitle }}</div>
+                  <div style="font-size:13px; color:#9AA0A8; margin-top:7px; line-height:1.55; max-width:420px; margin-left:auto; margin-right:auto;">{{ reqEmptyHint }}</div>
+                </div>
+              </sc-if>
               <sc-for list="{{ reqRows }}" as="t" hint-placeholder-count="8">
                 <div onClick="{{ t.onClick }}" style="display:grid; grid-template-columns:34px 104px minmax(160px,1fr) 116px 96px 128px 132px 32px; align-items:center; column-gap:12px; padding:16px 24px; background:{{ t.bg }}; cursor:pointer; transition:background 140ms ease-out;" style-hover="background:#F1F3F5">
                   <div><input type="checkbox" checked="{{ t.selected }}" onChange="{{ t.onSelect }}" style="width:16px; height:16px; accent-color:#E0572E;" /></div>
@@ -883,11 +893,11 @@
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
                     <div style="display:flex; flex-direction:column; gap:7px; grid-column:span 2;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Purpose</label>
-                      <input value="Field monitoring visit — Enugu cluster, August 2026" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                      <input value="{{ nrPurpose }}" onChange="{{ nrSetPurpose }}" placeholder="What is this for, in one line" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Department</label>
-                      <input value="Programmes" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                      <select style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 12px; font-size:14px; color:#1A1D21; outline:none;"><option>Programmes</option><option>Finance &amp; Admin</option><option>M&amp;E</option><option>Grants &amp; Compliance</option><option>Operations</option></select>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date required</label>
@@ -895,8 +905,8 @@
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Budget line</label>
-                      <input value="Communications & visibility" style="height:42px; border-radius:10px; border:1.5px solid #B45309; background:#fff; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
-                      <div style="font-size:12px; color:#8A4B0B;">₦40,000.00 remaining on this line</div>
+                      <select value="{{ nrBudget }}" onChange="{{ nrSetBudget }}" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 12px; font-size:14px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E"><option>Field monitoring &amp; supervision</option><option>Training &amp; workshops</option><option>Communications &amp; visibility</option><option>Vehicle operations</option><option>IT equipment — capital</option></select>
+                      <div style="font-size:12px; color:#8A8F98;">{{ nrAvail }} available on this line</div>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Donor code</label>
@@ -909,29 +919,37 @@
                 </div>
 
                 <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
-                  <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <div style="font-size:16px; font-weight:600; color:#1A1D21;">Line items</div>
-                    <button onClick="{{ noop }}" style="height:34px; padding:0 14px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">+ Add line</button>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div>
+                      <div style="font-size:16px; font-weight:600; color:#1A1D21;">Line items</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Type into any cell — the total, budget check and approval route update as you go</div>
+                    </div>
+                    <button onClick="{{ nrAdd }}" style="height:34px; padding:0 14px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">+ Add line</button>
                   </div>
-                  <div style="display:grid; grid-template-columns:minmax(0,1fr) 70px 130px 140px 32px; column-gap:12px; margin-top:18px; padding-bottom:8px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
-                    <div>Description</div><div style="text-align:right;">Qty</div><div style="text-align:right;">Unit (₦)</div><div style="text-align:right;">Total (₦)</div><div></div>
+                  <div style="display:grid; grid-template-columns:minmax(0,1fr) 76px 128px 132px 34px; column-gap:10px; margin-top:18px; padding-bottom:8px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>Description</div><div style="text-align:right;">Qty</div><div style="text-align:right;">Unit (₦)</div><div style="text-align:right;">Total</div><div></div>
                   </div>
-                  <sc-for list="{{ reqLines }}" as="l" hint-placeholder-count="4">
-                    <div style="display:grid; grid-template-columns:minmax(0,1fr) 70px 130px 140px 32px; column-gap:12px; align-items:center; padding:14px 0; border-bottom:1px solid #F4F5F7;">
-                      <div style="min-width:0;">
-                        <div style="font-size:13px; font-weight:500; color:#1A1D21;">{{ l.desc }}</div>
-                        <div style="font-size:11px; color:#9AA0A8; margin-top:3px;">{{ l.cat }}</div>
-                      </div>
-                      <div style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums; color:#3B3B3B;">{{ l.qty }}</div>
-                      <div style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums; color:#3B3B3B;">{{ l.unit }}</div>
-                      <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">{{ l.total }}</div>
-                      <div style="display:flex; justify-content:center;"><button onClick="{{ noop }}" style="width:28px; height:28px; border:none; border-radius:8px; background:transparent; color:#A8ADB5;" style-hover="background:#FBEAE4; color:#C2410C">✕</button></div>
+                  <sc-if value="{{ nrEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:34px 20px; text-align:center; border-bottom:1px solid #F4F5F7;">
+                      <div style="font-size:14px; font-weight:600; color:#1A1D21;">No line items yet</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:6px; line-height:1.5;">Add a line for each thing being bought, with its quantity and unit cost.</div>
+                      <button onClick="{{ nrAdd }}" style="height:36px; margin-top:14px; padding:0 16px; border:none; border-radius:9px; background:#E0572E; color:#fff; font-size:12px; font-weight:600;">+ Add the first line</button>
+                    </div>
+                  </sc-if>
+                  <sc-for list="{{ nrRows }}" as="l" hint-placeholder-count="4">
+                    <div style="display:grid; grid-template-columns:minmax(0,1fr) 76px 128px 132px 34px; column-gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #F4F5F7;">
+                      <input value="{{ l.desc }}" onChange="{{ l.onDesc }}" placeholder="What is being bought" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 11px; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
+                      <input value="{{ l.qty }}" onChange="{{ l.onQty }}" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 9px; font-size:13px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                      <input value="{{ l.unit }}" onChange="{{ l.onUnit }}" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 11px; font-size:13px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                      <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">{{ l.totalF }}</div>
+                      <div style="display:flex; justify-content:center;"><button onClick="{{ l.onRemove }}" style="width:28px; height:28px; border:none; border-radius:8px; background:transparent; color:#A8ADB5;" style-hover="background:#FBEAE4; color:#C2410C">✕</button></div>
                     </div>
                   </sc-for>
-                  <div style="display:flex; justify-content:flex-end; gap:32px; padding-top:16px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:16px;">
+                    <div style="font-size:12px; color:#8A8F98;">{{ nrCount }} · VAT not applicable</div>
                     <div style="text-align:right;">
                       <div style="font-size:12px; color:#8A8F98;">Total requested</div>
-                      <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:4px;">{{ lineTotal }}</div>
+                      <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:4px;">{{ nrTotal }}</div>
                     </div>
                   </div>
                 </div>
@@ -958,28 +976,56 @@
               </div>
 
               <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background:#FFF7ED; border:1px solid #FDE3C4; border-radius:16px; padding:20px;">
-                  <div style="display:flex; align-items:center; gap:9px;">
-                    <span style="width:22px; height:22px; border-radius:999px; background:#B45309; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">!</span>
-                    <div style="font-size:14px; font-weight:600; color:#8A4B0B;">Over budget</div>
+                <sc-if value="{{ nrOver }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#FFF7ED; border:1px solid #FDE3C4; border-radius:16px; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="width:22px; height:22px; border-radius:999px; background:#B45309; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">!</span>
+                      <div style="font-size:14px; font-weight:600; color:#8A4B0B;">Over budget</div>
+                    </div>
+                    <div style="font-size:13px; color:#8A4B0B; line-height:1.6; margin-top:10px; text-wrap:pretty;">This exceeds the balance on <span style="font-weight:600;">{{ nrBudget }}</span>. You may still submit — it routes to the Managing Director with an over-budget flag and needs a written justification.</div>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px; font-size:12px; color:#8A4B0B; font-variant-numeric:tabular-nums;">
+                      <div style="display:flex; justify-content:space-between;"><span>Line balance</span><span style="font-weight:600;">{{ nrAvail }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>This requisition</span><span style="font-weight:600;">{{ nrTotal }}</span></div>
+                      <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #FDE3C4;"><span>Shortfall</span><span style="font-weight:700;">{{ nrShortF }}</span></div>
+                    </div>
+                    <a href="#/budgets/virements" style="display:flex; align-items:center; justify-content:center; margin-top:14px; height:38px; border:1px solid #E4C79A; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B; text-decoration:none;">Raise a virement request</a>
                   </div>
-                  <div style="font-size:13px; color:#8A4B0B; line-height:1.6; margin-top:10px; text-wrap:pretty;">This requisition exceeds the available balance on <span style="font-weight:600;">Communications &amp; visibility</span> by <span style="font-weight:600; font-variant-numeric:tabular-nums;">₦1,210,000.00</span>. You may still submit — it will be routed to Finance with an over-budget flag and require a virement.</div>
-                  <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px; font-size:12px; color:#8A4B0B; font-variant-numeric:tabular-nums;">
-                    <div style="display:flex; justify-content:space-between;"><span>Line balance</span><span style="font-weight:600;">₦40,000.00</span></div>
-                    <div style="display:flex; justify-content:space-between;"><span>This requisition</span><span style="font-weight:600;">₦1,250,000.00</span></div>
-                    <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #FDE3C4;"><span>Shortfall</span><span style="font-weight:700;">₦1,210,000.00</span></div>
+                </sc-if>
+                <sc-if value="{{ nrFits }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:#EAF4EC; border:1px solid #CFE6D6; border-radius:16px; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="width:22px; height:22px; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+                      <div style="font-size:14px; font-weight:600; color:#166F31;">Within budget</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px; font-size:12px; color:#166F31; font-variant-numeric:tabular-nums;">
+                      <div style="display:flex; justify-content:space-between;"><span>Line balance</span><span style="font-weight:600;">{{ nrAvail }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>This requisition</span><span style="font-weight:600;">{{ nrTotal }}</span></div>
+                      <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #CFE6D6;"><span>Remaining after</span><span style="font-weight:700;">{{ nrRemainF }}</span></div>
+                    </div>
                   </div>
-                  <button onClick="{{ noop }}" style="margin-top:14px; width:100%; height:38px; border:1px solid #E4C79A; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B;">Raise a virement request</button>
+                </sc-if>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <sc-if value="{{ nrValid }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ nrSubmit }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Submit for approval</button>
+                  </sc-if>
+                  <sc-if value="{{ nrBlank }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Complete every line first</button>
+                    <div style="font-size:11px; color:#9C3309; margin-top:9px; line-height:1.5;">A line is missing a description, quantity or unit cost. Nothing incomplete reaches your supervisor.</div>
+                  </sc-if>
+                  <button onClick="{{ nrSaveDraft }}" style="width:100%; height:40px; margin-top:8px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Save as draft</button>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:12px; line-height:1.5;">Once submitted you cannot edit it — a returned requisition comes back to you with a note.</div>
                 </div>
 
                 <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                   <div style="font-size:14px; font-weight:600; color:#1A1D21;">Approval route</div>
-                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Determined by amount band ₦1m–₦5m</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">{{ nrStages }} of 5 stages at {{ nrTotal }}</div>
                   <div style="display:flex; flex-direction:column; margin-top:16px;">
-                    <sc-for list="{{ trackerStages }}" as="s" hint-placeholder-count="5">
+                    <sc-for list="{{ nrRoute }}" as="s" hint-placeholder-count="5">
                       <div style="display:flex; gap:12px;">
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                          <span style="width:20px; height:20px; border-radius:999px; border:2px solid #D3D6DB; flex:none;"></span>
+                          <sc-if value="{{ s.on }}" hint-placeholder-val="{{ true }}"><span style="width:20px; height:20px; border-radius:999px; background:#E0572E; flex:none;"></span></sc-if>
+                          <sc-if value="{{ s.off }}" hint-placeholder-val="{{ false }}"><span style="width:20px; height:20px; border-radius:999px; border:2px solid #D3D6DB; flex:none;"></span></sc-if>
                           <sc-if value="{{ s.last }}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
                           <sc-if value="{{ s.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex:1; width:2px; background:#EAECEF; min-height:14px;"></span></sc-if>
                         </div>
@@ -995,7 +1041,7 @@
             </div>
 
             <div style="position:fixed; bottom:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:14px 32px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); border-top:1px solid #E3E5E8;">
-              <div style="flex:1; font-size:12px; color:#8A8F98;">Autosaved · last change 09:41 · Ngozi Okafor</div>
+              <div style="flex:1; font-size:12px; color:#8A8F98;">{{ nrSaveState }}</div>
               <button onClick="{{ goReq }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;" style-hover="background:#F7F8FA">Cancel</button>
               <button onClick="{{ noop }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Save draft</button>
               <button onClick="{{ goReqDetail }}" style="height:42px; padding:0 22px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Submit for approval</button>
@@ -1618,102 +1664,195 @@
           <div data-screen-label="Documents" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
               <div>
-                <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Documents &amp; e-signature</div>
-                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">4,182 documents · 1,940 pages digitised this month · full-text OCR search</div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Document repository</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">4,182 documents · 1,940 pages digitised and searchable · versions kept, nothing overwritten</div>
               </div>
-              <div style="display:flex; gap:8px;">
-                <button onClick="{{ noop }}" style="height:40px; padding:0 16px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;">Upload</button>
-                <button onClick="{{ openSign }}" style="height:40px; padding:0 18px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Request signature</button>
+              <div style="display:flex; gap:8px; flex:none;">
+                <button onClick="{{ openExport }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Export index</button>
+                <a href="#/documents/esign" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21; display:inline-flex; align-items:center; text-decoration:none;">Request signature</a>
+                <button onClick="{{ openCreate }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">+ Upload documents</button>
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns:210px minmax(0,1fr) 288px; gap:12px; align-items:start;">
-              <div style="background:#fff; border-radius:16px; padding:18px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
-                <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9AA0A8; padding:0 6px 10px 6px;">Folders</div>
-                <div style="display:flex; flex-direction:column; gap:2px;">
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px; border:none; border-radius:9px; background:#F3F4F5; font-size:13px; font-weight:600; color:#1A1D21; text-align:left;">Grants <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">412</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px 0 26px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">USAID-LON-24 <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">188</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px 0 26px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">EU-WISH-23 <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">146</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">Finance <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">1,204</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">Procurement <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">638</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">HR <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">902</span></button>
-                  <button onClick="{{ noop }}" style="display:flex; align-items:center; gap:9px; height:36px; padding:0 10px; border:none; border-radius:9px; background:transparent; font-size:13px; color:#5B6068; text-align:left;" style-hover="background:#F7F8FA">Governance <span style="flex:1;"></span><span style="font-size:11px; color:#9AA0A8;">64</span></button>
-                </div>
-                <div style="margin-top:16px; padding-top:14px; border-top:1px solid #EEF0F3;">
-                  <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9AA0A8; padding:0 6px 10px 6px;">Digitisation</div>
-                  <div style="padding:0 6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#6B7280;"><span>Batch 24 — Finance 2024</span><span style="font-weight:600; color:#1A1D21;">68%</span></div>
-                    <div style="height:6px; border-radius:999px; background:#F0F1F3; margin-top:8px; overflow:hidden;"><div style="height:100%; width:68%; background:#6E9EC9; border-radius:999px;"></div></div>
-                    <div style="font-size:11px; color:#9AA0A8; margin-top:7px;">1,320 of 1,940 pages indexed</div>
-                  </div>
-                </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px;">
+              <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                <div style="font-size:13px; font-weight:500; color:#8A8F98;">Documents held</div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">4,182</div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Across 7 top-level folders</div>
               </div>
+              <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                <div style="font-size:13px; font-weight:500; color:#8A8F98;">Searchable by content</div>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">1,940</div><div style="font-size:13px; font-weight:600; color:#166F31;">pages OCR’d</div></div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Scans and photographed receipts included</div>
+              </div>
+              <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                <div style="font-size:13px; font-weight:500; color:#8A8F98;">Confidential</div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">286</div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Access-controlled and logged on open</div>
+              </div>
+              <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                <div style="font-size:13px; font-weight:500; color:#8A8F98;">Under legal hold</div>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">38</div><div style="font-size:13px; font-weight:600; color:#8A4B0B;">2 matters</div></div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Exempt from the retention run</div>
+              </div>
+            </div>
 
-              <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
-                <div style="display:flex; align-items:center; gap:10px; padding:18px 20px 14px 20px;">
-                  <div style="flex:1; display:flex; align-items:center; gap:10px; height:38px; padding:0 12px; border-radius:10px; background:#F7F8FA; border:1px solid #E3E5E8;">
-                    <span style="color:#9AA0A8; display:flex;">{{ iconSearch }}</span>
-                    <input value="per diem circular" style="flex:1; border:none; background:transparent; outline:none; font-size:13px; color:#1A1D21;" />
+            <div style="display:grid; grid-template-columns:262px minmax(0,1fr); gap:12px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:16px 12px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; padding:0 8px 10px 8px;">Folders</div>
+                  <div style="display:flex; flex-direction:column; gap:2px;">
+                    <sc-for list="{{ dmsTree }}" as="f" hint-placeholder-count="12">
+                      <sc-if value="{{ f.sel }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ f.onClick }}" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; height:34px; padding-right:10px; padding-left:{{ f.pad }}; border:none; border-radius:9px; background:#F5F6F8; box-shadow:inset 0 0 0 1.5px #E0572E;">
+                          <span style="flex:1; min-width:0; font-size:13px; font-weight:600; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.label }}</span>
+                          <span style="font-size:11px; font-weight:600; color:#B23F1D; font-variant-numeric:tabular-nums; flex:none;">{{ f.count }}</span>
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{ f.unsel }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ f.onClick }}" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; height:34px; padding-right:10px; padding-left:{{ f.pad }}; border:none; border-radius:9px; background:transparent;" style-hover="background:#F7F8FA">
+                          <span style="flex:1; min-width:0; font-size:13px; font-weight:500; color:#3B3B3B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.label }}</span>
+                          <span style="font-size:11px; color:#9AA0A8; font-variant-numeric:tabular-nums; flex:none;">{{ f.count }}</span>
+                        </button>
+                      </sc-if>
+                    </sc-for>
                   </div>
-                  <button onClick="{{ noop }}" style="height:38px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;">Filters</button>
                 </div>
-                <div style="padding:0 20px 14px 20px;">
-                  <div style="padding:14px 16px; border-radius:12px; background:#FFFBF5; border:1px solid #F3E4CE;">
-                    <div style="font-size:12px; font-weight:600; color:#8A4B0B;">OCR match · Per-diem-circular-2026.pdf, page 3</div>
-                    <div style="font-size:13px; color:#3B3B3B; line-height:1.6; margin-top:7px;">…domestic per diem for band B locations (Enugu, Kano, Port Harcourt) is set at <span style="background:#FCE7CB; font-weight:600;">₦25,000.00 per night</span> for officer grade with effect from 01/01/2026…</div>
+
+                <div style="background:#fff; border-radius:16px; padding:16px 12px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; padding:0 8px 10px 8px;">Document class</div>
+                  <div style="display:flex; flex-direction:column; gap:2px;">
+                    <sc-for list="{{ dmsClasses }}" as="c" hint-placeholder-count="8">
+                      <sc-if value="{{ c.sel }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ c.onClick }}" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; height:32px; padding:0 10px; border:none; border-radius:9px; background:#F5F6F8; box-shadow:inset 0 0 0 1.5px #E0572E;">
+                          <span style="flex:1; min-width:0; font-size:12px; font-weight:600; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.label }}</span>
+                          <span style="font-size:11px; font-weight:600; color:#B23F1D; font-variant-numeric:tabular-nums; flex:none;">{{ c.n }}</span>
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{ c.unsel }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ c.onClick }}" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; height:32px; padding:0 10px; border:none; border-radius:9px; background:transparent;" style-hover="background:#F7F8FA">
+                          <span style="flex:1; min-width:0; font-size:12px; color:#3B3B3B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.label }}</span>
+                          <span style="font-size:11px; color:#9AA0A8; font-variant-numeric:tabular-nums; flex:none;">{{ c.n }}</span>
+                        </button>
+                      </sc-if>
+                    </sc-for>
                   </div>
                 </div>
-                <div style="display:grid; grid-template-columns:minmax(130px,1fr) 118px 64px 44px 92px; column-gap:8px; padding:0 20px 8px 20px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
-                  <div>Document</div><div>Folder</div><div>Size</div><div>Ver.</div><div>Access</div>
-                </div>
-                <sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
-                  <div onClick="{{ d.onClick }}" style="display:grid; grid-template-columns:minmax(130px,1fr) 118px 64px 44px 92px; column-gap:8px; align-items:center; padding:15px 20px; background:{{ d.bg }}; cursor:pointer;" style-hover="background:#F1F3F5">
-                    <div style="min-width:0;">
-                      <div style="font-size:13px; font-weight:500; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.name }}</div>
-                      <div style="font-size:11px; color:#9AA0A8; margin-top:3px;">{{ d.by }} · {{ d.when }}</div>
-                    </div>
-                    <div style="font-size:12px; color:#6B7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.folder }}</div>
-                    <div style="font-size:12px; color:#6B7280; font-variant-numeric:tabular-nums;">{{ d.size }}</div>
-                    <div style="font-size:12px; color:#6B7280;">{{ d.ver }}</div>
-                    <div>
-                      <sc-if value="{{ d.conf }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; gap:5px; height:22px; padding:0 8px; border-radius:6px; background:rgba(194,65,12,.1); color:#9C3309; font-size:11px; font-weight:600;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>Confidential</span></sc-if>
-                      <sc-if value="{{ d.notConf }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 8px; border-radius:6px; background:#F3F4F5; color:#6B7280; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">All staff</span></sc-if>
-                    </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:13px; font-weight:600; color:#1A1D21;">Digitisation</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:5px; line-height:1.5;">Batch 24 · 1,940 of 2,100 pages processed</div>
+                  <div style="height:7px; border-radius:999px; background:#F0F1F3; overflow:hidden; margin-top:12px;">
+                    <div style="height:100%; width:92%; border-radius:999px; background:#1E8E3E;"></div>
                   </div>
-                </sc-for>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:8px;">Median OCR confidence 96.1%</div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:13px; font-weight:600; color:#1A1D21;">Also here</div>
+                  <div style="display:flex; flex-direction:column; gap:9px; margin-top:11px; font-size:12px; font-weight:600;">
+                    <a href="#/documents/esign">Signature requests</a>
+                    <a href="#/documents/retention">Retention &amp; legal hold</a>
+                    <a href="#/audit/evidence">Evidence packs</a>
+                  </div>
+                </div>
               </div>
 
               <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
-                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Signature request</div>
-                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">HAL-2026-01 · Security services contract</div>
-                  <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
-                    <sc-for list="{{ signers }}" as="s" hint-placeholder-count="3">
-                      <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="width:28px; height:28px; flex:none; border-radius:999px; background:#F3F4F5; color:#5B6068; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ s.initials }}</span>
-                        <div style="flex:1; min-width:0;">
-                          <div style="font-size:12px; font-weight:600; color:#1A1D21;">{{ s.name }}</div>
-                          <div style="font-size:11px; color:#9AA0A8;">{{ s.role }} · {{ s.when }}</div>
-                        </div>
-                        <sc-if value="{{ s.signed }}" hint-placeholder-val="{{ true }}"><span style="width:20px; height:20px; border-radius:999px; background:rgba(30,142,62,.12); color:#166F31; display:flex; align-items:center; justify-content:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span></sc-if>
-                        <sc-if value="{{ s.pending }}" hint-placeholder-val="{{ false }}"><span style="width:20px; height:20px; border-radius:999px; background:rgba(224,87,46,.12); color:#B23F1D; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; animation:wewePulse 2s infinite;">•</span></sc-if>
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="display:flex; align-items:center; gap:12px; padding:18px 24px 14px 24px;">
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">{{ dmsFolder }}</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">{{ dmsCount }} · click a row to open it in the viewer</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; height:36px; padding:0 12px; border-radius:9px; background:#F7F8FA; border:1px solid #E3E5E8; flex:none;">
+                      <span style="color:#9AA0A8; display:flex;">{{ iconSearch }}</span>
+                      <input value="{{ dmsQ }}" onChange="{{ dmsSetQ }}" placeholder="Search names, folders, references…" style="width:206px; border:none; background:transparent; outline:none; font-size:12px;" />
+                      <sc-if value="{{ dmsHasQ }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ dmsClearQ }}" style="border:none; background:transparent; padding:0; color:#9AA0A8; font-size:12px;">✕</button>
+                      </sc-if>
+                    </div>
+                  </div>
+
+                  <sc-if value="{{ dmsAnyPicked }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:10px; padding:12px 24px; background:#FEF8F5; border-top:1px solid #F3D6CB; border-bottom:1px solid #F3D6CB;">
+                      <span style="font-size:12px; font-weight:600; color:#B23F1D; flex:1;">{{ dmsPicked }} selected</span>
+                      <button onClick="{{ dmsPack }}" style="height:30px; padding:0 12px; border:1px solid #E8BCA9; border-radius:8px; background:#fff; font-size:11px; font-weight:600; color:#9C3309;">Add to evidence pack</button>
+                      <button onClick="{{ dmsHoldSel }}" style="height:30px; padding:0 12px; border:1px solid #E8BCA9; border-radius:8px; background:#fff; font-size:11px; font-weight:600; color:#9C3309;">Apply legal hold</button>
+                      <button onClick="{{ openExport }}" style="height:30px; padding:0 12px; border:1px solid #E8BCA9; border-radius:8px; background:#fff; font-size:11px; font-weight:600; color:#9C3309;">Download</button>
+                      <button onClick="{{ dmsClearSel }}" style="height:30px; padding:0 10px; border:none; border-radius:8px; background:transparent; font-size:11px; font-weight:600; color:#9C3309;">Clear</button>
+                    </div>
+                  </sc-if>
+
+                  <div style="display:grid; grid-template-columns:24px minmax(96px,1fr) 118px 44px 104px 62px 92px 108px; column-gap:8px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div></div><div>Document</div><div>Folder</div><div>Ver</div><div>Linked to</div><div>OCR</div><div>Updated</div><div>Marks</div>
+                  </div>
+                  <sc-if value="{{ dmsNone }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:52px 24px; text-align:center;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">No documents match</div>
+                      <div style="font-size:13px; color:#9AA0A8; margin-top:7px; line-height:1.55;">Try a different folder or class, or clear the search.</div>
+                    </div>
+                  </sc-if>
+                  <sc-for list="{{ dmsRows }}" as="d" hint-placeholder-count="12">
+                    <div style="display:grid; grid-template-columns:24px minmax(96px,1fr) 118px 44px 104px 62px 92px 108px; column-gap:8px; align-items:center; padding:13px 24px; background:{{ d.bg }};" style-hover="background:#F1F3F5">
+                      <div>
+                        <sc-if value="{{ d.sel }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ d.onPick }}" style="width:18px; height:18px; border:none; border-radius:5px; background:#E0572E; color:#fff; display:flex; align-items:center; justify-content:center; padding:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></button>
+                        </sc-if>
+                        <sc-if value="{{ d.unsel }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ d.onPick }}" style="width:18px; height:18px; border:1.5px solid #D3D6DB; border-radius:5px; background:#fff; padding:0;"></button>
+                        </sc-if>
                       </div>
-                    </sc-for>
+                      <div onClick="{{ d.onOpen }}" style="min-width:0; cursor:pointer;">
+                        <div style="font-size:13px; font-weight:500; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.name }}</div>
+                        <div style="font-size:11px; color:#9AA0A8; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.cls }} · {{ d.size }}</div>
+                      </div>
+                      <div style="font-size:12px; color:#6B7280; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ d.folder }}</div>
+                      <div style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ d.ver }}</div>
+                      <div style="min-width:0;">
+                        <sc-if value="{{ d.hasLink }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 8px; border-radius:6px; background:rgba(110,158,201,.16); color:#2C5C86; font-size:11px; font-weight:600; display:inline-flex; align-items:center; max-width:100%; overflow:hidden; white-space:nowrap;">{{ d.linked }}</span></sc-if>
+                        <sc-if value="{{ d.noLink }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#C4C8CE;">—</span></sc-if>
+                      </div>
+                      <div>
+                        <sc-if value="{{ d.searchable }}" hint-placeholder-val="{{ true }}"><span style="font-size:12px; color:#166F31; font-weight:600; font-variant-numeric:tabular-nums;">{{ d.ocrLabel }}</span></sc-if>
+                        <sc-if value="{{ d.notOcr }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#C4C8CE;">—</span></sc-if>
+                      </div>
+                      <div style="font-size:12px; color:#6B7280; font-variant-numeric:tabular-nums;">{{ d.when }}</div>
+                      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                        <sc-if value="{{ d.conf }}" hint-placeholder-val="{{ false }}"><span style="height:21px; padding:0 7px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">CONF</span></sc-if>
+                        <sc-if value="{{ d.hold }}" hint-placeholder-val="{{ false }}"><span style="height:21px; padding:0 7px; border-radius:5px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">HOLD</span></sc-if>
+                        <sc-if value="{{ d.signed }}" hint-placeholder-val="{{ false }}"><span style="height:21px; padding:0 7px; border-radius:5px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">SIGNED</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <div style="display:flex; align-items:center; gap:12px; padding:16px 24px; background:#FAFBFC; border-top:1px solid #EEF0F3;">
+                    <span style="width:8px; height:8px; border-radius:999px; background:#1E8E3E; flex:none;"></span>
+                    <span style="font-size:12px; color:#6B7280; line-height:1.5; flex:1;">A re-upload creates a new version and keeps the old one. Nothing here is overwritten, and deletion follows the retention policy rather than a delete key.</span>
                   </div>
-                  <button onClick="{{ openSign }}" style="margin-top:16px; width:100%; height:40px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Sign now</button>
-                  <button onClick="{{ noop }}" style="margin-top:8px; width:100%; height:38px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;">Send reminder to external signer</button>
                 </div>
-                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
-                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Certificate of completion</div>
-                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; font-size:12px;">
-                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Document hash</span><span style="font-weight:500; color:#1A1D21; font-variant-numeric:tabular-nums;">a41f…9c02</span></div>
-                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Signatures</span><span style="font-weight:500; color:#1A1D21;">2 of 3</span></div>
-                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Audit trail</span><span style="font-weight:500; color:#1A1D21;">14 events</span></div>
+
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="padding:18px 24px 14px 24px;">
+                    <div style="font-size:15px; font-weight:600; color:#1A1D21;">Recent access</div>
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Every open, search hit, download and hold is written to the audit trail</div>
                   </div>
-                  <div style="margin-top:14px; display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; background:#F7F8FA;">
-                    <div style="width:52px; height:52px; border-radius:8px; background:#1A1D21;"></div>
-                    <div style="font-size:11px; color:#6B7280; line-height:1.5;">Scan to verify this document against the WEWE register.</div>
+                  <div style="display:grid; grid-template-columns:minmax(110px,1fr) minmax(150px,2fr) 148px 92px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>Who</div><div>What they did</div><div>When</div><div>Account</div>
                   </div>
+                  <sc-for list="{{ dmsAccess }}" as="a" hint-placeholder-count="5">
+                    <div style="display:grid; grid-template-columns:minmax(110px,1fr) minmax(150px,2fr) 148px 92px; column-gap:10px; align-items:center; padding:12px 24px; background:{{ a.bg }};">
+                      <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+                        <span style="width:26px; height:26px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ a.initials }}</span>
+                        <span style="font-size:13px; font-weight:500; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.who }}</span>
+                      </div>
+                      <div style="font-size:12px; color:#6B7280; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.act }}</div>
+                      <div style="font-size:12px; color:#6B7280; font-variant-numeric:tabular-nums;">{{ a.when }}</div>
+                      <div>
+                        <sc-if value="{{ a.ext }}" hint-placeholder-val="{{ false }}"><span style="height:21px; padding:0 8px; border-radius:5px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">EXTERNAL</span></sc-if>
+                        <sc-if value="{{ a.internal }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#9AA0A8;">Staff</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
                 </div>
               </div>
             </div>
@@ -2049,7 +2188,7 @@
                 </div>
               </sc-for>
               <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:#FAFBFC; border-top:1px solid #EEF0F3; font-variant-numeric:tabular-nums;">
-                <div style="font-size:12px; color:#8A8F98;">Showing 5 of 47 staff</div>
+                <div style="font-size:12px; color:#8A8F98;">{{ payShowing }}</div>
                 <div style="display:flex; gap:28px;">
                   <div style="text-align:right;"><div style="font-size:11px; color:#8A8F98;">Total gross</div><div style="font-size:15px; font-weight:600; color:#1A1D21;">₦18,940,000.00</div></div>
                   <div style="text-align:right;"><div style="font-size:11px; color:#8A8F98;">Total net</div><div style="font-size:15px; font-weight:600; color:#1A1D21;">₦14,204,000.00</div></div>
@@ -2306,7 +2445,7 @@
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
               <div>
                 <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Reports &amp; analytics</div>
-                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">FY2026 to date · 214 transactions · ₦187,420,000.00 processed · updated 4 minutes ago</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ rptSummary }}</div>
               </div>
               <div style="display:flex; gap:8px; flex:none;">
                 <button onClick="{{ openFilter }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Filters</button>
@@ -3725,19 +3864,15 @@
               <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); max-width:520px;">
                 <div style="font-size:15px; font-weight:600; color:#1A1D21;">Enter the six-digit code</div>
                 <div style="font-size:13px; color:#6B7280; margin-top:8px; line-height:1.6;">Open your authenticator app and type the code showing for WEWE ERP.</div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                  <span style="width:10px;"></span>
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                  <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-                </div>
-                <div style="font-size:11px; color:#9AA0A8; margin-top:12px;">The code changes every 30 seconds. If it is rejected, wait for the next one rather than retyping.</div>
+                <div style="margin-top:20px;"><input value="{{ otp }}" onChange="{{ setOtp }}" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%; height:64px; border:1px solid #E3E5E8; border-radius:12px; background:#F7F8FA; text-align:center; font-size:32px; font-weight:600; letter-spacing:.34em; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" /></div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
                   <button onClick="{{ twoFaBack }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Back</button>
-                  <button onClick="{{ twoFaNext }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Confirm</button>
+                  <sc-if value="{{ otpReady }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ twoFaNext }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Confirm</button>
+                  </sc-if>
+                  <sc-if value="{{ otpShort }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Enter all 6 digits</button>
+                  </sc-if>
                 </div>
               </div>
             </sc-if>
@@ -5476,7 +5611,7 @@
         <sc-if value="{{ isDocView }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="Document viewer" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
             <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
-              <a href="#/documents">Documents</a><span>/</span><span>Grants / USAID-LON-24</span><span>/</span><span style="color:#3B3B3B; font-weight:500;">Award agreement.pdf</span>
+              <a href="#/documents">Documents</a><span>/</span><span>{{ dv.crumb }}</span><span>/</span><span style="color:#3B3B3B; font-weight:500;">{{ dv.name }}</span>
             </div>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) 316px; gap:12px; align-items:start;">
@@ -5562,12 +5697,12 @@
                     <span style="display:inline-flex; align-items:center; gap:5px; height:22px; padding:0 8px; border-radius:6px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700;">CONFIDENTIAL</span>
                   </div>
                   <div style="display:flex; flex-direction:column; gap:11px; margin-top:14px; font-size:12px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Type</span><span style="color:#1A1D21; font-weight:500;">PDF · 24 pages</span></div>
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Size</span><span style="color:#1A1D21; font-weight:500; font-variant-numeric:tabular-nums;">2.4 MB</span></div>
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Version</span><span style="color:#1A1D21; font-weight:500;">v4 · current</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Class</span><span style="color:#1A1D21; font-weight:500;">{{ dv.cls }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Size</span><span style="color:#1A1D21; font-weight:500; font-variant-numeric:tabular-nums;">{{ dv.size }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Version</span><span style="color:#1A1D21; font-weight:500;">{{ dv.ver }} · current</span></div>
                     <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Uploaded by</span><span style="color:#1A1D21; font-weight:500;">Amina Yusuf</span></div>
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Uploaded</span><span style="color:#1A1D21; font-weight:500; font-variant-numeric:tabular-nums;">12/01/2026</span></div>
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">OCR</span><span style="color:#166F31; font-weight:600;">Searchable · 96.4%</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Updated</span><span style="color:#1A1D21; font-weight:500; font-variant-numeric:tabular-nums;">{{ dv.when }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">OCR</span><span style="color:#166F31; font-weight:600;">{{ dv.ocrLabel }}</span></div>
                     <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Retention</span><span style="color:#1A1D21; font-weight:500;">10 yrs after close</span></div>
                     <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Legal hold</span><span style="color:#8A4B0B; font-weight:600;">Yes — FY2026 audit</span></div>
                   </div>
@@ -6232,6 +6367,12 @@
                   </sc-if>
                 </sc-for>
               </div>
+              <sc-if value="{{ specNone }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:56px 24px; text-align:center;">
+                  <div style="font-size:15px; font-weight:600; color:#1A1D21;">Nothing to show yet</div>
+                  <div style="font-size:13px; color:#9AA0A8; margin-top:7px; line-height:1.55;">Records appear here as they are created.</div>
+                </div>
+              </sc-if>
               <sc-for list="{{ specRows }}" as="r" hint-placeholder-count="6">
                 <div style="display:grid; grid-template-columns:{{ r.tpl }}; column-gap:10px; align-items:center; padding:15px 24px; background:{{ r.bg }};" style-hover="background:#F1F3F5">
                   <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="5">
@@ -6596,20 +6737,7 @@
         <div style="background:#fff; border-radius:16px; padding:28px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.07);">
           <div style="font-size:20px; font-weight:600; color:#1A1D21;">Confirm it’s you</div>
           <div style="font-size:13px; color:#6B7280; margin-top:8px; line-height:1.6; text-wrap:pretty;">WEWE has asked you to sign <span style="font-weight:600; color:#1A1D21;">Amendment 3 — USAID-LON-24</span>. We have emailed a six-digit code to <span style="font-weight:600; color:#1A1D21;">k.adeleke@usaid.gov</span>.</div>
-          <div style="display:flex; gap:10px; margin-top:20px;">
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-            <span style="width:10px;"></span>
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-            <input maxlength="1" style="width:52px; height:60px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; text-align:center; font-size:24px; font-weight:600; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
-          </div>
-          <button onClick="{{ extNext }}" style="width:100%; height:46px; margin-top:20px; border:none; border-radius:11px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Verify and open the document</button>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; font-size:12px;">
-            <span style="color:#9AA0A8;">Code expires in 9:48 · resend available in 1:02</span>
-            <button onClick="{{ extRestart }}" style="border:none; background:transparent; padding:0; font-size:12px; font-weight:600; color:#D9532B;">Wrong email?</button>
-          </div>
+          <div style="margin-top:20px;"><input value="{{ extOtp }}" onChange="{{ setExtOtp }}" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%; height:64px; border:1px solid #E3E5E8; border-radius:12px; background:#F7F8FA; text-align:center; font-size:32px; font-weight:600; letter-spacing:.34em; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" /></div>
           <div style="font-size:11px; color:#9AA0A8; margin-top:18px; padding-top:16px; border-top:1px solid #EEF0F3; line-height:1.6;">You do not need a WEWE account. This link works once, for this document, and expires on 28/08/2026.</div>
         </div>
       </sc-if>
@@ -7258,6 +7386,120 @@
           <sc-if value="{{ dec.noteMissing }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">A note is required</button>
           </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgDmsUpload }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:620px; max-height:88vh; overflow-y:auto; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Upload documents</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Filed as version 1. A re-upload of the same name later creates v2 and keeps this one.</div>
+
+        <div style="margin-top:20px; padding:30px; border:1.5px dashed #D3D6DB; border-radius:12px; background:#FAFBFC; text-align:center;">
+          <div style="font-size:14px; font-weight:600; color:#1A1D21;">Drop files here, or take a photo</div>
+          <div style="font-size:12px; color:#8A8F98; margin-top:6px;">PDF, JPG, PNG, DOCX or XLSX up to 10 MB each</div>
+          <button onClick="{{ noop }}" style="height:36px; margin-top:16px; padding:0 16px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;">Choose files</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
+            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Amendment 3 — signed copy.pdf</div><div style="font-size:11px; color:#9AA0A8;">812 KB · 6 pages</div></div>
+            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
+            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Tranche 3 disbursement letter.pdf</div><div style="font-size:11px; color:#9AA0A8;">248 KB · 2 pages</div></div>
+            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
+            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Revised budget annex.xlsx</div><div style="font-size:11px; color:#9AA0A8;">184 KB</div></div>
+            <span style="font-size:11px; color:#166F31; font-weight:600; flex:none;">Ready</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Destination folder</label>
+            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;">
+              <option>{{ upDest }}</option>
+              <option>Grants / EU-WISH-23</option>
+              <option>Finance / Budgets</option>
+              <option>Finance / Payments &amp; vouchers</option>
+              <option>Procurement</option>
+              <option>Human resources</option>
+              <option>Governance &amp; policy</option>
+              <option>Audit &amp; evidence</option>
+            </select>
+            <span style="font-size:11px; color:#9AA0A8;">Prefilled from the folder you were browsing</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Document class</label>
+            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;">
+              <option>Agreements &amp; amendments</option>
+              <option>Financial records</option>
+              <option>Procurement records</option>
+              <option>Staff records</option>
+              <option>Policies</option>
+              <option>Reports</option>
+              <option>Evidence</option>
+            </select>
+            <span style="font-size:11px; color:#9AA0A8;">Sets the retention rule</span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:7px; margin-top:16px;">
+          <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Link to a transaction or grant (optional)</label>
+          <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;">
+            <option>USAID-LON-24</option>
+            <option>EU-WISH-23</option>
+            <option>FCDO-ACE-25</option>
+            <option>REQ-2026-0187</option>
+            <option>PO-2026-0064</option>
+            <option>RET-2026-0018</option>
+            <option>Not linked</option>
+          </select>
+          <span style="font-size:11px; color:#9AA0A8;">Linked documents appear on that record as supporting evidence</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+            <div style="min-width:0;">
+              <div style="font-size:13px; font-weight:600; color:#1A1D21;">Mark confidential</div>
+              <div style="font-size:11px; color:#9AA0A8; margin-top:3px; line-height:1.45;">Restricts access by role and logs every open to the audit trail</div>
+            </div>
+            <sc-if value="{{ upConf }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ upToggleConf }}" style="width:38px; height:22px; flex:none; border:none; border-radius:999px; background:#E0572E; position:relative; padding:0;"><span style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+            </sc-if>
+            <sc-if value="{{ upOpen }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ upToggleConf }}" style="width:38px; height:22px; flex:none; border:none; border-radius:999px; background:#DCDEE2; position:relative; padding:0;"><span style="position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+            </sc-if>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+            <div style="min-width:0;">
+              <div style="font-size:13px; font-weight:600; color:#1A1D21;">Run OCR on scans</div>
+              <div style="font-size:11px; color:#9AA0A8; margin-top:3px; line-height:1.45;">Makes the contents searchable, including photographed receipts</div>
+            </div>
+            <sc-if value="{{ upOcr }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ upToggleOcr }}" style="width:38px; height:22px; flex:none; border:none; border-radius:999px; background:#E0572E; position:relative; padding:0;"><span style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+            </sc-if>
+            <sc-if value="{{ upNoOcr }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ upToggleOcr }}" style="width:38px; height:22px; flex:none; border:none; border-radius:999px; background:#DCDEE2; position:relative; padding:0;"><span style="position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ upConf }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:11px; margin-top:16px; padding:13px 15px; border-radius:10px; background:#FBEAE4; border:1px solid #F3D6CB;">
+            <span style="width:8px; height:8px; border-radius:999px; background:#C2410C; flex:none;"></span>
+            <span style="font-size:12px; color:#9C3309; line-height:1.5;">Confidential documents are not visible to the External Auditor role and cannot be attached to a public form.</span>
+          </div>
+        </sc-if>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <button onClick="{{ upSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Upload 3 files</button>
         </div>
       </div>
     </sc-if>
@@ -8880,7 +9122,7 @@ const DASH = {
     ],
     banner:'3 postings failed to reach QuickBooks — account mapping missing for “Per diem — international”.',
     queueTitle:'Awaiting Finance', queueSubtitle:'Payment processing queue',
-    refs:['REQ-2026-0187','PO-2026-0064','REQ-2026-0189','RET-2026-0019','PO-2026-0066','REQ-2026-0179'],
+    refs:TXNS.filter(t => t.status === 'pending').slice(0, 6).map(t => t.ref),
     meterTitle:'Grant burn rate', meterSubtitle:'Actual against budget by donor',
     meters:[
       {label:'USAID-LON-24', pct:81, detail:'₦48,600,000.00 of ₦60,000,000.00'},
@@ -9772,6 +10014,55 @@ const QB_EXCEPTIONS = [
   { ref:'PO-2026-0061', posted:'01/08/2026 · 08:44', err:'Vendor “Kaduna Motors Ltd” not found', amount:340000 }
 ];
 
+const DMS_TREE = [
+  { label:'All documents', count:4182, depth:0 },
+  { label:'Grants', count:1284, depth:1 },
+  { label:'USAID-LON-24', count:612, depth:2 },
+  { label:'EU-WISH-23', count:398, depth:2 },
+  { label:'Finance', count:1640, depth:1 },
+  { label:'Budgets', count:186, depth:2 },
+  { label:'Payments & vouchers', count:1104, depth:2 },
+  { label:'Payroll', count:350, depth:2 },
+  { label:'Procurement', count:512, depth:1 },
+  { label:'Human resources', count:428, depth:1 },
+  { label:'Governance & policy', count:184, depth:1 },
+  { label:'Audit & evidence', count:134, depth:1 }
+];
+
+const DMS_CLASSES = [
+  { label:'All classes', n:4182 },
+  { label:'Agreements & amendments', n:96 },
+  { label:'Financial records', n:1802 },
+  { label:'Procurement records', n:512 },
+  { label:'Staff records', n:428 },
+  { label:'Policies', n:64 },
+  { label:'Reports', n:388 },
+  { label:'Evidence', n:892 }
+];
+
+const DMS_DOCS = [
+  { name:'USAID-LON-24 — Award agreement.pdf', folder:'Grants / USAID-LON-24', cls:'Agreements & amendments', size:'2.4 MB', ver:'v4', when:'12/01/2026', conf:true, hold:true, ocr:96.4, linked:'USAID-LON-24', signed:true },
+  { name:'Amendment 3 — USAID-LON-24.pdf', folder:'Grants / USAID-LON-24', cls:'Agreements & amendments', size:'812 KB', ver:'v5', when:'30/07/2026', conf:true, hold:true, ocr:99.1, linked:'USAID-LON-24', signed:true },
+  { name:'FY2026 approved budget.xlsx', folder:'Finance / Budgets', cls:'Financial records', size:'860 KB', ver:'v7', when:'04/02/2026', conf:false, hold:false, ocr:0, linked:'Core', signed:false },
+  { name:'Per diem circular 2026.pdf', folder:'Governance & policy', cls:'Policies', size:'318 KB', ver:'v2', when:'02/01/2026', conf:false, hold:false, ocr:94.8, linked:'—', signed:false },
+  { name:'REQ-2026-0187 — quotation bundle.pdf', folder:'Procurement', cls:'Procurement records', size:'1.2 MB', ver:'v1', when:'26/07/2026', conf:false, hold:false, ocr:91.2, linked:'REQ-2026-0187', signed:false },
+  { name:'PO-2026-0064 — Techtink quotation.pdf', folder:'Procurement', cls:'Procurement records', size:'204 KB', ver:'v1', when:'28/07/2026', conf:false, hold:false, ocr:97.6, linked:'PO-2026-0064', signed:false },
+  { name:'RET-2026-0018 — receipts bundle.pdf', folder:'Finance / Payments & vouchers', cls:'Evidence', size:'1.2 MB', ver:'v2', when:'29/07/2026', conf:false, hold:false, ocr:88.4, linked:'RET-2026-0018', signed:false },
+  { name:'August 2026 payroll register.xlsx', folder:'Finance / Payroll', cls:'Financial records', size:'640 KB', ver:'v3', when:'Yesterday', conf:true, hold:false, ocr:0, linked:'Core', signed:false },
+  { name:'Contract — Chinelo Obi.pdf', folder:'Human resources', cls:'Staff records', size:'420 KB', ver:'v2', when:'01/09/2024', conf:true, hold:false, ocr:98.2, linked:'EU-WISH-23', signed:true },
+  { name:'Q2 2026 donor narrative report.docx', folder:'Grants / EU-WISH-23', cls:'Reports', size:'1.8 MB', ver:'v6', when:'14/07/2026', conf:false, hold:false, ocr:0, linked:'EU-WISH-23', signed:false },
+  { name:'Safeguarding policy 2026.pdf', folder:'Governance & policy', cls:'Policies', size:'286 KB', ver:'v3', when:'01/03/2026', conf:false, hold:false, ocr:99.4, linked:'—', signed:true },
+  { name:'FY2025 audited financial statements.pdf', folder:'Audit & evidence', cls:'Financial records', size:'3.1 MB', ver:'v1', when:'28/04/2026', conf:false, hold:true, ocr:97.1, linked:'Core', signed:true }
+];
+
+const DMS_ACCESS = [
+  { who:'K. Adeleke', act:'Opened the award agreement, watermarked', when:'Yesterday · 11:20', ext:true },
+  { who:'Fatima Bello', act:'Searched “per diem circular” and landed on page 3', when:'30/07/2026 · 09:26', ext:false },
+  { who:'Chiamaka Eze', act:'Cited article 4.2 on REQ-2026-0187', when:'26/07/2026 · 15:02', ext:false },
+  { who:'Amina Yusuf', act:'Applied a legal hold to 2 documents', when:'02/07/2026 · 08:40', ext:false },
+  { who:'Ibrahim Musa', act:'Downloaded the signed FY2025 statements', when:'28/06/2026 · 16:14', ext:false }
+];
+
 const DOCS = [
   { name:'USAID-LON-24 — Award agreement.pdf', folder:'Grants / USAID-LON-24', size:'2.4 MB', ver:'v4', by:'Amina Yusuf', when:'12/01/2026', conf:true },
   { name:'FY2026 approved budget.xlsx', folder:'Finance / Budgets', size:'860 KB', ver:'v7', by:'Ibrahim Musa', when:'04/02/2026', conf:false },
@@ -10087,6 +10378,17 @@ class Component extends DCLogic {
     bulkDone: false,
     fulfil: {},
     obMode: 'warn',
+    nrPurpose: '',
+    nrBudget: 'Field monitoring & supervision',
+    nrLines: [{ desc:'', qty:1, unit:0 }],
+    dmsFolder: 'All documents',
+    dmsClass: 'All classes',
+    dmsQ: '',
+    dmsSel: {},
+    upConf: false,
+    upOcr: true,
+    otp: '',
+    extOtp: '',
     ceremonyStep: 1,
     ceremonyMethod: 'saved',
     extStep: 1,
@@ -10156,6 +10458,24 @@ class Component extends DCLogic {
     })();
     return { txn:t, d };
   }
+  openShare(url, label) {
+    try {
+      const w = typeof window !== 'undefined' && window.open(url, '_blank', 'noopener,noreferrer');
+      if (w) return;
+    } catch (e) { /* popup blocked */ }
+    this.toast('Could not open ' + label + ' — your browser blocked the window. Copy the link instead.');
+  }
+  hook(name, payload, fallbackMsg) {
+    const fn = typeof window !== 'undefined' && window['__wewe' + name];
+    if (typeof fn === 'function') {
+      let res;
+      try { res = fn(payload); } catch (e) { this.toast('Could not complete that — the server rejected it. Nothing was saved.'); return true; }
+      this.toast(typeof res === 'string' && res ? res : 'Submitted.');
+      return true;
+    }
+    if (fallbackMsg) this.toast(fallbackMsg);
+    return false;
+  }
   act(ref, verb, note) {
     const fn = typeof window !== 'undefined' && window.__weweAct;
     if (typeof fn === 'function') {
@@ -10167,6 +10487,23 @@ class Component extends DCLogic {
       : verb === 'return' ? ref + ' returned to the initiator with your note. It re-enters your queue once resubmitted.'
       : ref + ' rejected. The initiator is notified with your reason and the commitment is released.';
     this.toast(msg);
+  }
+  dmsFiltered() {
+    const f = this.state.dmsFolder, c = this.state.dmsClass, q = String(this.state.dmsQ || '').toLowerCase().trim();
+    return DMS_DOCS
+      .filter(d => f === 'All documents' || d.folder.indexOf(f) > -1)
+      .filter(d => c === 'All classes' || d.cls === c)
+      .filter(d => !q || (d.name + ' ' + d.folder + ' ' + d.linked).toLowerCase().indexOf(q) > -1);
+  }
+  nrSum() {
+    return this.state.nrLines.reduce((a, l) => a + l.qty * l.unit, 0);
+  }
+  nrCap() {
+    const caps = { 'Field monitoring & supervision':3000000, 'Training & workshops':2170000, 'Communications & visibility':40000, 'Vehicle operations':82000, 'IT equipment — capital':6000000 };
+    return caps[this.state.nrBudget] || 0;
+  }
+  nrSet(i, key, v) {
+    this.setState({ nrLines: this.state.nrLines.map((l, n) => n === i ? Object.assign({}, l, { [key]: key === 'desc' ? v : Math.max(0, parseFloat(String(v).replace(/[^0-9.]/g, '')) || 0) }) : l) });
   }
   runAction(label) {
     const l = String(label);
@@ -10188,6 +10525,7 @@ class Component extends DCLogic {
     if (/bulk approve/i.test(l)) { this.setState({ dlg:{ kind:'bulk' }, bulkDone:false }); return; }
     if (/^sign$/i.test(l)) { this.setState({ dlg:{ kind:'ceremony' }, ceremonyStep:1 }); return; }
     if (/certificate/i.test(l)) { this.go('/documents/certificate'); return; }
+    if (/re-upload|upload budget|import budget/i.test(l)) { this.setState({ dlg:{ kind:'upload', label:l } }); return; }
     if (/Build a report|Custom builder/i.test(l)) { this.go('/reports/builder'); return; }
     if (/^Export|^Print|^Download/i.test(l)) { this.setState({ dlg:{ kind:'export' } }); return; }
     if (/^Filter/i.test(l)) { this.setState({ dlg:{ kind:'filter' } }); return; }
@@ -10274,7 +10612,9 @@ class Component extends DCLogic {
     const role = ROLES[this.state.role] ? this.state.role : 'finance';
     const person = ROLES[role];
     const route = this.state.route || '/dashboard';
-    const detMatch = /^\/requisitions\/((?:REQ|ADV|RET|PO)-\d{4}-\d{4})$/.exec(route);
+    const qi = route.indexOf('?');
+    const path = qi === -1 ? route : route.slice(0, qi);
+    const detMatch = /^\/requisitions\/((?:REQ|ADV|RET|PO)-\d{4}-\d{4})$/.exec(path);
     const detBundle = detMatch ? this.detailFor(detMatch[1]) : null;
 
     const navSpec = person.nav.map((g, i) => i === person.nav.length - 1 ? [g[0], g[1].concat(['mob','sys'])] : g);
@@ -10283,7 +10623,13 @@ class Component extends DCLogic {
       items: ids.map(id => {
         const m = MODULES[id];
         const active = route === m.route;
-        const counts = { req: role === 'finance' ? 6 : role === 'supervisor' ? 4 : 0, adv: role === 'finance' ? 3 : 0, aud: role === 'audit' ? 3 : 0 };
+        const stageOf = { supervisor:1, audit:2, finance:3, approver:4 }[role];
+        const mine = stageOf === undefined ? [] : TXNS.filter(t => t.status === 'pending' && t.stage === stageOf);
+        const counts = {
+          req: mine.filter(t => /^(REQ|PO)-/.test(t.ref)).length,
+          adv: mine.filter(t => /^(ADV|RET)-/.test(t.ref)).length,
+          aud: role === 'audit' ? TXNS.filter(t => t.status === 'pending' && t.stage === 2).length : 0
+        };
         const act = active || (m.route !== '/dashboard' && route.indexOf(m.route + '/') === 0);
         const kids = (act && KIDS[id]) ? KIDS[id].map(([label, r]) => ({
           label, current: route === r, notCurrent: route !== r, onClick: () => this.go(r)
@@ -10322,9 +10668,9 @@ class Component extends DCLogic {
     const isDash = route === '/dashboard';
     const isDS = route === '/design-system';
     const adv = this.state.advanced;
-    const under = p => route === p || route.indexOf(p + '/') === 0;
-    const spec = PAGE_SPECS[route];
-    const base = p => route === p;
+    const under = p => path === p || path.indexOf(p + '/') === 0;
+    const spec = PAGE_SPECS[path];
+    const base = p => path === p;
 
     const tab = this.state.reqTab;
     const tabbed = REQ_ROWS.filter(t =>
@@ -10380,6 +10726,7 @@ class Component extends DCLogic {
       navGroups, roleLabel: person.label, personName: person.name, personTitle: person.title,
       personInitials: this.initials(person.name),
       switcherOpen: this.state.switcherOpen,
+      switcherDemo: this.state.switcherOpen && typeof window !== 'undefined' && /(\?|&)demo=1/.test(window.location.search || ''),
       toggleSwitcher: () => this.setState({ switcherOpen: !this.state.switcherOpen }),
       roleList: Object.keys(ROLES).map(k => ({
         label: ROLES[k].label, name: ROLES[k].name, initials: this.initials(ROLES[k].name),
@@ -10419,7 +10766,7 @@ class Component extends DCLogic {
       refundSave: () => {
         const how = ['cash receipted at the office', 'bank transfer', 'deduction from August salary'][this.state.refundMode];
         this.setState({ dlg:null });
-        this.toast('₦61,600.00 settled by ' + how + '. RET-2026-0021 is now fully retired and closed.');
+        this.hook('SettleRefund', { method:how }, 'Refund settlement recorded.');
       },
       dlgPsMail: !!this.state.dlg && this.state.dlg.kind === 'psmail',
       pm: (() => {
@@ -10429,7 +10776,7 @@ class Component extends DCLogic {
         const last = String(r[0]).split(' ').slice(-1)[0].toLowerCase();
         return { name:r[0], id:r[1], net:r[4], email: first + '.' + last + '@wewe.org.ng' };
       })(),
-      pmSend: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.toast('August payslip emailed to ' + r[0] + ' as a password-protected PDF. Delivery is logged against the payroll run.'); },
+      pmSend: () => { const r = this.state.dlg.row; this.setState({ dlg:null }); this.hook('EmailPayslip', { staff:r[0] }, 'Payslip emailed.'); },
       dlgApprove2: !!this.state.dlg && this.state.dlg.kind === 'approve',
       dlgReverse: !!this.state.dlg && this.state.dlg.kind === 'reverse',
       dlgChase: !!this.state.dlg && this.state.dlg.kind === 'chase',
@@ -10534,9 +10881,9 @@ class Component extends DCLogic {
       })(),
       dlgQuick: !!this.state.dlg && this.state.dlg.kind === 'quick',
       openQuick: () => this.setState({ dlg:{ kind:'quick' } }),
-      psEmail: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Payslip emailed to ' + n + ' as a password-protected PDF.'); },
+      psEmail: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('EmailPayslip', { staff:n }, 'Payslip emailed.'); },
       psQuery: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Query opened on ' + n + '’s August payslip. HR replies within two working days.'); },
-      rmPay: () => { const a = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Payment raised for ' + a + '. It enters the Finance queue for two signatures before 10/09/2026.'); },
+      rmPay: () => { const a = this.state.dlg.row[0]; this.setState({ dlg:null }); this.hook('RaiseRemittancePayment', { authority:a }, 'Payment raised.'); },
       tplUse: () => { this.setState({ dlg:null }); this.go('/requisitions/new'); },
       tplSave: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Template “' + n + '” saved. Everyone using it starts from the new version.'); },
       tplCopy: () => { const n = this.state.dlg.row[0]; this.setState({ dlg:null }); this.toast('Copy of “' + n + '” created as a personal template.'); },
@@ -10559,14 +10906,14 @@ class Component extends DCLogic {
       dlgVerify: !!this.state.dlg && this.state.dlg.kind === 'verify',
       dlgRole: !!this.state.dlg && this.state.dlg.kind === 'role',
       dlgPayApp: !!this.state.dlg && this.state.dlg.kind === 'payapp',
-      staffSave: () => { this.setState({ dlg:null }); this.toast('WW-0048 created. Account invite sent and a 9-step onboarding checklist opened for HR, IT and Tunde Balogun.'); },
+      staffSave: () => { this.setState({ dlg:null }); this.hook('CreateStaff', {}, 'Staff record created and an invite sent.'); },
       onbTasks: ONB_TASKS.map((t, i) => {
         const on = this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i];
         return { task:t[0], owner:t[1], due:t[2], on, off: !on, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
           onClick: () => { const s = Object.assign({}, this.state.onbSel); s[i] = !on; this.setState({ onbSel:s }); } };
       }),
       onbCount: ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length,
-      onbSave: () => { const n = ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length; this.setState({ dlg:null }); this.toast(n + ' onboarding tasks assigned to Blessing Nwafor, due against a 01/09/2026 start.'); },
+      onbSave: () => { const n = ONB_TASKS.filter((t, i) => (this.state.onbSel[i] === undefined ? t[3] : this.state.onbSel[i])).length; this.setState({ dlg:null }); this.hook('StartOnboarding', { tasks:n }, n + ' onboarding tasks assigned.'); },
       rfqVendors: RFQ_VENDORS.map((v, i) => {
         const on = this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i];
         return { name:v[0], note:v[1], blocked:!!v[3], on, off: !on, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
@@ -10575,10 +10922,10 @@ class Component extends DCLogic {
       rfqCount: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length,
       rfqOk: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length >= 3,
       rfqTooFew: RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length < 3,
-      rfqSend: () => { const n = RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length; this.setState({ dlg:null }); this.toast('RFQ-2026-0034 sent to ' + n + ' vendors, closing 18/08/2026. Quotations land in the comparison sheet as they arrive.'); },
-      verifySend: () => { this.setState({ dlg:null }); this.toast('Campaign launched — 31 custodians notified, 128 assets to confirm by 31/08/2026.'); },
-      roleSave: () => { this.setState({ dlg:null }); this.toast('Draft role created with no permissions. Set them in the matrix, then publish.'); },
-      paySend: () => { this.setState({ dlg:null }); this.toast('August payroll sent to Ibrahim Musa, then Dr. Amina Yusuf. ₦14,067,842.00 net held until both sign.'); },
+      rfqSend: () => { const n = RFQ_VENDORS.filter((v, i) => (this.state.rfqSel[i] === undefined ? v[2] : this.state.rfqSel[i])).length; this.setState({ dlg:null }); this.hook('SendRfq', { vendors:n }, 'Request for quotation sent to ' + n + ' vendors.'); },
+      verifySend: () => { this.setState({ dlg:null }); this.hook('StartAssetVerification', {}, 'Verification campaign launched.'); },
+      roleSave: () => { this.setState({ dlg:null }); this.hook('CreateRole', {}, 'Draft role created.'); },
+      paySend: () => { this.setState({ dlg:null }); this.hook('SubmitPayroll', { period:'2026-08' }, 'Payroll sent for approval.'); },
       dlgIssue: !!this.state.dlg && this.state.dlg.kind === 'issue',
       dlgReceive: !!this.state.dlg && this.state.dlg.kind === 'receive',
       dlgKpi: !!this.state.dlg && this.state.dlg.kind === 'kpi',
@@ -10638,7 +10985,7 @@ class Component extends DCLogic {
       kpiOver: 85 + this.state.kpiW > 100,
       kpiFits: 85 + this.state.kpiW <= 100,
       kpiRoom: 15,
-      kpiSave: () => { this.setState({ dlg:null }); this.toast('Objective sent to Ngozi Okafor at ' + this.state.kpiW + '% weight. She accepts or proposes a change before the cycle opens.'); },
+      kpiSave: () => { this.setState({ dlg:null }); this.hook('CreateObjective', { weight:this.state.kpiW }, 'Objective sent to the staff member.'); },
       dnStep: this.state.dnStep,
       dnStep1: this.state.dnStep === 1, dnStep2: this.state.dnStep === 2, dnStep3: this.state.dnStep === 3,
       dnSteps: [[1,'Donor'],[2,'Award'],[3,'Budget']].map(([n, label]) => ({
@@ -10647,7 +10994,7 @@ class Component extends DCLogic {
       dnBackLabel: this.state.dnStep === 1 ? 'Cancel' : 'Back',
       dnBack: () => { if (this.state.dnStep === 1) this.setState({ dlg:null }); else this.setState({ dnStep: this.state.dnStep - 1 }); },
       dnNext: () => this.setState({ dnStep: this.state.dnStep + 1 }),
-      dnSave: () => { this.setState({ dlg:null, dnStep:1 }); this.toast('Donor created as a draft with 4 budget lines at ₦0.00. Finance publishes it once the budget reconciles to the award value.'); },
+      dnSave: () => { this.setState({ dlg:null, dnStep:1 }); this.hook('CreateDonor', {}, 'Donor created as a draft.'); },
       dlgRow: !!this.state.dlg && this.state.dlg.kind === 'row',
       dlgAction: !!this.state.dlg && this.state.dlg.kind === 'action',
       dlgEvent: !!this.state.dlg && this.state.dlg.kind === 'event',
@@ -10735,6 +11082,49 @@ class Component extends DCLogic {
       isBud: base('/budgets'),
       isQbo: base('/quickbooks'),
       isDms: base('/documents'),
+      dmsFolder: this.state.dmsFolder,
+      dmsTree: DMS_TREE.map(f => ({
+        label:f.label, count:f.count, pad: (14 + f.depth * 16) + 'px',
+        sel: this.state.dmsFolder === f.label, unsel: this.state.dmsFolder !== f.label,
+        onClick: () => this.setState({ dmsFolder:f.label })
+      })),
+      dmsClasses: DMS_CLASSES.map(c => ({
+        label:c.label, n:c.n, sel: this.state.dmsClass === c.label, unsel: this.state.dmsClass !== c.label,
+        onClick: () => this.setState({ dmsClass:c.label })
+      })),
+      dmsRows: this.dmsFiltered().map((d, i) => ({
+        name:d.name, folder:d.folder, cls:d.cls, size:d.size, ver:d.ver, when:d.when, linked:d.linked,
+        hasLink: d.linked !== '—', noLink: d.linked === '—',
+        conf:d.conf, hold:d.hold, signed:d.signed,
+        ocrLabel: d.ocr ? d.ocr.toFixed(1) + '%' : '—', searchable: d.ocr > 0, notOcr: !d.ocr,
+        bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+        sel: !!this.state.dmsSel[d.name], unsel: !this.state.dmsSel[d.name],
+        onPick: () => { const v = Object.assign({}, this.state.dmsSel); if (v[d.name]) delete v[d.name]; else v[d.name] = 1; this.setState({ dmsSel:v }); },
+        onOpen: () => this.go('/documents/view?id=' + encodeURIComponent(d.name))
+      })),
+      dmsCount: (() => { const n = this.dmsFiltered().length; return n + (n === 1 ? ' document' : ' documents'); })(),
+      dmsQ: this.state.dmsQ,
+      dmsSetQ: e => this.setState({ dmsQ: e.target.value }),
+      dmsHasQ: !!String(this.state.dmsQ || '').trim(),
+      dmsClearQ: () => this.setState({ dmsQ:'' }),
+      dmsPicked: Object.keys(this.state.dmsSel).length,
+      dmsAnyPicked: Object.keys(this.state.dmsSel).length > 0,
+      dmsClearSel: () => this.setState({ dmsSel:{} }),
+      dmsPack: () => { const refs = Object.keys(this.state.dmsSel); this.setState({ dmsSel:{} }); this.hook('CreateEvidencePack', { documents:refs }, refs.length + ' documents added to an evidence pack.'); },
+      dmsHoldSel: () => { const refs = Object.keys(this.state.dmsSel); this.setState({ dmsSel:{} }); this.hook('ApplyLegalHold', { documents:refs }, 'Legal hold applied to ' + refs.length + ' documents.'); },
+      dmsAccess: DMS_ACCESS.map((a, i) => ({ who:a.who, act:a.act, when:a.when, ext:a.ext, internal: !a.ext, initials:this.initials(a.who), bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
+      openCreate: () => this.setState({ dlg:{ kind:'dmsupload' }, upConf:false, upOcr:true }),
+      dlgDmsUpload: !!this.state.dlg && this.state.dlg.kind === 'dmsupload',
+      upDest: this.state.dmsFolder === 'All documents' ? 'Grants / USAID-LON-24' : this.state.dmsFolder,
+      upConf: this.state.upConf, upOpen: !this.state.upConf,
+      upToggleConf: () => this.setState({ upConf: !this.state.upConf }),
+      upOcr: this.state.upOcr, upNoOcr: !this.state.upOcr,
+      upToggleOcr: () => this.setState({ upOcr: !this.state.upOcr }),
+      upSave: () => {
+        const dest = this.state.dmsFolder === 'All documents' ? 'Grants / USAID-LON-24' : this.state.dmsFolder;
+        this.setState({ dlg:null });
+        this.hook('UploadDocuments', { folder:dest, confidential:this.state.upConf, ocr:this.state.upOcr }, 'Documents uploaded.');
+      },
       isHr: base('/hr'),
       isTls: base('/timesheets'),
       isPay: base('/payroll'),
@@ -10780,7 +11170,7 @@ class Component extends DCLogic {
           if (tone === 'x') {
             return { acts: text.split('|').map((b, bi) => ({ label:b, primary: bi === 0, secondary: bi > 0,
               onClick: () => {
-                if (/^return$/i.test(b)) { this.setState({ dlg:{ kind:'return', ref:r[0], item:r[1], who:r[2], qty:r[3] } }); return; }
+                if (/^return$/i.test(b) && !/^(REQ|ADV|RET|PO)-\d{4}-\d{4}$/.test(String(r[0]))) { this.setState({ dlg:{ kind:'return', ref:r[0], item:r[1], who:r[2], qty:r[3] } }); return; }
                 if (/^issue$/i.test(b)) { this.setState({ dlg:{ kind:'issue' }, stkItem:0, stkQty:12 }); return; }
                 if (/^view$/i.test(b) && /Email/.test(text)) { this.setState({ dlg:{ kind:'payslip', row:r } }); return; }
                 if (/^(view|prepare)$/i.test(b) && /Export|Prepare/.test(text)) { this.setState({ dlg:{ kind:'remit', row:r } }); return; }
@@ -10806,9 +11196,9 @@ class Component extends DCLogic {
             pillBlue: tone === 'b', pillGrey: tone === 'n' };
         })
       })) : [],
-      isStub: !detBundle && KNOWN.indexOf(route) === -1 && !spec && ['/admin/activity','/hr/staff','/documents/view','/timesheets/approvals','/admin/workflow','/hr/appraisals','/inventory','/inventory/log','/reports/builder','/admin/forms','/admin/forms/build',
+      isStub: !detBundle && KNOWN.indexOf(path) === -1 && !spec && ['/admin/activity','/hr/staff','/documents/view','/timesheets/approvals','/admin/workflow','/hr/appraisals','/inventory','/inventory/log','/reports/builder','/admin/forms','/admin/forms/build',
         '/auth/2fa','/auth/reset','/auth/setup','/auth/locked','/account/profile','/account/signature','/account/notifications','/account/delegation','/admin/workflow/chain','/documents/certificate','/sign/external',
-        '/print/travel-authority','/print/purchase-order','/print/hr-letter'].indexOf(route) === -1,
+        '/print/travel-authority','/print/purchase-order','/print/hr-letter'].indexOf(path) === -1,
       goFb: () => this.go('/admin/forms/build'),
       formResp: [
         ['Today · 11:20','Ngozi Okafor','Enugu','38','₦248,000.00','RET-2026-0022',false],
@@ -10922,7 +11312,7 @@ class Component extends DCLogic {
         onClick: () => this.setState({ ceremonyMethod:k }) })),
       cerSaved: this.state.ceremonyMethod === 'saved', cerDraw: this.state.ceremonyMethod === 'draw', cerType: this.state.ceremonyMethod === 'type',
       cerMethodLabel: this.state.ceremonyMethod === 'saved' ? 'saved signature' : this.state.ceremonyMethod === 'draw' ? 'drawn signature' : 'typed signature',
-      cerSign: () => { this.setState({ dlg:null, ceremonyStep:1 }); this.toast('Signed. Amendment 3 is fully executed — the certificate and document hash are available.'); this.go('/documents/certificate'); },
+      cerSign: () => { this.setState({ dlg:null, ceremonyStep:1 }); this.hook('SignDocument', { method:this.state.ceremonyMethod }, 'Signature applied.'); this.go('/documents/certificate'); },
 
       ext1: this.state.extStep === 1, ext2: this.state.extStep === 2, ext3: this.state.extStep === 3, ext4: this.state.extStep === 4,
       extNext: () => this.setState({ extStep: Math.min(4, this.state.extStep + 1) }),
@@ -10950,7 +11340,7 @@ class Component extends DCLogic {
           conditional: n.min > 0, always: n.min === 0, stageNo: String(this.state.chainSel + 1) };
       })(),
       chainVersions: CHAIN_VERSIONS.map(v => ({ ...v, draft: !v.live })),
-      chainSave: () => this.toast('Saved as version 7. It applies to transactions raised from now on — anything already in the chain keeps version 6.'),
+      chainSave: () => this.hook('SaveWorkflowChain', { type:this.state.chainType }, 'Workflow chain saved as a new version.'),
       chainTest: () => this.setState({ dlg:{ kind:'chaintest' } }),
 
       bulkRows: BULK_QUEUE.map((b, i) => {
@@ -10995,6 +11385,64 @@ class Component extends DCLogic {
           : 'Receipt recorded. PO-2026-0064 stays open for the outstanding lines and the register shows it as partially received.');
       },
 
+      payShowing: 'Showing ' + Math.min(5, PAYROLL.length) + ' of ' + PAYROLL.length + (PAYROLL.length === 1 ? ' staff member' : ' staff'),
+      specNone: !!spec && !!spec.table && (!spec.table.rows || spec.table.rows.length === 0),
+      dmsNone: this.dmsFiltered().length === 0,
+      reqNone: (() => {
+        const t2 = this.state.reqTab;
+        return TXNS.filter(x =>
+          t2 === 'all' ? true :
+          t2 === 'mine' ? x.who === person.name :
+          t2 === 'queue' ? (x.status === 'pending' && x.stage >= 3) :
+          x.status === 'returned'
+        ).length === 0;
+      })(),
+      reqEmptyTitle: this.state.reqTab === 'queue' ? 'Nothing waiting on you' : this.state.reqTab === 'returned' ? 'Nothing has been returned' : this.state.reqTab === 'mine' ? 'You have not raised anything yet' : 'No requisitions yet',
+      reqEmptyHint: this.state.reqTab === 'queue' ? 'Your approval queue is clear. Items appear here the moment they reach your stage.' : this.state.reqTab === 'returned' ? 'Requisitions sent back for correction will appear here with the approver’s note.' : 'Raise one from New requisition, or start from a template to save time.',
+      txnTotalCount: TXNS.length,
+      txnTotalValue: money(TXNS.reduce((a, t) => a + (t.amount || 0), 0)),
+      txnSummary: TXNS.length + (TXNS.length === 1 ? ' requisition' : ' requisitions') + ' raised this financial year · ' + money(TXNS.reduce((a, t) => a + (t.amount || 0), 0)) + ' total value',
+      rptSummary: 'FY2026 to date · ' + TXNS.length + ' transactions · ' + money(TXNS.reduce((a, t) => a + (t.amount || 0), 0)) + ' processed',
+      nrSaveState: (() => {
+        const touched = String(this.state.nrPurpose || '').trim() || this.state.nrLines.some(l => String(l.desc).trim() || l.unit > 0);
+        return touched ? 'Unsaved changes · ' + person.name : 'New requisition · nothing entered yet';
+      })(),
+      nrEmpty: this.state.nrLines.length === 0,
+      nrHasLines: this.state.nrLines.length > 0,
+      nrPurpose: this.state.nrPurpose,
+      nrSetPurpose: e => this.setState({ nrPurpose: e.target.value }),
+      nrBudget: this.state.nrBudget,
+      nrSetBudget: e => this.setState({ nrBudget: e.target.value }),
+      nrRows: this.state.nrLines.map((l, i) => ({
+        desc:l.desc, qty:l.qty, unit:l.unit, totalF: money(l.qty * l.unit),
+        onDesc: e => this.nrSet(i, 'desc', e.target.value),
+        onQty: e => this.nrSet(i, 'qty', e.target.value),
+        onUnit: e => this.nrSet(i, 'unit', e.target.value),
+        onRemove: () => this.setState({ nrLines: this.state.nrLines.filter((x, n) => n !== i) })
+      })),
+      nrAdd: () => this.setState({ nrLines: this.state.nrLines.concat([{ desc:'', qty:1, unit:0 }]) }),
+      nrTotal: money(this.nrSum()),
+      nrCount: this.state.nrLines.length + (this.state.nrLines.length === 1 ? ' line' : ' lines'),
+      nrAvail: money(this.nrCap()),
+      nrOver: this.nrSum() > this.nrCap(),
+      nrFits: this.nrSum() <= this.nrCap(),
+      nrShortF: money(Math.max(0, this.nrSum() - this.nrCap())),
+      nrRemainF: money(Math.max(0, this.nrCap() - this.nrSum())),
+      nrBlank: this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
+      nrValid: this.state.nrLines.length > 0 && !this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
+      nrRoute: (() => {
+        const t = this.nrSum();
+        return [
+          { name:'Initiator', who:'Ibrahim Musa — you', on:true },
+          { name:'Supervisor', who:'Tunde Balogun, Head of Programmes', on:true },
+          { name:'Internal Audit', who: t >= 250000 ? 'Chiamaka Eze' : 'Skipped — below ₦250,000.00', on: t >= 250000 },
+          { name:'Finance', who:'Budget check and payment', on:true },
+          { name:'Final Approver', who: t >= 1000000 ? 'Folake Adeyemi, Managing Director' : 'Skipped — below ₦1,000,000.00', on: t >= 1000000 }
+        ].map((x, i, arr) => ({ name:x.name, who:x.who, on:x.on, off: !x.on, last: i === arr.length - 1, notLast: i !== arr.length - 1 }));
+      })(),
+      nrStages: 3 + (this.nrSum() >= 250000 ? 1 : 0) + (this.nrSum() >= 1000000 ? 1 : 0),
+      nrSubmit: () => { this.hook('CreateRequisition', { purpose:this.state.nrPurpose, budgetLine:this.state.nrBudget, lines:this.state.nrLines, totalKobo:this.nrSum()*100 }, 'Requisition submitted for approval.'); this.go('/requisitions'); },
+      nrSaveDraft: () => this.hook('SaveRequisitionDraft', { purpose:this.state.nrPurpose, lines:this.state.nrLines }, 'Draft saved.'),
       obWarn: this.state.obMode === 'warn', obBlock: this.state.obMode === 'block',
       obModes: [['warn','Warn and allow with justification'],['block','Block — no headroom at all']].map(([k, label]) => ({
         label, on: this.state.obMode === k, off: this.state.obMode !== k, onClick: () => this.setState({ obMode:k }) })),
@@ -11047,9 +11495,20 @@ class Component extends DCLogic {
           React.createElement('rect', { x:-1, y:-1, width:27, height:27, fill:'#fff' }), rects);
       })(),
       twoFa1: this.state.twoFaStep === 1, twoFa2: this.state.twoFaStep === 2, twoFa3: this.state.twoFaStep === 3,
+      otp: this.state.otp,
+      setOtp: e => this.setState({ otp: String(e.target.value || '').replace(/\D/g, '').slice(0, 6) }),
+      otpReady: String(this.state.otp).length === 6,
+      otpShort: String(this.state.otp).length < 6,
+      otpLeft: 6 - String(this.state.otp).length,
+      extOtp: this.state.extOtp,
+      setExtOtp: e => this.setState({ extOtp: String(e.target.value || '').replace(/\D/g, '').slice(0, 6) }),
+      extOtpReady: String(this.state.extOtp).length === 6,
+      extOtpShort: String(this.state.extOtp).length < 6,
+      demoMode: typeof window !== 'undefined' && /(\?|&)demo=1/.test(window.location.search || ''),
+      notDemo: !(typeof window !== 'undefined' && /(\?|&)demo=1/.test(window.location.search || '')),
       twoFaNext: () => this.setState({ twoFaStep: Math.min(3, this.state.twoFaStep + 1) }),
       twoFaBack: () => this.setState({ twoFaStep: Math.max(1, this.state.twoFaStep - 1) }),
-      twoFaDone: () => { this.setState({ twoFaStep:1 }); this.toast('Two-step verification is on. You will be asked for a code at each sign-in from a new device.'); this.go('/account/profile'); },
+      twoFaDone: () => { this.setState({ twoFaStep:1 }); this.hook('Enrol2fa', {}, 'Two-step verification is on.'); this.go('/account/profile'); },
       backupCodes: BACKUP_CODES.map((c, i) => ({ code:c, n: i + 1 })),
 
       reset1: this.state.resetStep === 1, reset2: this.state.resetStep === 2, reset3: this.state.resetStep === 3, reset4: this.state.resetStep === 4,
@@ -11080,13 +11539,13 @@ class Component extends DCLogic {
       markAllRead: () => { const r = {}; NOTIFICATIONS.forEach(n => { r[n.id] = 1; }); this.setState({ notifRead:r }); this.toast('All notifications marked as read.'); },
 
       sessions: SESSIONS_MINE.map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF', other: !s.current })),
-      signOutAll: () => this.toast('Signed out of 3 other sessions. This device stays signed in.'),
+      signOutAll: () => this.hook('SignOutOtherSessions', {}, 'Other sessions signed out.'),
 
       sigDraw: this.state.sigTab === 'draw', sigType: this.state.sigTab === 'type', sigUpload: this.state.sigTab === 'upload',
       sigTabs: [['draw','Draw'],['type','Type'],['upload','Upload']].map(([k, label]) => ({
         label, on: this.state.sigTab === k, off: this.state.sigTab !== k, onClick: () => this.setState({ sigTab:k }) })),
       padRef: el => { if (el) this.initPad(el); },
-      saveSig: () => this.toast('Signature saved. It will be offered whenever you are asked to sign a document.'),
+      saveSig: () => this.hook('SaveSignature', {}, 'Signature saved.'),
 
       prefRows: NOTIF_PREFS.map((p, i) => {
         const mode = this.state.prefs[i] === undefined ? p.mode : this.state.prefs[i];
@@ -11105,8 +11564,8 @@ class Component extends DCLogic {
       delOk: !!this.state.delTo && this.state.delTo !== 'Ibrahim Musa — Finance Manager (you)' && this.state.delTo !== 'Fatima Bello — already delegating to Samuel Adeoye',
       delNone: !this.state.delTo,
       delActive: this.state.delActive,
-      delStart: () => { this.setState({ delActive:true }); this.toast('Delegation to ' + String(this.state.delTo).split(' — ')[0] + ' starts 08/08/2026 and ends 22/08/2026.'); },
-      delCancel: () => { this.setState({ delActive:false }); this.toast('Delegation cancelled. Approvals return to you immediately.'); },
+      delStart: () => { this.setState({ delActive:true }); this.hook('StartDelegation', { to:this.state.delTo }, 'Delegation started.'); },
+      delCancel: () => { this.setState({ delActive:false }); this.hook('CancelDelegation', {}, 'Delegation cancelled.'); },
 
       isForms: base('/admin/forms'),
       isFb: base('/admin/forms/build'),
@@ -11170,13 +11629,18 @@ class Component extends DCLogic {
         .map(([k, label, note]) => ({ label, note, on: this.state.fbDist === k, off: this.state.fbDist !== k,
           onClick: () => this.setState({ fbDist:k }) })),
       fbLink: 'wewe.org.ng/f/field-visit-26',
-      fbCopy: () => this.toast('Link copied — wewe.org.ng/f/field-visit-26'),
-      fbShareWa: () => this.toast('Opening WhatsApp with the form link and a short message.'),
-      fbShareFb: () => this.toast('Opening Facebook to post the form link.'),
-      fbShareX: () => this.toast('Opening X to post the form link.'),
+      fbCopy: () => {
+        const url = 'https://wewe.org.ng/f/field-visit-26';
+        const nav = typeof navigator !== 'undefined' && navigator.clipboard;
+        if (nav && nav.writeText) { nav.writeText(url).then(() => this.toast('Link copied to your clipboard.'), () => this.toast('Could not copy — select the link and copy it manually.')); }
+        else this.toast('Could not copy — select the link and copy it manually.');
+      },
+      fbShareWa: () => this.openShare('https://wa.me/?text=' + encodeURIComponent('Please complete this WEWE form: https://wewe.org.ng/f/field-visit-26'), 'WhatsApp'),
+      fbShareFb: () => this.openShare('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent('https://wewe.org.ng/f/field-visit-26'), 'Facebook'),
+      fbShareX: () => this.openShare('https://twitter.com/intent/tweet?url=' + encodeURIComponent('https://wewe.org.ng/f/field-visit-26') + '&text=' + encodeURIComponent('Please complete this WEWE form'), 'X'),
       fbSendMail: () => this.setState({ dlg:{ kind:'share', name:'Field monitoring visit report' } }),
-      fbSave: () => this.toast('Form saved with ' + this.state.fbFields.filter(f => f.type !== 'heading').length + ' fields and mapped to ' + this.state.fbMap + '.'),
-      fbPublish: () => this.toast('Published. It is now attached to the Field monitoring visit template and open for responses.'),
+      fbSave: () => this.hook('SaveForm', { fields:this.state.fbFields, mapTo:this.state.fbMap }, 'Form saved.'),
+      fbPublish: () => this.hook('PublishForm', {}, 'Form published.'),
       isRb: base('/reports/builder'),
       rbStep1: this.state.rbStep === 1, rbStep2: this.state.rbStep === 2,
       rbStep3: this.state.rbStep === 3, rbStep4: this.state.rbStep === 4,
@@ -11223,7 +11687,7 @@ class Component extends DCLogic {
       rbGroup: this.state.rbGroup,
       rbGrouped: this.state.rbGroup !== 'No grouping',
       rbSaved: this.state.rbSaved,
-      rbSave: () => { this.setState({ rbSaved:true }); this.toast('Saved as “Requisitions by ' + this.state.rbGroup.toLowerCase() + '” — ' + RB_FIELDS.filter(f => (this.state.rbCols[f.key] === undefined ? f.def : this.state.rbCols[f.key])).length + ' columns, shared with Finance and Internal Audit.'); },
+      rbSave: () => { this.setState({ rbSaved:true }); this.hook('SaveReport', { groupBy:this.state.rbGroup }, 'Report saved to the library.'); },
       rbSchedule: () => this.setState({ dlg:{ kind:'create', label:'Schedule this report' } }),
       isInv: base('/inventory'),
       isInvLog: base('/inventory/log'),
@@ -11379,8 +11843,22 @@ class Component extends DCLogic {
       qbPerdiemUnmapped: !this.state.qbMap.perdiem,
       qbMapped: this.state.qbMap.perdiem ? 38 : 37,
       qbUnmapped: this.state.qbMap.perdiem ? 0 : 1,
-      docs: stripe(DOCS.map(d2 => ({ ...d2, notConf: !d2.conf, onClick: () => this.go('/documents/view') }))),
+      docs: stripe(DOCS.map(d2 => ({ ...d2, notConf: !d2.conf, onClick: () => this.go('/documents/view?id=' + encodeURIComponent(d2.name)) }))),
       isDocView: base('/documents/view'),
+      dv: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        let id = '';
+        if (m) { try { id = decodeURIComponent(m[1]); } catch (e) { id = m[1]; } }
+        const d = DMS_DOCS.find(x => x.name === id) || DMS_DOCS[0];
+        return {
+          name:d.name, folder:d.folder, cls:d.cls, size:d.size, ver:d.ver, when:d.when,
+          pages: d.ocr ? String(Math.max(2, Math.round(d.size.indexOf('MB') > -1 ? 24 : 6))) : '—',
+          ocrLabel: d.ocr ? 'Searchable · ' + d.ocr.toFixed(1) + '%' : 'Not a scan',
+          conf:d.conf, open: !d.conf, hold:d.hold, noHold: !d.hold, signed:d.signed,
+          linked:d.linked, hasLink: d.linked !== '—',
+          crumb: d.folder
+        };
+      })(),
       tsApprovals: [
         { name:'Ngozi Okafor', dept:'Programmes', hours:'40', effort:'100%', when:'Today · 09:58', note:'' },
         { name:'Grace Uche', dept:'M&E', hours:'40', effort:'100%', when:'Today · 07:52', note:'' },
@@ -11467,7 +11945,7 @@ class Component extends DCLogic {
       openPublish: () => this.setState({ modal:'publish' }),
       modalViewAs: this.state.modal === 'viewas',
       modalPublish: this.state.modal === 'publish',
-      confirmPublish: () => { this.setState({ modal:null }); this.toast('Version 5 published to 4 members. Change log updated.'); },
+      confirmPublish: () => { this.setState({ modal:null }); this.hook('PublishRole', {}, 'Role changes published.'); },
       confirmViewAs: () => { this.setState({ modal:null, role:'finance', route:'/dashboard' }, () => { window.location.hash = '/dashboard'; }); this.toast('Viewing as Ibrahim Musa — read-only simulation.'); },
       colToggle: PERM_ACTIONS.map((a, ci) => ({ label:a, onClick: () => this.toggleColumn(ci) })),
       roleMembers: stripe(ROLE_MEMBERS.map(m => ({ ...m, initials:this.initials(m.name), notPrimary: !m.primary }))),
@@ -11520,7 +11998,7 @@ class Component extends DCLogic {
       openDonor: () => this.setState({ dlg:{ kind:'donor' }, dnStep:1 }),
       openIssueAny: () => this.setState({ dlg:{ kind:'issue' }, stkItem:0, stkQty:12 }),
       openReceiveAny: () => this.setState({ dlg:{ kind:'receive' }, stkItem:0, stkRec:80 }),
-      submitTs: () => { this.setState({ tsSubmitted:true }); this.toast('Timesheet 01–15/08/2026 submitted to Tunde Balogun for approval.'); },
+      submitTs: () => { this.setState({ tsSubmitted:true }); this.hook('SubmitTimesheet', { rows:this.state.tsRows }, 'Timesheet submitted for approval.'); },
       reopenTs: () => this.setState({ tsSubmitted:false }),
       dayCols: [['Mon','03/08'],['Tue','04/08'],['Wed','05/08'],['Thu','06/08'],['Fri','07/08']].map(d => ({ day:d[0], date:d[1] })),
       payroll: stripe(PAYROLL.map(p => ({ ...p, grossF:money(p.gross), taxF:money(p.tax), pensionF:money(p.pension), netF:money(p.net),
@@ -11561,7 +12039,7 @@ class Component extends DCLogic {
       clearPad: () => { if (this._pad) { const c = this._pad.getContext('2d'); c.clearRect(0,0,this._pad.width,this._pad.height); } },
       goReq: () => this.go('/requisitions'),
       goReqNew: () => this.go('/requisitions/new'),
-      goReqDetail: () => this.go('/requisitions/REQ-2026-0187'),
+      goReqDetail: () => this.go(TXNS.length ? '/requisitions/' + TXNS[0].ref : '/requisitions'),
       goRetire: () => this.go('/advances/retire'),
       goRoles: () => this.go('/admin/roles'),
       goAdmin: () => this.go('/admin'),

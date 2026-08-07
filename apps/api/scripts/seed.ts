@@ -180,12 +180,12 @@ async function main() {
   const ago = (d: number) => new Date(Date.now() - d * day);
 
   // vendors
-  await db.insert(schema.vendors).values([
+  const vend = await db.insert(schema.vendors).values([
     { name: 'Halogen Security Services Ltd', categories: ['Security'], contact: { email: 'ops@halogen.ng' }, tin: '01234567-0001', dueDiligence: { cac: true, taxClearance: true } },
     { name: 'Kaduna Motors Ltd', categories: ['Vehicle maintenance'], contact: { email: 'service@kadunamotors.ng' }, dueDiligence: { cac: true, taxClearance: false } },
     { name: 'Brightline Printers', categories: ['Printing'], contact: { email: 'hello@brightline.ng' } },
     { name: 'Sahel Office Supplies', categories: ['Stationery'], contact: { email: 'sales@sahelsupplies.ng' }, dueDiligence: { cac: true, taxClearance: true } },
-  ]);
+  ]).returning();
 
   // assets
   await db.insert(schema.assets).values([
@@ -231,7 +231,7 @@ async function main() {
   const a1 = await advTx('ADV-2026-0001', 'Travel advance — Kano supervision visit', amina, N(280_000), 'PENDING', 0);
   await db.insert(schema.advances).values({ txId: a1.id, staffId: amina.id, purpose: 'Kano supervision visit (4 nights)', travel: { destination: 'Kano', nights: 4 }, status: 'REQUESTED', balanceKobo: 0n });
   const a2 = await advTx('ADV-2026-0002', 'Cash advance — Aba community dialogue', chiamaka, N(350_000), 'APPROVED', 2);
-  await db.insert(schema.advances).values({ txId: a2.id, staffId: chiamaka.id, purpose: 'Aba community dialogue logistics', status: 'DISBURSED', balanceKobo: N(350_000), disbursedAt: ago(20), disbursedRef: 'TRF-70021', retirementDeadline: ago(8) });
+  const [adv2] = await db.insert(schema.advances).values({ txId: a2.id, staffId: chiamaka.id, purpose: 'Aba community dialogue logistics', status: 'DISBURSED', balanceKobo: N(350_000), disbursedAt: ago(20), disbursedRef: 'TRF-70021', retirementDeadline: ago(8) }).returning();
   const a3 = await advTx('ADV-2026-0003', 'Advance — data verification transport', chiamaka, N(120_000), 'APPROVED', 2);
   await db.insert(schema.advances).values({ txId: a3.id, staffId: chiamaka.id, purpose: 'Quarterly data verification transport', status: 'CLOSED', balanceKobo: 0n, disbursedAt: ago(30), disbursedRef: 'TRF-69544', retirementDeadline: ago(18) });
 
@@ -260,6 +260,160 @@ async function main() {
     { userId: ibrahim.id, grade: 'M-1', hireDate: ago(1300), salaryKobo: N(900_000) },
   ]);
 
+  // ---------- module enrichment: procurement, payroll, timesheets, e-sign, retirements, budget versions, grant deadlines, delegations, notifications, reports ----------
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const nowD = new Date();
+  const curPeriod = `${nowD.getFullYear()}-${pad2(nowD.getMonth() + 1)}`;
+  const prevMonth = new Date(nowD.getFullYear(), nowD.getMonth() - 1, 1);
+  const prevPeriod = `${prevMonth.getFullYear()}-${pad2(prevMonth.getMonth() + 1)}`;
+  const prevMonthEnd = new Date(nowD.getFullYear(), nowD.getMonth(), 0);
+
+  // budget version + allocations (this year's active budget, mirrors the seeded lines)
+  const [bv] = await db.insert(schema.budgetVersions).values({
+    fiscalYear: year, versionNo: 1, status: 'ACTIVE', note: 'FY opening budget — board approved',
+    createdById: ibrahim.id, activatedAt: ago(210),
+  }).returning();
+  await db.insert(schema.budgetAllocations).values(bl.map((b) => ({
+    versionId: bv.id, budgetLineId: b.id, amountKobo: b.allocatedKobo,
+  })));
+
+  // procurement: RFQ with competing quotes → PO (partly received) → contract
+  const [rfq1] = await db.insert(schema.rfqs).values({
+    ref: 'RFQ-2026-0001', title: 'Projector & screen for training hall', deadline: ago(-2),
+    status: 'SELECTED', selectionJustification: 'Brightline Printers — lowest compliant quote, valid tax clearance.',
+    createdById: emeka.id, createdAt: ago(12),
+  }).returning();
+  await db.insert(schema.rfqs).values({
+    ref: 'RFQ-2026-0002', title: 'Annual vehicle servicing framework', deadline: ago(-9),
+    status: 'OPEN', createdById: emeka.id, createdAt: ago(4),
+  });
+  await db.insert(schema.rfqQuotes).values([
+    { rfqId: rfq1.id, vendorId: vend[2].id, totalKobo: N(468_000), lines: [{ d: 'Projector', qty: 1, unitKobo: N(378_000).toString() }, { d: 'Screen', qty: 1, unitKobo: N(90_000).toString() }], validityDays: 30, selected: true, receivedAt: ago(10) },
+    { rfqId: rfq1.id, vendorId: vend[3].id, totalKobo: N(512_000), lines: [{ d: 'Projector + screen bundle', qty: 1, unitKobo: N(512_000).toString() }], validityDays: 14, selected: false, receivedAt: ago(11) },
+  ]);
+  const [po1] = await db.insert(schema.purchaseOrders).values({
+    ref: 'PO-2026-0001', rfqId: rfq1.id, vendorId: vend[2].id, totalKobo: N(468_000),
+    lines: [{ description: 'Projector (Epson EB-X51)', qty: 1, unitKobo: N(378_000).toString(), receivedQty: 1 }, { description: 'Projection screen', qty: 1, unitKobo: N(90_000).toString(), receivedQty: 0 }],
+    status: 'PARTIAL', issuedAt: ago(8),
+  }).returning();
+  await db.insert(schema.poReceipts).values({
+    poId: po1.id, lines: [{ lineIndex: 0, qty: 1 }], note: 'Projector received; screen back-ordered.', receivedById: admin.id, receivedAt: ago(3),
+  });
+  await db.insert(schema.contracts).values([
+    { ref: 'CTR-2026-0001', vendorId: vend[0].id, title: 'Office security services (12 months)', valueKobo: N(7_200_000), paidKobo: N(1_800_000), startDate: ago(120), endDate: ago(-245), status: 'ACTIVE' },
+    { ref: 'CTR-2026-0002', vendorId: vend[1].id, title: 'Fleet maintenance retainer', valueKobo: N(3_600_000), paidKobo: N(3_600_000), startDate: ago(400), endDate: ago(35), status: 'EXPIRED' },
+  ]);
+
+  // payroll: last month released, current month pending
+  const payItem = (runId: string, u: { id: string }, grossNaira: number) => {
+    const gross = N(grossNaira);
+    const pensionEmployee = (gross * 8n) / 100n;
+    const pensionEmployer = (gross * 10n) / 100n;
+    const nhf = (gross * 25n) / 1000n;
+    const paye = (gross * 7n) / 100n;
+    const net = gross - paye - pensionEmployee - nhf;
+    return { runId, userId: u.id, grossKobo: gross, payeKobo: paye, pensionEmployeeKobo: pensionEmployee, pensionEmployerKobo: pensionEmployer, nhfKobo: nhf, otherDeductionsKobo: 0n, netKobo: net, breakdown: { basis: 'monthly gross', paye: paye.toString(), pensionEmployee: pensionEmployee.toString(), nhf: nhf.toString() } };
+  };
+  const [prRun] = await db.insert(schema.payrollRuns).values({
+    period: prevPeriod, status: 'RELEASED', totals: { staff: 3, netKobo: '0' }, createdById: ibrahim.id, releasedAt: ago(6),
+  }).returning();
+  await db.insert(schema.payrollItems).values([
+    payItem(prRun.id, amina, 450_000), payItem(prRun.id, tunde, 850_000), payItem(prRun.id, ibrahim, 900_000),
+  ]);
+  await db.insert(schema.payrollRuns).values({
+    period: curPeriod, status: 'PENDING', createdById: ibrahim.id,
+  });
+
+  // timesheets: LOE split across grants
+  await db.insert(schema.timesheets).values([
+    { userId: amina.id, periodStart: prevMonth, periodEnd: prevMonthEnd, rows: [{ projectCode: 'USAID-LON-24', percent: 60 }, { projectCode: 'EU-WISH-23', percent: 40 }], status: 'SUBMITTED' },
+    { userId: chiamaka.id, periodStart: prevMonth, periodEnd: prevMonthEnd, rows: [{ projectCode: 'EU-WISH-23', percent: 100 }], status: 'SUBMITTED' },
+  ]);
+
+  // documents + e-sign: one document out for signature (internal signed, external pending)
+  const [doc1] = await db.insert(schema.documents).values({
+    name: 'Amendment 3 — USAID-LON-24.pdf', mime: 'application/pdf', sizeBytes: 248_310,
+    storageKey: 'seed/amendment-3-usaid-lon-24.pdf', sha256: 'a1b2c3d4e5f60718293a4b5c6d7e8f90112233445566778899aabbccddeeff00',
+    docType: 'CONTRACT', tags: ['grant', 'amendment'], uploadedById: emeka.id, currentVersion: 1, createdAt: ago(5),
+  }).returning();
+  await db.insert(schema.docVersions).values({
+    documentId: doc1.id, versionNo: 1, storageKey: doc1.storageKey, sha256: doc1.sha256, sizeBytes: 248_310, note: 'Initial upload', uploadedById: emeka.id,
+  });
+  const [sr1] = await db.insert(schema.signatureRequests).values({
+    documentId: doc1.id, versionNo: 1, requestedById: ibrahim.id, message: 'Please countersign Amendment 3.', deadline: ago(-23), status: 'OPEN', createdAt: ago(2),
+  }).returning();
+  await db.insert(schema.signatureSigners).values([
+    { requestId: sr1.id, orderNo: 1, userId: folake.id, status: 'SIGNED', method: 'typed', docSha256AtSign: doc1.sha256, signedAt: ago(1) },
+    { requestId: sr1.id, orderNo: 2, externalName: 'Karen Adeleke', externalEmail: 'k.adeleke@usaid.gov', externalToken: 'seed-amend3-ext-0002', otpCode: '000000', status: 'PENDING' },
+  ]);
+
+  // retirement of the disbursed advance (a2), with a small refund due
+  const [rtx] = await db.insert(schema.transactions).values({
+    ref: 'RET-2026-0001', typeCode: 'RETIREMENT', title: 'Retirement — Aba community dialogue advance',
+    initiatorId: chiamaka.id, departmentId: chiamaka.departmentId!, amountKobo: N(330_000), status: 'APPROVED', currentStage: 3,
+    submittedAt: ago(6), payload: { chain: [{ role: 'SUPERVISOR' }, { role: 'INTERNAL_AUDIT' }, { role: 'FINANCE' }, { role: 'FINAL_APPROVER' }] },
+  }).returning();
+  await db.insert(schema.stageEvents).values({ transactionId: rtx.id, stageIndex: 0, role: null, action: 'SUBMITTED', actorId: chiamaka.id, createdAt: ago(6) });
+  await db.insert(schema.retirements).values({
+    txId: rtx.id, advanceId: adv2.id, totalKobo: N(330_000), varianceKobo: N(20_000), refundDueKobo: N(20_000),
+  });
+
+  // delegation: MD delegates approvals to Finance Manager over a leave window
+  await db.insert(schema.delegations).values({
+    delegatorId: folake.id, delegateId: ibrahim.id, startsAt: ago(2), endsAt: ago(-5), active: true,
+  });
+
+  // notifications across personas
+  await db.insert(schema.notifications).values([
+    { userId: ibrahim.id, kind: 'ACTION_REQUIRED', title: 'Requisition awaiting Finance', body: 'REQ-2026-0004 has reached the Finance stage.', entityType: 'transaction', entityId: 'REQ-2026-0004' },
+    { userId: amina.id, kind: 'UPDATE', title: 'Requisition returned', body: 'Your projector request was returned for a vendor quote.', entityType: 'transaction', entityId: 'REQ-2026-0006' },
+    { userId: ngozi.id, kind: 'FLAG', title: 'Flag raised on REQ-2026-0002', body: 'Venue quote appears above the framework rate.', entityType: 'transaction', entityId: 'REQ-2026-0002' },
+  ]);
+
+  // saved + scheduled reports
+  await db.insert(schema.savedReports).values({
+    name: 'Outstanding advances (all departments)', ownerId: ibrahim.id, shared: true,
+    config: { entity: 'advances', columns: ['ref', 'staff', 'balanceKobo', 'retirementDeadline'], filters: { status: 'DISBURSED' } },
+  });
+  await db.insert(schema.scheduledReports).values({
+    name: 'Weekly requisition register', reportKey: 'requisition-register', recipientsRole: 'FINANCE', dayOfWeek: 1, hour: 8, active: true, createdById: ibrahim.id,
+  });
+
+  // grant reporting deadlines
+  const grantRows = await db.select().from(schema.grants);
+  const grantId = (code: string) => grantRows.find((g) => g.code === code)?.id;
+  const usaid = grantId('USAID-LON-24');
+  const euwish = grantId('EU-WISH-23');
+  const gd: any[] = [];
+  if (usaid) gd.push(
+    { grantId: usaid, title: 'Q3 financial report to USAID', dueDate: ago(-14), ownerRole: 'FINANCE', status: 'OPEN' },
+    { grantId: usaid, title: 'Annual inventory certification', dueDate: ago(6), ownerRole: 'SYSTEM_ADMIN', status: 'OVERDUE' },
+  );
+  if (euwish) gd.push(
+    { grantId: euwish, title: 'EU narrative & financial report', dueDate: ago(-30), ownerRole: 'FINANCE', status: 'OPEN' },
+  );
+  if (gd.length) await db.insert(schema.grantDeadlines).values(gd);
+
+  // leave balances for the year (annual)
+  if (annual) {
+    await db.insert(schema.leaveBalances).values([
+      { userId: amina.id, leaveTypeId: annual.id, year, entitledDays: annual.daysPerYear, usedDays: 5 },
+      { userId: chiamaka.id, leaveTypeId: annual.id, year, entitledDays: annual.daysPerYear, usedDays: 0 },
+    ]);
+  }
+
+  // one onboarding checklist
+  await db.insert(schema.staffChecklists).values({
+    userId: fatima.id, kind: 'ONBOARDING',
+    items: [
+      { label: 'Sign code of conduct', ownerRole: 'HR_OFFICER', mandatory: true, done: true },
+      { label: 'IT account provisioning', ownerRole: 'SYSTEM_ADMIN', mandatory: true, done: false },
+      { label: 'Bank & pension details', ownerRole: 'HR_OFFICER', mandatory: true, done: false },
+    ],
+    status: 'OPEN',
+  });
+
+  console.log('Module enrichment complete (procurement, payroll, timesheets, e-sign, retirements, budget versions, grant deadlines, delegations, notifications, reports).');
   console.log('Demo enrichment complete (vendors, assets, inventory, findings, flags, advances, leave, profiles).');
   console.log('Seed complete.');
   console.log('Users (password: Password1!):');

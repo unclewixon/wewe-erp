@@ -1,0 +1,8 @@
+# WEWE ERP — TLS front for the droplet.
+# Caddy terminates HTTPS (auto Let's Encrypt) and reverse-proxies to the web container.
+# Requires: a domain A-record pointing at the droplet, and DOMAIN set in .env.
+# Bring up with: docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:80
+}
