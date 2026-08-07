@@ -791,6 +791,7 @@
     window.__weweDash = window.__weweDash || {};
     window.__weweDash[persona] = D;
   }
+
 })();
 
 /* ---- Phase F: Phase-2 bundle wiring — detail data, writes, notifications, account ---- */
@@ -1327,6 +1328,42 @@
       },
     };
   }
+
+  // Version history, at IIFE level: it must not depend on whether any virements exist.
+  try {
+    window.__wewePageSpecs = window.__wewePageSpecs || {};
+    // The activate chip in the last column is what the design's row handler looks for, and it
+    // is offered only on a version that is not already live — the engine refuses re-activating
+    // an active one, so the row should not ask. Labels are 'v<versionNo>' because that is what
+    // the activate dialog carries back to the hook.
+    var vers = xhr('/v1/budgets/versions') || [];
+    if (vers.length) {
+      var live = vers.filter(function (v) { return v.status === 'ACTIVE'; })[0];
+      var waiting = vers.filter(function (v) { return v.status !== 'ACTIVE'; });
+      window.__wewePageSpecs['/budgets/versions'] = {
+        title: 'Budget version history',
+        sub: 'Every saved version is retained; activating one replaces the live budget',
+        actions: [],
+        stats: [
+          ['Live version', live ? 'v' + live.versionNo : '—', live ? 'Active since ' + ddmmyyyy(live.activatedAt) : 'No version is live yet'],
+          ['Versions saved', String(vers.length), 'Across all fiscal years'],
+          ['Awaiting activation', String(waiting.length), waiting.length ? 'v' + waiting[0].versionNo + ' saved ' + ddmmyyyy(waiting[0].createdAt) : 'None'],
+          ['Lines in the live version', live ? String(live.allocationCount || 0) : '—', live ? fmtNaira(String(live.totalKobo || '0')) : ''],
+        ],
+        table: {
+          title: 'Versions',
+          cols: [['Version', null, '88px'], ['Saved', null, '112px'], ['By', null, '140px'], ['Lines', null, '70px'],
+                 ['Total value', 'r', '142px'], ['Note', null, 'minmax(130px,1fr)'], ['State', null, '104px'], ['', null, '104px']],
+          rows: vers.map(function (v) {
+            var isLive = v.status === 'ACTIVE';
+            return ['v' + v.versionNo, ddmmyyyy(v.createdAt), '—', String(v.allocationCount || 0),
+                    fmtNaira(String(v.totalKobo || '0')), v.note || '—',
+                    isLive ? 'g:LIVE' : 'a:SAVED', isLive ? '' : 'x:Activate'];
+          }),
+        },
+      };
+    }
+  } catch (e) { /* fixtures */ }
 })();
 
 /* ---- Phase H: write-hook bridge ----
@@ -1523,10 +1560,42 @@
     // do not include one), so saying that would describe a route the money never takes.
     return 'Budget version saved — ' + r.msg + '. Publish it from Version history to make it the live budget.';
   };
-  // No file reaches this hook (the payload is only a fiscal year) and the engine has no import
-  // endpoint, so there is nothing to send. Refused rather than left undefined, which would let
-  // the design announce "validation running" over an upload that never happened.
+  // Phase 1.14 sends a real file here — { fiscalYear, name, mime, dataBase64 } — so the design
+  // side of this is now done. It stays refused because the ENGINE has no budget-import endpoint
+  // to receive it. That is our work, not Design's, and until it exists announcing "validation
+  // running" would describe nothing.
   window.__weweUploadBudget = function () { return false; };
+
+  window.__weweActivateBudgetVersion = function (p) {
+    // The design labels versions 'v<versionNo>' — that is what the activate dialog carries.
+    var raw = String((p && p.versionId) || '').trim();
+    var versions = get('/v1/budgets/versions') || [];
+    var m = raw.match(/^v(\d+)$/i);
+    var hit = m
+      ? versions.find(function (v) { return String(v.versionNo) === m[1]; })
+      : versions.find(function (v) { return v.id === raw; });
+    if (!hit) return false;
+    var res = post('/v1/budgets/versions/' + hit.id + '/activate', {});
+    if (!res) return false;   // the engine refuses a version that is already live
+    return 'v' + hit.versionNo + ' is now the live budget. Every budget check from here measures against it.';
+  };
+
+  window.__weweCreateVirement = function (p) {
+    // Lines arrive as the names shown on screen; the engine keys on budget line ids.
+    var lines = get('/v1/budgets/position') || [];
+    var byName = {};
+    lines.forEach(function (l) { byName[String(l.name).trim().toLowerCase()] = l.budgetLineId || l.id; });
+    var from = byName[String((p && p.fromLine) || '').trim().toLowerCase()];
+    var to = byName[String((p && p.toLine) || '').trim().toLowerCase()];
+    if (!from || !to || from === to) return false;
+    var kobo = koboNumberToString(p && p.amountKobo);   // already kobo, but a NUMBER
+    if (!kobo || kobo === '0') return false;
+    var body = { sourceLineId: from, destLineId: to, amountKobo: kobo, submit: true };
+    if (p.reason) body.reason = String(p.reason).trim();
+    var res = post('/v1/virements', body);
+    if (!res || !res.ref) return false;
+    return 'Virement ' + res.ref + ' raised — it goes to Finance, then the Managing Director.';
+  };
 
   // ---- Procurement (Phase 1.11) ----
   // The design addresses things the way a buyer does — a vendor by name, an RFQ or PO by its

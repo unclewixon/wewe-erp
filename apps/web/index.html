@@ -1589,6 +1589,168 @@
           </div>
         </sc-if>
 
+        <sc-if value="{{ isBudLine }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ bl.missing }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Budget line not found" style="display:flex; flex-direction:column; gap:14px; max-width:760px;">
+              <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+                <a href="#/budgets">Budgets</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">Not found</span>
+              </div>
+              <div style="background:#fff; border-radius:16px; padding:44px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); text-align:center;">
+                <div style="font-size:20px; font-weight:600; color:#1A1D21;">No budget line with that name</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:10px; line-height:1.6;">It may have been renamed or moved to another fiscal year.</div>
+                <a href="#/budgets" style="display:inline-flex; align-items:center; height:42px; padding:0 20px; margin-top:20px; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600; text-decoration:none;">Back to budgets</a>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ bl.found }}" hint-placeholder-val="{{ true }}">
+            <div data-screen-label="Budget line" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+              <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+                <a href="#/budgets">Budgets</a><span>/</span><span>{{ bl.dept }}</span><span>/</span><span style="color:#3B3B3B; font-weight:500;">{{ bl.line }}</span>
+              </div>
+
+              <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+                  <div style="min-width:0;">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                      <div style="font-size:22px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">{{ bl.line }}</div>
+                      <sc-if value="{{ bl.danger }}" hint-placeholder-val="{{ false }}"><span style="height:24px; padding:0 10px; border-radius:6px; background:rgba(194,65,12,.1); color:#9C3309; font-size:11px; font-weight:700; display:inline-flex; align-items:center;">CRITICAL · {{ bl.pctLabel }}</span></sc-if>
+                      <sc-if value="{{ bl.warn }}" hint-placeholder-val="{{ false }}"><span style="height:24px; padding:0 10px; border-radius:6px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:11px; font-weight:700; display:inline-flex; align-items:center;">WATCH · {{ bl.pctLabel }}</span></sc-if>
+                      <sc-if value="{{ bl.ok }}" hint-placeholder-val="{{ true }}"><span style="height:24px; padding:0 10px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:11px; font-weight:700; display:inline-flex; align-items:center;">HEALTHY · {{ bl.pctLabel }}</span></sc-if>
+                    </div>
+                    <div style="font-size:13px; color:#6B7280; margin-top:8px;">{{ bl.code }} · {{ bl.dept }} · owned by {{ bl.owner }} · {{ bl.period }}</div>
+                    <div style="margin-top:6px;"><span style="height:24px; padding:0 10px; border-radius:6px; background:rgba(110,158,201,.16); color:#2C5C86; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">{{ bl.donor }}</span></div>
+                  </div>
+                  <div style="display:flex; gap:8px; flex:none;">
+                    <button onClick="{{ blVirement }}" style="height:38px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Move funds</button>
+                    <button onClick="{{ blRaise }}" style="height:38px; padding:0 16px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:12px; font-weight:600;" style-hover="background:#C8481F">Spend against this line</button>
+                  </div>
+                </div>
+
+                <div style="margin-top:22px;">
+                  <div style="position:relative; height:14px; border-radius:999px; background:#F0F1F3; overflow:hidden;">
+                    <div style="position:absolute; inset:0 auto 0 0; border-radius:999px; background:#DCC5AE; width:{{ bl.pct }}%;"></div>
+                    <div style="position:absolute; inset:0 auto 0 0; border-radius:999px; background:#E0572E; width:{{ bl.spentPct }}%;"></div>
+                  </div>
+                  <div style="display:flex; gap:22px; margin-top:12px; font-size:12px; color:#6B7280; flex-wrap:wrap;">
+                    <span style="display:inline-flex; align-items:center; gap:7px;"><span style="width:10px; height:10px; border-radius:3px; background:#E0572E;"></span>Actually spent {{ bl.spentLabel }}</span>
+                    <span style="display:inline-flex; align-items:center; gap:7px;"><span style="width:10px; height:10px; border-radius:3px; background:#DCC5AE;"></span>Committed but not yet paid</span>
+                    <span style="display:inline-flex; align-items:center; gap:7px;"><span style="width:10px; height:10px; border-radius:3px; background:#F0F1F3;"></span>Still free</span>
+                  </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; margin-top:22px; padding-top:20px; border-top:1px solid #EEF0F3;">
+                  <div><div style="font-size:12px; color:#8A8F98;">Allocated</div><div style="font-size:22px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:5px;">{{ bl.allocF }}</div></div>
+                  <div><div style="font-size:12px; color:#8A8F98;">Committed</div><div style="font-size:22px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:5px;">{{ bl.commF }}</div></div>
+                  <div><div style="font-size:12px; color:#8A8F98;">Paid out</div><div style="font-size:22px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:5px;">{{ bl.actualF }}</div></div>
+                  <div><div style="font-size:12px; color:#8A8F98;">Still available</div><div style="font-size:22px; font-weight:600; color:#166F31; font-variant-numeric:tabular-nums; margin-top:5px;">{{ bl.availF }}</div></div>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start;">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                    <div style="padding:20px 24px 14px 24px;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">Where the money sits</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">The sub-lines this budget is split into</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:minmax(120px,1fr) 116px 116px 116px 96px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                      <div>Sub-line</div><div style="text-align:right;">Allocated</div><div style="text-align:right;">Committed</div><div style="text-align:right;">Available</div><div>Used</div>
+                    </div>
+                    <sc-for list="{{ bl.subRows }}" as="s" hint-placeholder-count="4">
+                      <div style="display:grid; grid-template-columns:minmax(120px,1fr) 116px 116px 116px 96px; column-gap:10px; align-items:center; padding:13px 24px; background:{{ s.bg }};">
+                        <div style="font-size:13px; font-weight:500; color:#1A1D21; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ s.name }}</div>
+                        <div style="font-size:12px; text-align:right; color:#3B3B3B; font-variant-numeric:tabular-nums;">{{ s.allocF }}</div>
+                        <div style="font-size:12px; text-align:right; color:#3B3B3B; font-variant-numeric:tabular-nums;">{{ s.commF }}</div>
+                        <div style="font-size:12px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ s.availF }}</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; border-radius:999px; background:#F0F1F3; overflow:hidden;">
+                            <sc-if value="{{ s.hot }}" hint-placeholder-val="{{ false }}"><div style="height:100%; border-radius:999px; background:#C2410C; width:{{ s.pct }}%;"></div></sc-if>
+                            <sc-if value="{{ s.mid }}" hint-placeholder-val="{{ false }}"><div style="height:100%; border-radius:999px; background:#B45309; width:{{ s.pct }}%;"></div></sc-if>
+                            <sc-if value="{{ s.cool }}" hint-placeholder-val="{{ true }}"><div style="height:100%; border-radius:999px; background:#6E9EC9; width:{{ s.pct }}%;"></div></sc-if>
+                          </div>
+                          <span style="font-size:11px; color:#6B7280; font-variant-numeric:tabular-nums; flex:none;">{{ s.pctLabel }}</span>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 24px; background:#FAFBFC; border-top:1px solid #EEF0F3;">
+                      <sc-if value="{{ bl.subMatches }}" hint-placeholder-val="{{ true }}">
+                        <span style="font-size:12px; color:#6B7280;">Sub-lines add up to the line allocation.</span>
+                      </sc-if>
+                      <sc-if value="{{ bl.subMatches }}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+                      <span style="font-size:13px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ bl.subTotalF }}</span>
+                    </div>
+                  </div>
+
+                  <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                    <div style="padding:20px 24px 14px 24px;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">What has been charged to it</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">{{ bl.txnCount }} transactions · click any to open it</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:118px minmax(120px,1fr) 106px 124px 112px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                      <div>Reference</div><div>What it was</div><div>Date</div><div style="text-align:right;">Amount</div><div>State</div>
+                    </div>
+                    <sc-for list="{{ bl.txns }}" as="t" hint-placeholder-count="4">
+                      <div onClick="{{ t.onOpen }}" style="display:grid; grid-template-columns:118px minmax(120px,1fr) 106px 124px 112px; column-gap:10px; align-items:center; padding:13px 24px; background:{{ t.bg }}; cursor:pointer;" style-hover="background:#F1F3F5">
+                        <div style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ t.ref }}</div>
+                        <div style="font-size:13px; color:#3B3B3B; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ t.title }}</div>
+                        <div style="font-size:12px; color:#6B7280; font-variant-numeric:tabular-nums;">{{ t.date }}</div>
+                        <div style="font-size:12px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ t.amountF }}</div>
+                        <div>
+                          <sc-if value="{{ t.actual }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">PAID</span></sc-if>
+                          <sc-if value="{{ t.committed }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">COMMITTED</span></sc-if>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                    <div style="font-size:14px; font-weight:600; color:#1A1D21;">Committed but unpaid</div>
+                    <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:10px;">{{ bl.pendingF }}</div>
+                    <div style="font-size:12px; color:#6B7280; margin-top:8px; line-height:1.5;">Approved and reserved on this line, but the money has not left yet. It is already unavailable to anyone else.</div>
+                  </div>
+
+                  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                    <div style="font-size:14px; font-weight:600; color:#1A1D21;">Funds moved</div>
+                    <sc-if value="{{ bl.hasVir }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+                        <sc-for list="{{ bl.virs }}" as="v" hint-placeholder-count="1">
+                          <div style="padding:12px 14px; border-radius:11px; background:#F7F8FA;">
+                            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+                              <span style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ v.ref }}</span>
+                              <sc-if value="{{ v.inbound }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; font-weight:700; color:#166F31; font-variant-numeric:tabular-nums;">{{ v.amountF }}</span></sc-if>
+                              <sc-if value="{{ v.outbound }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; font-weight:700; color:#9C3309; font-variant-numeric:tabular-nums;">{{ v.amountF }}</span></sc-if>
+                            </div>
+                            <div style="font-size:12px; color:#6B7280; margin-top:5px; line-height:1.45;">{{ v.desc }}</div>
+                            <div style="font-size:11px; color:#9AA0A8; margin-top:4px; font-variant-numeric:tabular-nums;">{{ v.date }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ bl.noVir }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:10px; line-height:1.5;">No funds have been moved in or out of this line this year. It still holds its original allocation.</div>
+                    </sc-if>
+                  </div>
+
+                  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                    <div style="font-size:14px; font-weight:600; color:#1A1D21;">Who to ask</div>
+                    <div style="display:flex; align-items:center; gap:11px; margin-top:12px;">
+                      <span style="width:34px; height:34px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ bl.ownerInitials }}</span>
+                      <div style="min-width:0;">
+                        <div style="font-size:13px; font-weight:600; color:#1A1D21;">{{ bl.owner }}</div>
+                        <div style="font-size:12px; color:#9AA0A8;">Line owner</div>
+                      </div>
+                    </div>
+                    <div style="font-size:12px; color:#6B7280; margin-top:12px; line-height:1.5;">They are notified when this line passes 80% and again at 95%.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
         <sc-if value="{{ isBud }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="Budgets" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
@@ -1598,7 +1760,7 @@
               </div>
               <div style="display:flex; gap:8px;">
                 <button onClick="{{ noop }}" style="height:40px; padding:0 16px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;">Import budget</button>
-                <button onClick="{{ noop }}" style="height:40px; padding:0 18px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Request virement</button>
+                <button onClick="{{ openVirement }}" style="height:40px; padding:0 18px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Request virement</button>
               </div>
             </div>
             <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
@@ -1606,7 +1768,7 @@
                 <div>Budget line</div><div style="text-align:right;">Allocated</div><div style="text-align:right;">Committed</div><div style="text-align:right;">Actual</div><div style="text-align:right;">Available</div><div>Utilisation</div>
               </div>
               <sc-for list="{{ budgetRows }}" as="b" hint-placeholder-count="8">
-                <div style="display:grid; grid-template-columns:minmax(200px,1fr) 130px 130px 130px 130px 150px; column-gap:12px; align-items:center; padding:16px 24px; background:{{ b.bg }};" style-hover="background:#F1F3F5">
+                <div onClick="{{ b.onOpen }}" style="cursor:pointer; display:grid; grid-template-columns:minmax(200px,1fr) 130px 130px 130px 130px 150px; column-gap:12px; align-items:center; padding:16px 24px; background:{{ b.bg }};" style-hover="background:#F1F3F5">
                   <div style="min-width:0;">
                     <div style="font-size:13px; font-weight:500; color:#1A1D21;">{{ b.line }}</div>
                     <div style="font-size:11px; color:#9AA0A8; margin-top:3px;">{{ b.dept }} · {{ b.donor }}</div>
@@ -7902,6 +8064,142 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ dlgVirement }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:620px; max-height:88vh; overflow-y:auto; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Move funds between budget lines</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">A virement is its own approved transaction — Finance, then the Managing Director. The budget itself is never edited directly.</div>
+
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:22px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Take it from</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <select value="{{ vmFrom }}" onChange="{{ vmSetFrom }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034">
+              <option value="">Choose the line the money leaves…</option>
+              <sc-for list="{{ vmLines }}" as="l" hint-placeholder-count="8">
+                <option value="{{ l.line }}">{{ l.line }} — {{ l.availF }} available</option>
+              </sc-for>
+            </select>
+            <sc-if value="{{ vmHasFrom }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#166F31; font-weight:600;">{{ vmFromAvail }} uncommitted on this line — that is the ceiling</span>
+            </sc-if>
+            <sc-if value="{{ vmNoFrom }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:11px; color:#9AA0A8;">Only the uncommitted balance can be moved. Anything already committed stays put.</span>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Move it to</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <select value="{{ vmTo }}" onChange="{{ vmSetTo }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034">
+              <option value="">Choose the line the money goes to…</option>
+              <sc-for list="{{ vmLines }}" as="l" hint-placeholder-count="8">
+                <option value="{{ l.line }}">{{ l.line }} — {{ l.availF }} available</option>
+              </sc-for>
+            </select>
+            <sc-if value="{{ vmSame }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#9C3309;">A virement has to move money somewhere. Pick a different destination.</span>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Amount (₦)</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <input value="{{ vmAmt }}" onChange="{{ vmSetAmt }}" placeholder="0.00" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#EE8034" />
+            <sc-if value="{{ vmOverAvail }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#9C3309;">{{ vmAmtF }} is more than the {{ vmFromAvail }} uncommitted on that line.</span>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ vmShowImpact }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 18px; border-radius:12px; background:#F7F8FA;">
+              <div style="font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8A8F98;">If this is approved</div>
+              <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">{{ vmFrom }}</span><span style="color:#9C3309; font-weight:600; font-variant-numeric:tabular-nums;">{{ vmAfterFrom }}</span></div>
+                <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">{{ vmTo }}</span><span style="color:#166F31; font-weight:600; font-variant-numeric:tabular-nums;">{{ vmAfterTo }}</span></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Why the money needs to move</label>
+            <textarea value="{{ vmReason }}" onChange="{{ vmSetReason }}" placeholder="Finance and the Managing Director read this before deciding" style="min-height:72px; padding:12px 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none; resize:vertical; line-height:1.55;" style-focus="border-color:#EE8034"></textarea>
+            <span style="font-size:11px; color:#9AA0A8;">Optional, but a virement without a reason is usually sent back</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ vmValid }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ vmSubmit }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D46A22">Request the virement</button>
+          </sc-if>
+          <sc-if value="{{ vmNoFrom }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a source line</button>
+          </sc-if>
+          <sc-if value="{{ vmNoTo }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a destination</button>
+          </sc-if>
+          <sc-if value="{{ vmSame }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Pick a different line</button>
+          </sc-if>
+          <sc-if value="{{ vmNoAmt }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Enter an amount</button>
+          </sc-if>
+          <sc-if value="{{ vmOverAvail }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">More than is available</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgActBudget }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:600px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Make {{ abVer }} the live budget?</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">Activating replaces the figures every other part of the system checks against. It takes effect the moment you confirm.</div>
+
+        <div style="display:flex; flex-direction:column; gap:11px; margin-top:20px; padding:16px 18px; border-radius:12px; background:#F7F8FA; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Version</span><span style="color:#1A1D21; font-weight:600;">{{ abVer }} — {{ abNote }}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Saved</span><span style="color:#1A1D21; font-weight:600;">{{ abSaved }} by {{ abBy }}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Lines</span><span style="color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ abLines }}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px; padding-top:11px; border-top:1px solid #E3E5E8;"><span style="color:#1A1D21; font-weight:600;">Total allocation</span><span style="color:#1A1D21; font-weight:700; font-variant-numeric:tabular-nums;">{{ abTotal }}</span></div>
+        </div>
+
+        <div style="margin-top:18px; padding:16px 18px; border-radius:12px; background:#FFF7ED; border:1px solid #FDE3C4;">
+          <div style="font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8A4B0B;">What changes immediately</div>
+          <div style="display:flex; flex-direction:column; gap:9px; margin-top:11px; font-size:12px; color:#8A4B0B;">
+            <div style="display:flex; gap:9px;"><span>·</span><span style="line-height:1.5;">v7 stops being the live budget and is marked superseded. It is kept, not deleted.</span></div>
+            <div style="display:flex; gap:9px;"><span>·</span><span style="line-height:1.5;">The over-budget check on new requisitions starts measuring against these allocations.</span></div>
+            <div style="display:flex; gap:9px;"><span>·</span><span style="line-height:1.5;">Anything already committed stays committed — approvals in flight are not re-checked.</span></div>
+            <div style="display:flex; gap:9px;"><span>·</span><span style="line-height:1.5;">Line owners are notified where their allocation has moved.</span></div>
+          </div>
+        </div>
+
+        <sc-if value="{{ abNotFinance }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:11px; margin-top:16px; padding:13px 15px; border-radius:10px; background:#FBEAE4; border:1px solid #F3D6CB;">
+            <span style="width:8px; height:8px; border-radius:999px; background:#C2410C; flex:none;"></span>
+            <span style="font-size:12px; color:#9C3309; line-height:1.5;">Only Finance can activate a budget version — the same restriction as creating one.</span>
+          </div>
+        </sc-if>
+
+        <div style="font-size:11px; color:#9AA0A8; margin-top:16px; line-height:1.55;">Your name and the time are recorded against the activation. It can be undone only by activating another version.</div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ abIsFinance }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ abDo }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D46A22">{{ abConfirmLabel }}</button>
+          </sc-if>
+          <sc-if value="{{ abNotFinance }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Finance only</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ dlgBulk }}" hint-placeholder-val="{{ false }}">
       <div style="width:100%; max-width:720px; max-height:88vh; overflow-y:auto; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
         <sc-if value="{{ bulkPending }}" hint-placeholder-val="{{ true }}">
@@ -9959,11 +10257,12 @@
       <div style="width:100%; max-width:520px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
         <div style="font-size:20px; font-weight:600; color:#1A1D21;">{{ dlgLabel }}</div>
         <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Excel, CSV, PDF, JPG or PNG · up to 10 MB per file</div>
-        <label style="display:block; margin-top:20px; border:1.5px dashed #D3D6DB; border-radius:14px; padding:30px 20px; text-align:center; background:#FAFBFC; cursor:pointer;" style-hover="border-color:#E0572E; background:#FFF9F6">
-          <div style="font-size:14px; font-weight:600; color:#1A1D21;">Choose a file, or drop it here</div>
-          <div style="font-size:12px; color:#8A8F98; margin-top:6px;">Your camera roll is available on mobile</div>
-          <input type="file" multiple style="display:block; margin:16px auto 0 auto; font-size:12px; color:#6B7280;" />
-        </label>
+        <sc-if value="{{ bfNone }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ bfPick }}" style="display:block; width:100%; margin-top:20px; border:1.5px dashed #D3D6DB; border-radius:14px; padding:30px 20px; text-align:center; background:#FAFBFC; cursor:pointer;" style-hover="border-color:#EE8034; background:#FFF9F6">
+            <div style="font-size:14px; font-weight:600; color:#1A1D21;">Choose the budget file</div>
+            <div style="font-size:12px; color:#8A8F98; margin-top:6px;">Excel or CSV · the line names must match the chart of accounts</div>
+          </button>
+        </sc-if>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px;">
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Destination folder</label>
@@ -9979,14 +10278,28 @@
           <label style="display:flex; align-items:center; gap:9px; font-size:13px; color:#3B3B3B;"><input type="checkbox" checked style="width:15px; height:15px; accent-color:#E0572E;" />Validate before replacing the current version</label>
           <label style="display:flex; align-items:center; gap:9px; font-size:13px; color:#3B3B3B;"><input type="checkbox" style="width:15px; height:15px; accent-color:#E0572E;" />Keep the previous version as v7 and archive it</label>
         </div>
-        <div style="display:flex; align-items:center; gap:12px; margin-top:18px; padding:13px 15px; border-radius:10px; background:#F7F8FA;">
-          <span style="width:32px; height:32px; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
-          <div style="flex:1;"><div style="font-size:12px; font-weight:600; color:#1A1D21;">FY2026-budget-v8.xlsx</div><div style="font-size:11px; color:#9AA0A8;">862 KB · queued</div></div>
-          <div style="width:90px; height:6px; border-radius:999px; background:#EBEDF0; overflow:hidden;"><div style="height:100%; width:100%; background:#1E8E3E; border-radius:999px;"></div></div>
-        </div>
+        <sc-if value="{{ bfPicked }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:12px; margin-top:18px; padding:13px 15px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:32px; height:32px; flex:none; border-radius:8px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"></path></svg></span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:12px; font-weight:600; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ bfName }}</div>
+              <sc-if value="{{ bfReady }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px; color:#166F31;">{{ bfSize }} · ready</div></sc-if>
+              <sc-if value="{{ bfReading }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px; color:#8A4B0B;">{{ bfSize }} · reading…</div></sc-if>
+            </div>
+            <button onClick="{{ bfClear }}" style="width:28px; height:28px; flex:none; border:none; border-radius:8px; background:transparent; color:#A8ADB5;" style-hover="background:#FBEAE4; color:#C2410C">✕</button>
+          </div>
+        </sc-if>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
           <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
-          <button onClick="{{ confirmDlgUpload }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Upload and validate</button>
+          <sc-if value="{{ bfReady }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ confirmDlgUpload }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D46A22">Upload and validate</button>
+          </sc-if>
+          <sc-if value="{{ bfNone }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a file first</button>
+          </sc-if>
+          <sc-if value="{{ bfReading }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Reading the file…</button>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -10519,15 +10832,16 @@ const PAGE_SPECS = {
 
   '/budgets/versions': { title:'Budget version history', sub:'Every published version is retained and can be compared line by line',
     actions:['Compare v6 and v7'],
-    stats:[['Current version','v7','Published 04/02/2026'],['Versions','7','Since 12/12/2025'],['Lines changed in v7','11','₦2,150,000.00 net'],['Published by','Ibrahim Musa','Approved by MD']],
-    table:{ title:'Versions', cols:[['Version',null,'100px'],['Published',null,'140px'],['By',null,'170px'],['Lines',null,'90px'],['Total value','r','160px'],['Note',null,'minmax(180px,1fr)']],
-      rows:[['v7','04/02/2026','Ibrahim Musa','148','₦21,000,000.00','FY2026 approved budget'],
-            ['v6','22/01/2026','Ibrahim Musa','148','₦20,400,000.00','Board review adjustments'],
-            ['v5','15/01/2026','Fatima Bello','146','₦20,400,000.00','FCDO tranche 2 added'],
-            ['v4','08/01/2026','Fatima Bello','141','₦18,900,000.00','Draft circulated to departments'],
-            ['v3','20/12/2025','Ibrahim Musa','138','₦18,900,000.00','Second draft'],
-            ['v2','15/12/2025','Ibrahim Musa','130','₦17,600,000.00','First consolidated draft'],
-            ['v1','12/12/2025','Ibrahim Musa','96','₦15,200,000.00','Programmes only']] } },
+    stats:[['Live version','v7','Active since 04/02/2026'],['Versions saved','8','Since 12/12/2025'],['Awaiting activation','1','v8 — saved 04/08/2026'],['Lines in the live version','148','₦21,000,000.00']],
+    table:{ title:'Versions', cols:[['Version',null,'88px'],['Saved',null,'112px'],['By',null,'140px'],['Lines',null,'70px'],['Total value','r','142px'],['Note',null,'minmax(130px,1fr)'],['State',null,'104px'],['',null,'104px']],
+      rows:[['v8','04/08/2026','Fatima Bello','151','₦21,850,000.00','Q3 revision — caregiver uplift','a:SAVED','x:Activate'],
+            ['v7','04/02/2026','Ibrahim Musa','148','₦21,000,000.00','FY2026 approved budget','g:LIVE','x:Compare'],
+            ['v6','22/01/2026','Ibrahim Musa','148','₦20,400,000.00','Board review adjustments','n:SUPERSEDED','x:Activate'],
+            ['v5','15/01/2026','Fatima Bello','146','₦20,400,000.00','FCDO tranche 2 added','n:SUPERSEDED','x:Activate'],
+            ['v4','08/01/2026','Fatima Bello','141','₦18,900,000.00','Draft circulated to departments','n:SUPERSEDED','x:Activate'],
+            ['v3','20/12/2025','Ibrahim Musa','138','₦18,900,000.00','Second draft','n:SUPERSEDED','x:Activate'],
+            ['v2','15/12/2025','Ibrahim Musa','130','₦17,600,000.00','First consolidated draft','n:SUPERSEDED','x:Activate'],
+            ['v1','12/12/2025','Ibrahim Musa','96','₦15,200,000.00','Programmes only','n:SUPERSEDED','x:Activate']] } },
 
   '/payroll/payslips': { title:'Payslips', sub:'Self-service payslips · staff see only their own, Finance and HR see all',
     actions:['Email all payslips'],
@@ -11219,6 +11533,69 @@ const REQ_COMMENTS = [
 
 const REQ_ROWS = TXNS.map(t => t);
 
+const BUDGET_DETAIL = {
+  'Field monitoring & supervision': {
+    owner:'Tunde Balogun', period:'FY2026 · 01/01–31/12/2026', code:'PRG-4100',
+    sub:[['Per diem and subsistence', 1200000, 1010000, 902000], ['Accommodation', 900000, 742000, 640000], ['Vehicle hire and fuel', 700000, 448000, 358000], ['Communication and incidentals', 200000, 140000, 80000]],
+    txns:[['REQ-2026-0187','Field monitoring — Enugu cluster','04/08/2026',1250000,'Committed'],
+      ['RET-2026-0018','Retirement — Kano monitoring','29/07/2026',565500,'Actual'],
+      ['ADV-2026-0046','Travel advance — Enugu','24/07/2026',796000,'Committed'],
+      ['RET-2026-0014','Retirement — Aba cluster visit','12/07/2026',418500,'Actual']],
+    virements:[['V-2026-008','In from Communications & visibility','12/05/2026',300000]] },
+
+  'Training & workshops': {
+    owner:'Ngozi Okafor', period:'FY2026 · 01/01–31/12/2026', code:'PRG-4200',
+    sub:[['Facilitator fees', 700000, 480000, 420000], ['Venue and equipment', 620000, 300000, 240000], ['Participant transport', 400000, 160000, 120000], ['Materials and printing', 280000, 100000, 80000]],
+    txns:[['REQ-2026-0189','Safeguarding training — facilitator fees','01/08/2026',750000,'Committed'],
+      ['RET-2026-0016','Retirement — caregiver workshop','18/07/2026',290000,'Actual']],
+    virements:[['V-2026-011','In from Vehicle operations & maintenance','29/07/2026',450000]] },
+
+  'Caregiver support grants': {
+    owner:'Chinelo Obi', period:'FY2026 · 01/01–31/12/2026', code:'PRG-4300',
+    sub:[['Monthly stipend — 190 caregivers', 4200000, 1450000, 1450000], ['Emergency hardship fund', 500000, 180000, 180000], ['Disbursement charges', 300000, 70000, 70000]],
+    txns:[['REQ-2026-0193','Caregiver stipends — August','03/08/2026',850000,'Committed'],
+      ['REQ-2026-0176','Caregiver stipends — July','02/07/2026',450000,'Actual'],
+      ['REQ-2026-0161','Caregiver stipends — June','01/06/2026',400000,'Actual']],
+    virements:[] },
+
+  'Data collection & M&E': {
+    owner:'Grace Uche', period:'FY2026 · 01/01–31/12/2026', code:'MNE-4500',
+    sub:[['Enumerator fees', 1100000, 620000, 500000], ['Devices and airtime', 600000, 310000, 260000], ['Baseline and endline surveys', 500000, 180000, 130000], ['Data quality assurance', 300000, 70000, 50000]],
+    txns:[['REQ-2026-0191','Baseline survey — Enugu round','28/07/2026',480000,'Committed'],
+      ['REQ-2026-0172','Enumerator fees — Q2','30/06/2026',620000,'Actual'],
+      ['RET-2026-0012','Retirement — device airtime','15/06/2026',80000,'Actual']],
+    virements:[] },
+
+  'Communications & visibility': {
+    owner:'Grace Uche', period:'FY2026 · 01/01–31/12/2026', code:'MNE-4400',
+    sub:[['Branded materials', 500000, 480000, 452000], ['Photography and documentation', 300000, 290000, 280000], ['Print and design', 200000, 190000, 180000]],
+    txns:[['PO-2026-0054','Branded T-shirts (100)','12/07/2026',420000,'Actual'],
+      ['REQ-2026-0166','Photography — caregiver forum','20/06/2026',150000,'Actual']],
+    virements:[['V-2026-008','Out to Field monitoring & supervision','12/05/2026',-300000]] },
+
+  'Office running costs': {
+    owner:'Musa Danjuma', period:'FY2026 · 01/01–31/12/2026', code:'ADM-7100',
+    sub:[['Diesel and electricity', 1600000, 1380000, 1340000], ['Internet and telephony', 900000, 780000, 750000], ['Cleaning and security', 1200000, 700000, 660000], ['Office consumables', 500000, 290000, 270000]],
+    txns:[['PO-2026-0066','Q3 stationery replenishment','02/08/2026',700000,'Committed'],
+      ['REQ-2026-0175','Diesel — July','04/07/2026',148000,'Actual'],
+      ['REQ-2026-0158','Security services — Q2','01/06/2026',375000,'Actual']],
+    virements:[] },
+
+  'Vehicle operations & maintenance': {
+    owner:'Musa Danjuma', period:'FY2026 · 01/01–31/12/2026', code:'OPS-6200',
+    sub:[['Fuel', 800000, 612000, 590000], ['Servicing and repairs', 600000, 428000, 390000], ['Insurance and licensing', 400000, 200000, 200000]],
+    txns:[['REQ-2026-0184','Generator and vehicle servicing','22/07/2026',168000,'Actual'],
+      ['REQ-2026-0170','Fuel — Q3 replenishment','01/07/2026',420000,'Committed']],
+    virements:[['V-2026-011','Out to Training & workshops','29/07/2026',-450000]] },
+
+  'Audit & compliance': {
+    owner:'Chiamaka Eze', period:'FY2026 · 01/01–31/12/2026', code:'GRC-8100',
+    sub:[['External audit fees', 900000, 300000, 300000], ['Internal audit travel', 350000, 100000, 100000], ['Compliance training', 250000, 50000, 50000]],
+    txns:[['REQ-2026-0179','Legal retainer — Q3 2026','01/08/2026',300000,'Actual'],
+      ['REQ-2026-0164','Internal audit field visits','16/06/2026',150000,'Actual']],
+    virements:[] }
+};
+
 const BUDGET_ROWS = [
   { line:'Field monitoring & supervision', dept:'Programmes', donor:'USAID-LON-24', alloc:3000000, comm:2340000, actual:1980000 },
   { line:'Training & workshops', dept:'Programmes', donor:'EU-WISH-23', alloc:2000000, comm:1040000, actual:860000 },
@@ -11751,6 +12128,8 @@ class Component extends DCLogic {
       { desc:'Laptop — 14" business class, 16GB RAM, 512GB SSD', qty:6, unit:680000 },
       { desc:'Extended warranty — 3 years on site', qty:6, unit:48000 }
     ],
+    vmFrom: '', vmTo: '', vmAmt: '', vmReason: '',
+    bfFile: null,
     dmsFolder: 'All documents',
     dmsClass: 'All classes',
     dmsQ: '',
@@ -11848,12 +12227,18 @@ class Component extends DCLogic {
     })();
     return { txn:t, d };
   }
-  readFiles(list) {
+  readFiles(list, key) {
+    const slot = key || 'upFiles';
     const files = Array.prototype.slice.call(list || []);
     if (!files.length) return;
     const sizeOf = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
     files.forEach(file => {
       const rec = { name:file.name, mime:file.type || 'application/octet-stream', sizeLabel:sizeOf(file.size), dataBase64:'' };
+      if (slot === 'bfFile') { this.setState({ bfFile:rec }); const fr2 = new FileReader();
+        fr2.onload = () => { const s2 = String(fr2.result || ''); const b2 = s2.indexOf(',') > -1 ? s2.slice(s2.indexOf(',') + 1) : s2;
+          this.setState({ bfFile: Object.assign({}, rec, { dataBase64:b2 }) }); };
+        fr2.onerror = () => this.toast('Could not read ' + file.name + '.');
+        fr2.readAsDataURL(file); return; }
       this.setState({ upFiles: this.state.upFiles.concat([rec]) });
       const fr = new FileReader();
       fr.onload = () => {
@@ -11993,6 +12378,7 @@ class Component extends DCLogic {
     if (/^new rfq$/i.test(l)) { this.setState({ dlg:{ kind:'rfq' } }); return; }
     if (/add a vendor|new vendor|register.*vendor/i.test(l)) { this.setState({ dlg:{ kind:'vendor' }, nvName:'', nvEmail:'', nvPhone:'', nvAddress:'', nvTin:'', nvCats:{}, nvDd:false, nvCac:'', nvTax:'' }); return; }
     if (/new purchase order/i.test(l)) { this.go('/procurement/po/new'); return; }
+    if (/virement/i.test(l)) { this.setState({ dlg:{ kind:'virement' }, vmFrom:'', vmTo:'', vmAmt:'', vmReason:'' }); return; }
     if (/re-upload|upload budget|import budget/i.test(l)) { this.setState({ dlg:{ kind:'upload', label:l } }); return; }
     if (/Build a report|Custom builder/i.test(l)) { this.go('/reports/builder'); return; }
     if (/^Export|^Print|^Download/i.test(l)) { this.setState({ dlg:{ kind:'export' } }); return; }
@@ -12175,7 +12561,8 @@ class Component extends DCLogic {
       const pct = Math.round(b.comm / b.alloc * 100);
       return { line:b.line, dept:b.dept, donor:b.donor, alloc:money0(b.alloc), comm:money0(b.comm), actual:money0(b.actual),
         avail:money0(b.alloc - b.comm), pct, pctLabel:pct + '%', bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
-        danger:pct >= 95, warn:pct >= 80 && pct < 95, ok:pct < 80 };
+        danger:pct >= 95, warn:pct >= 80 && pct < 95, ok:pct < 80,
+        onOpen: () => this.go('/budgets/line?id=' + encodeURIComponent(b.line)) };
     });
 
     const stripe = (arr, extra) => arr.map((r, i) => Object.assign({}, r, { bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' }, extra ? extra(r, i) : {}));
@@ -12644,6 +13031,47 @@ class Component extends DCLogic {
       isAdv: base('/advances'),
       isRet: base('/advances/retire'),
       isBud: base('/budgets'),
+      isBudLine: base('/budgets/line'),
+      bl: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : '';
+        const row = BUDGET_ROWS.find(b => b.line === id);
+        const d = BUDGET_DETAIL[id];
+        if (!row || !d) return { missing:true, found:false, ref:id };
+        const pct = Math.round(row.comm / row.alloc * 100);
+        const spentPct = Math.round(row.actual / row.alloc * 100);
+        const subAlloc = d.sub.reduce((s, x) => s + x[1], 0);
+        return {
+          missing:false, found:true,
+          line:row.line, dept:row.dept, donor:row.donor, owner:d.owner, ownerInitials:this.initials(d.owner), period:d.period, code:d.code,
+          allocF:money0(row.alloc), commF:money0(row.comm), actualF:money0(row.actual),
+          availF:money0(row.alloc - row.comm), pendingF:money0(row.comm - row.actual),
+          pct, pctLabel:pct + '%', spentPct, spentLabel:spentPct + '%',
+          danger:pct >= 95, warn:pct >= 80 && pct < 95, ok:pct < 80,
+          state: pct >= 95 ? 'Critical' : pct >= 80 ? 'Watch' : 'Healthy',
+          subRows: d.sub.map((x, i) => {
+            const p = Math.round(x[2] / x[1] * 100);
+            return { name:x[0], allocF:money0(x[1]), commF:money0(x[2]), actualF:money0(x[3]),
+              availF:money0(x[1] - x[2]), pct:p, pctLabel:p + '%',
+              hot:p >= 95, mid:p >= 80 && p < 95, cool:p < 80,
+              bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' };
+          }),
+          subTotalF:money0(subAlloc), subMatches: subAlloc === row.alloc,
+          subGapF:money0(Math.abs(subAlloc - row.alloc)), subOver: subAlloc > row.alloc,
+          txns: d.txns.map((t, i) => ({ ref:t[0], title:t[1], date:t[2], amountF:money0(t[3]),
+            actual:t[4] === 'Actual', committed:t[4] === 'Committed',
+            bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+            onOpen: () => this.go('/requisitions/' + t[0]) })),
+          txnCount: d.txns.length,
+          hasVir: d.virements.length > 0, noVir: d.virements.length === 0,
+          virs: d.virements.map((v, i) => ({ ref:v[0], desc:v[1], date:v[2],
+            amountF:(v[3] > 0 ? '+' : '−') + money0(Math.abs(v[3])).replace('₦', '₦'),
+            inbound:v[3] > 0, outbound:v[3] < 0,
+            bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' }))
+        };
+      })(),
+      blRaise: () => this.go('/requisitions/new'),
+      blVirement: () => this.go('/budgets/virements'),
       isQbo: base('/quickbooks'),
       isDms: base('/documents'),
       dmsFolder: this.state.dmsFolder,
@@ -12754,6 +13182,10 @@ class Component extends DCLogic {
                 if (/^(view|prepare)$/i.test(b) && /Export|Prepare/.test(text)) { this.setState({ dlg:{ kind:'remit', row:r } }); return; }
                 if (/^bank$/i.test(b)) { this.setState({ dlg:{ kind:'bank' }, bkVendor:String(r[0]), bkName:'', bkAcctName:'', bkAcctNo:'', bkReason:'', bkRejectMode:false }); return; }
                 if (/^(blacklist|reinstate)$/i.test(b)) { this.setState({ dlg:{ kind:'blacklist' }, blVendor:String(r[0]), blMode: /reinstate/i.test(b) ? 'reinstate' : 'blacklist', blReason:'' }); return; }
+                if (/^activate$/i.test(b) && /^v\d+$/.test(String(r[0]))) {
+                  this.setState({ dlg:{ kind:'actbudget', ver:String(r[0]), saved:String(r[1] || ''), by:String(r[2] || ''), lines:String(r[3] || ''), total:String(r[4] || ''), note:String(r[5] || '') } });
+                  return;
+                }
                 if (/^(award|quotes)$/i.test(b) && /^RFQ-\d{4}-\d{4}$/.test(String(r[0]))) { this.go('/procurement/award?id=' + r[0]); return; }
                 if (/^sign$/i.test(b)) { this.setState({ dlg:{ kind:'ceremony', requestId:String(r[0] || '') }, ceremonyStep:1, esignSelected:String(r[0] || '') }); return; }
                 if (/^certificate$/i.test(b)) { this.go('/documents/certificate'); return; }
@@ -12783,7 +13215,7 @@ class Component extends DCLogic {
         })
       })) : [],
       isStub: !detBundle && KNOWN.indexOf(path) === -1 && !spec && ['/admin/activity','/hr/staff','/documents/view','/timesheets/approvals','/admin/workflow','/hr/appraisals','/inventory','/inventory/log','/reports/builder','/admin/forms','/admin/forms/build',
-        '/auth/2fa','/auth/reset','/auth/setup','/auth/locked','/account/profile','/account/signature','/account/notifications','/account/delegation','/admin/workflow/chain','/documents/certificate','/sign/external',
+        '/auth/2fa','/auth/reset','/auth/setup','/auth/locked','/account/profile','/account/signature','/account/notifications','/account/delegation','/admin/workflow/chain','/documents/certificate','/sign/external','/budgets/line',
         '/print/travel-authority','/print/purchase-order','/print/hr-letter','/budgets/new',
         '/procurement/po/view','/procurement/po/new','/procurement/contract','/procurement/award'].indexOf(path) === -1,
       goFb: () => this.go('/admin/forms/build'),
@@ -13469,8 +13901,66 @@ class Component extends DCLogic {
         ? 'A budget needs at least one line before it can go to Finance.'
         : 'Every line is named, but nothing is costed yet. Put an amount in at least one quarter.',
       bbValid: this.state.bbRows.length > 0 && !this.state.bbRows.some(r => !String(r.line).trim()) && this.bbTotal() > 0 && this.bbTotal() <= this.state.bbCeiling,
+      openVirement: () => this.setState({ dlg:{ kind:'virement' }, vmFrom:'', vmTo:'', vmAmt:'', vmReason:'' }),
+      dlgVirement: !!this.state.dlg && this.state.dlg.kind === 'virement',
+      vmLines: BUDGET_ROWS.map(b => ({ line:b.line, availF: money(b.alloc - b.comm) })),
+      vmFrom: this.state.vmFrom, vmTo: this.state.vmTo,
+      vmSetFrom: e => this.setState({ vmFrom: e.target.value }),
+      vmSetTo: e => this.setState({ vmTo: e.target.value }),
+      vmAmt: this.state.vmAmt,
+      vmSetAmt: e => this.setState({ vmAmt: String(e.target.value).replace(/[^0-9.]/g, '') }),
+      vmReason: this.state.vmReason,
+      vmSetReason: e => this.setState({ vmReason: e.target.value }),
+      vmFromAvail: (() => { const r = BUDGET_ROWS.find(b => b.line === this.state.vmFrom); return r ? money(r.alloc - r.comm) : '—'; })(),
+      vmToAvail: (() => { const r = BUDGET_ROWS.find(b => b.line === this.state.vmTo); return r ? money(r.alloc - r.comm) : '—'; })(),
+      vmHasFrom: !!this.state.vmFrom, vmHasTo: !!this.state.vmTo,
+      vmAmtNum: Number(this.state.vmAmt) || 0,
+      vmAmtF: money(Number(this.state.vmAmt) || 0),
+      vmSame: !!this.state.vmFrom && this.state.vmFrom === this.state.vmTo,
+      vmOverAvail: (() => {
+        const r = BUDGET_ROWS.find(b => b.line === this.state.vmFrom);
+        if (!r) return false;
+        return (Number(this.state.vmAmt) || 0) > (r.alloc - r.comm);
+      })(),
+      vmAfterFrom: (() => {
+        const r = BUDGET_ROWS.find(b => b.line === this.state.vmFrom);
+        return r ? money(Math.max(0, (r.alloc - r.comm) - (Number(this.state.vmAmt) || 0))) : '—';
+      })(),
+      vmAfterTo: (() => {
+        const r = BUDGET_ROWS.find(b => b.line === this.state.vmTo);
+        return r ? money((r.alloc - r.comm) + (Number(this.state.vmAmt) || 0)) : '—';
+      })(),
+      vmShowImpact: !!this.state.vmFrom && !!this.state.vmTo && this.state.vmFrom !== this.state.vmTo && (Number(this.state.vmAmt) || 0) > 0,
+      vmNoFrom: !this.state.vmFrom,
+      vmNoTo: !!this.state.vmFrom && !this.state.vmTo,
+      vmNoAmt: !!this.state.vmFrom && !!this.state.vmTo && this.state.vmFrom !== this.state.vmTo && (Number(this.state.vmAmt) || 0) <= 0,
+      vmValid: (() => {
+        const f = this.state.vmFrom, t = this.state.vmTo, a = Number(this.state.vmAmt) || 0;
+        if (!f || !t || f === t || a <= 0) return false;
+        const r = BUDGET_ROWS.find(b => b.line === f);
+        return !!r && a <= (r.alloc - r.comm);
+      })(),
+      vmSubmit: () => this.hook('CreateVirement', {
+        fromLine: this.state.vmFrom, toLine: this.state.vmTo,
+        amountKobo: Math.round((Number(this.state.vmAmt) || 0) * 100),
+        reason: String(this.state.vmReason || '').trim() || undefined
+      }, 'Virement requested. It goes to Finance, then the Managing Director.'),
+      dlgActBudget: !!this.state.dlg && this.state.dlg.kind === 'actbudget',
+      abVer: this.state.dlg && this.state.dlg.ver ? this.state.dlg.ver : '',
+      abSaved: this.state.dlg && this.state.dlg.saved ? this.state.dlg.saved : '',
+      abBy: this.state.dlg && this.state.dlg.by ? this.state.dlg.by : '',
+      abLines: this.state.dlg && this.state.dlg.lines ? this.state.dlg.lines : '',
+      abTotal: this.state.dlg && this.state.dlg.total ? this.state.dlg.total : '',
+      abNote: this.state.dlg && this.state.dlg.note ? this.state.dlg.note : '',
+      abIsFinance: this.state.role === 'finance',
+      abNotFinance: this.state.role !== 'finance',
+      abConfirmLabel: 'Make ' + (this.state.dlg && this.state.dlg.ver ? this.state.dlg.ver : '') + ' the live budget',
+      abDo: () => {
+        const v = this.state.dlg.ver;
+        this.hook('ActivateBudgetVersion', { versionId:v }, v + ' is now the live budget.');
+      },
       bbSaveDraft: () => this.hook('SaveBudgetDraft', { fiscalYear:this.state.bbYear, basis:this.state.bbBasis, lines:this.state.bbRows.map(r => ({ category:r.cat, name:r.line, donorCode:r.donor, department:r.dept, quartersKobo:r.q.map(v => v * 100) })) }, 'Budget draft saved.'),
-      bbSubmit: () => this.hook('SubmitBudget', { fiscalYear:this.state.bbYear, basis:this.state.bbBasis, totalKobo:this.bbTotal() * 100, lines:this.state.bbRows.map(r => ({ category:r.cat, name:r.line, donorCode:r.donor, department:r.dept, quartersKobo:r.q.map(v => v * 100) })) }, 'Budget submitted to Finance, then the Managing Director.'),
+      bbSubmit: () => this.hook('SubmitBudget', { fiscalYear:this.state.bbYear, basis:this.state.bbBasis, totalKobo:this.bbTotal() * 100, lines:this.state.bbRows.map(r => ({ category:r.cat, name:r.line, donorCode:r.donor, department:r.dept, quartersKobo:r.q.map(v => v * 100) })) }, 'Saved as a new budget version. Activate it from Version history to make it live.'),
       nrPurpose: this.state.nrPurpose,
       nrSetPurpose: e => this.setState({ nrPurpose: e.target.value }),
       nrBudget: this.state.nrBudget,
@@ -13892,7 +14382,26 @@ class Component extends DCLogic {
       reqTabs: [['all','All','214'],['mine','Mine','38'],['queue','Awaiting me','6'],['returned','Returned','3']]
         .map(([k, label, n]) => ({ label, n, on: tab === k, off: tab !== k, onClick: () => this.setState({ reqTab:k, selected:[] }) })),
       dlgUpload: !!this.state.dlg && this.state.dlg.kind === 'upload',
-      confirmDlgUpload: () => { this.setState({ dlg:null }); this.hook('UploadBudget', { fiscalYear:'FY2026' }, 'Budget file uploaded — validation running.'); },
+      bfName: this.state.bfFile ? this.state.bfFile.name : '',
+      bfSize: this.state.bfFile ? this.state.bfFile.sizeLabel : '',
+      bfPicked: !!this.state.bfFile,
+      bfNone: !this.state.bfFile,
+      bfReady: !!(this.state.bfFile && this.state.bfFile.dataBase64),
+      bfReading: !!(this.state.bfFile && !this.state.bfFile.dataBase64),
+      bfPick: () => {
+        const el = document.createElement('input');
+        el.type = 'file';
+        el.accept = '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
+        el.onchange = () => this.readFiles(el.files, 'bfFile');
+        el.click();
+      },
+      bfClear: () => this.setState({ bfFile:null }),
+      confirmDlgUpload: () => {
+        const f = this.state.bfFile;
+        if (!f || !f.dataBase64) { this.toast('Choose a budget file first.'); return; }
+        this.setState({ dlg:null, bfFile:null });
+        this.hook('UploadBudget', { fiscalYear:'FY2026', name:f.name, mime:f.mime, dataBase64:f.dataBase64 }, null);
+      },
       reqHistory: REQ_HISTORY.map(h => ({ ...h, initials:this.initials(h.who), green:h.tone==='green', amber:h.tone==='amber', neutral:h.tone==='neutral' })),
       comments: REQ_COMMENTS.map(c => ({ ...c, initials:this.initials(c.who) })),
       trackerStages, advanced: adv, notAdvanced: !adv,
