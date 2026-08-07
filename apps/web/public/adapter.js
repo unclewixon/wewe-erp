@@ -1641,6 +1641,29 @@
   // Bank details are deliberately two-handed: the change is held pending, and the person who
   // proposed it cannot be the one to confirm it. That separation is the control, so each leg
   // is wired to its own endpoint rather than collapsed into one call.
+  // Blacklisting is dispatched from the design under a computed name — hook(name, …) where
+  // name is 'BlacklistVendor' or 'UnblacklistVendor' — so both legs answer the same shape.
+  // The engine takes a reason of 5+ characters; the design gates at 10, which is stricter and
+  // fine. Restricted to Finance, Internal Audit and Admin, and it refuses an award to a
+  // blacklisted vendor, so this is the control behind that refusal.
+  function setVendorBlacklist(p, path) {
+    var id = resolveVendorId(p && p.vendorId);            // the design passes the vendor name
+    var reason = String((p && p.reason) || '').trim();
+    if (!id || reason.length < 5) return false;
+    var res = post('/v1/vendors/' + id + '/' + path, { reason: reason });
+    return res ? true : false;
+  }
+  window.__weweBlacklistVendor = function (p) {
+    return setVendorBlacklist(p, 'blacklist')
+      ? 'Vendor blacklisted. They are excluded from every quotation picker from now on.'
+      : false;
+  };
+  window.__weweUnblacklistVendor = function (p) {
+    return setVendorBlacklist(p, 'unblacklist')
+      ? 'Vendor reinstated. They can be invited to quote again.'
+      : false;
+  };
+
   window.__weweProposeBankDetails = function (p) {
     var id = resolveVendorId(p && p.vendorId);
     if (!id) return false;
