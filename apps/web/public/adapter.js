@@ -1578,17 +1578,72 @@
       : 'Signed. Waiting on the remaining signatories.';
   };
 
-  // Refused rather than left undefined, so the design shows a failure instead of announcing
-  // work that never happened. Each needs engine work, recorded as gaps 37-39:
-  //   evidence packs bundle TRANSACTIONS by filter (from/to/donor/department), not a set of
-  //   chosen documents, so {documents:[...]} has nothing to post to;
-  //   the digitisation pipeline — batches, page indexing, flagging — has no endpoints at all;
-  //   signature settings and a saved personal signature have nowhere to persist.
-  window.__weweCreateEvidencePack = function () { return false; };
-  window.__weweCreateDigitisationBatch = function () { return false; };
-  window.__weweIndexPage = function () { return false; };
-  window.__weweFlagPage = function () { return false; };
-  window.__weweSaveSignatureSettings = function () { return false; };
+  window.__weweCreateEvidencePack = function (p) {
+    // The design hands over the documents an auditor picked; the engine now takes them
+    // alongside its filters instead of only sweeping a date range.
+    var docs = (p && p.documents) || [];
+    if (!docs.length) return false;
+    var res = post('/v1/evidence-packs', { documentIds: docs });
+    if (!res) return false;
+    return 'Evidence pack built with ' + docs.length + ' document' + (docs.length === 1 ? '' : 's') + '.';
+  };
+
+  window.__weweCreateDigitisationBatch = function (p) {
+    var source = String((p && p.source) || '').trim();
+    if (source.length < 2) return false;
+    var res = post('/v1/dms/digitisation/batches', {
+      source: source,
+      estimatedPages: Number(p.estimatedPages) || 0,
+      operator: p.operator || undefined,
+    });
+    if (!res || !res.ref) return false;
+    // Remember it so the page hooks, which hardcode a batch reference in the design,
+    // act on the batch that was actually just created.
+    window.__weweDigitisationBatch = res.ref;
+    return 'Batch ' + res.ref + ' opened for ' + (res.estimatedPages || 0) + ' page(s).';
+  };
+  function currentBatch(p) {
+    // The design sends batchId:'B-024' — a fixture. Prefer the batch this session created.
+    var given = String((p && p.batchId) || '').trim();
+    return window.__weweDigitisationBatch || (/^DGB-/.test(given) ? given : null);
+  }
+  window.__weweIndexPage = function (p) {
+    var batch = currentBatch(p);
+    if (!batch || !p || !p.pageNumber) return false;
+    var res = post('/v1/dms/digitisation/batches/' + batch + '/index', {
+      pageNumber: Number(p.pageNumber),
+      documentClass: String(p.documentClass || '').trim() || 'Unclassified',
+      title: p.title || undefined,
+      reference: p.reference || undefined,
+    });
+    if (!res) return false;
+    return 'Page ' + p.pageNumber + ' indexed — ' + res.counts.outstanding + ' left in ' + res.ref + '.';
+  };
+  window.__weweFlagPage = function (p) {
+    var batch = currentBatch(p);
+    if (!batch || !p || !p.pageNumber) return false;
+    var res = post('/v1/dms/digitisation/batches/' + batch + '/flag', {
+      pageNumber: Number(p.pageNumber),
+      reason: String(p.reason || 'unreadable'),
+    });
+    if (!res) return false;
+    return 'Page ' + p.pageNumber + ' flagged for rescanning.';
+  };
+
+  window.__weweSaveSignatureSettings = function (p) {
+    var res = put('/v1/esign/settings', {
+      defaultExpiryDays: Number(p && p.defaultExpiryDays) || 30,
+      remindAfterDays: Number(p && p.remindAfterDays) || 0,
+      requireTwoFactor: !!(p && p.requireTwoFactor),
+      watermarkExternal: !!(p && p.watermarkExternal),
+      allowTyped: !!(p && p.allowTyped),
+    });
+    if (!res) return false;
+    return 'Signature policy saved.';
+  };
+
+  // Still refused: a saved personal signature has no payload (the design sends {}) and
+  // nowhere to persist. Recorded as the remaining half of gap 39.
   window.__weweSaveSignature = function () { return false; };
 
   // ---- Budgets ----

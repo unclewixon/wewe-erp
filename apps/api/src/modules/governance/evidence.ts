@@ -5,7 +5,7 @@
  * itself is audit-logged with the filters and row counts.
  */
 import { Body, Controller, Injectable, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { and, asc, eq, gte, inArray, lte, notInArray } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lte, notInArray, or } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -19,6 +19,13 @@ const FiltersSchema = z.object({
   to: z.coerce.date().optional(),
   donorCode: z.string().max(40).optional(),
   departmentId: z.string().max(60).optional(),
+  /**
+   * DMS-07: documents chosen by hand, rather than swept up by the filter. An auditor
+   * building a pack usually has a specific bundle in mind, and a date range is a blunt
+   * way to express it. Accepts document ids or names; each resolves to the current
+   * version, with its sha256 so the pack is verifiable against the repository later.
+   */
+  documentIds: z.array(z.string().min(1)).max(200).optional(),
 });
 
 // src/modules/governance → apps/api (same depth from dist/ when compiled)
@@ -53,6 +60,18 @@ export class EvidencePackService {
           .orderBy(asc(schema.auditEvents.id))
       : [];
 
+    // Hand-picked documents, resolved to their current version and hash so the pack can be
+    // checked against the repository afterwards. Accepts ids or names — an auditor working
+    // from a screen has the name, not the id.
+    const chosen = filters.documentIds ?? [];
+    const docs = chosen.length
+      ? await db.select().from(schema.documents).where(or(
+          inArray(schema.documents.id, chosen),
+          inArray(schema.documents.name, chosen),
+        ))
+      : [];
+    const missing = chosen.filter((c) => !docs.some((d) => d.id === c || d.name === c));
+
     const bundle = {
       kind: 'WEWE_EVIDENCE_PACK',
       generatedAt: new Date().toISOString(),
@@ -62,13 +81,23 @@ export class EvidencePackService {
         to: filters.to?.toISOString() ?? null,
         donorCode: filters.donorCode ?? null,
         departmentId: filters.departmentId ?? null,
+        documentIds: chosen.length ? chosen : null,
       },
       counts: {
         transactions: txs.length,
         requisitionLines: txs.reduce((n, t) => n + t.lines.length, 0),
         stageEvents: txs.reduce((n, t) => n + t.stageEvents.length, 0),
         auditEvents: auditRows.length,
+        documents: docs.length,
       },
+      // Named but not found — recorded rather than dropped, so a pack that is missing
+      // something says so on its face instead of looking complete.
+      documentsNotFound: missing.length ? missing : undefined,
+      documents: docs.map((d) => ({
+        id: d.id, name: d.name, mime: d.mime, sizeBytes: d.sizeBytes,
+        sha256: d.sha256, docType: d.docType, confidential: d.confidential,
+        uploadedAt: d.createdAt?.toISOString?.() ?? null,
+      })),
       transactions: txs.map((tx) => ({
         id: tx.id, ref: tx.ref, typeCode: tx.typeCode, title: tx.title,
         status: tx.status, currentStage: tx.currentStage,

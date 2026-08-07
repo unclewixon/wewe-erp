@@ -11,13 +11,16 @@ import {
   disposalHook, seedRepositoryDefaults, DOC_DISPOSAL_TYPE,
 } from './repository';
 import { EsignController, EsignExternalController, EsignService } from './esign';
+import { DigitisationController, DigitisationService } from './digitisation';
+import { EsignSettingsController, EsignSettingsService } from './esign-settings';
 
 export const controllers = [
   FoldersController, DocumentsController, LinksController, SearchController,
   EsignController, EsignExternalController,
+  DigitisationController, EsignSettingsController,
 ];
 
-export const providers = [DocStorageService, { provide: NullOcrService, useClass: TesseractOcrService }, DmsService, EsignService];
+export const providers = [DocStorageService, { provide: NullOcrService, useClass: TesseractOcrService }, DmsService, EsignService, DigitisationService, EsignSettingsService];
 
 /** Idempotent reference data: DOC_DISPOSAL type + root folder tree. */
 export async function seedDefaults(): Promise<void> {

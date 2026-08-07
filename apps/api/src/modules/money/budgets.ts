@@ -39,6 +39,22 @@ const AllocationSchema = z.object({
 }).refine((a) => !a.quartersKobo || a.quartersKobo.reduce((s, q) => s + BigInt(q), 0n) === BigInt(a.amountKobo), {
   message: 'quartersKobo must add up to amountKobo',
 });
+/**
+ * BUD-04: import a budget from a spreadsheet export. Takes the file the way the uploader
+ * already sends one — base64 with its name and type — and reads it as CSV, because that is
+ * what every finance team can produce from Excel without a converter.
+ *
+ * The import creates a DRAFT version and nothing more. Nobody should be able to replace the
+ * live budget by dropping a file on a page; activation stays a separate, deliberate act.
+ */
+const ImportBudgetSchema = z.object({
+  fiscalYear: z.union([z.number().int().min(2000).max(2100), z.string()]),
+  name: z.string().max(200).optional(),
+  mime: z.string().max(120).optional(),
+  dataBase64: z.string().min(1),
+  note: z.string().max(500).optional(),
+});
+
 const CreateVersionSchema = z.object({
   fiscalYear: z.number().int().min(2000).max(2100),
   note: z.string().max(500).optional(),
@@ -265,6 +281,91 @@ export class BudgetsService {
     return this.getVersion(version.id);
   }
 
+  /**
+   * Parse a CSV budget and create a draft version from it. Recognised headers, in any order
+   * and case: line/name, department, donor, and either amount, or q1..q4 which are summed.
+   * A row naming a line the year does not have is created, exactly as the builder does —
+   * importing a budget is the same act as building one, only faster.
+   */
+  async importVersion(user: AuthedUser, dto: z.infer<typeof ImportBudgetSchema>, ip?: string) {
+    const fiscalYear = typeof dto.fiscalYear === 'number'
+      ? dto.fiscalYear
+      : Number((String(dto.fiscalYear).match(/(\d{4})/) ?? [])[1]);
+    if (!fiscalYear || fiscalYear < 2000 || fiscalYear > 2100)
+      throw new BadRequestException('A four-digit fiscal year is required');
+
+    let text: string;
+    try { text = Buffer.from(dto.dataBase64, 'base64').toString('utf8'); }
+    catch { throw new BadRequestException('The file could not be decoded'); }
+    const rows = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (rows.length < 2) throw new BadRequestException('The file needs a header row and at least one budget line');
+
+    const split = (line: string) => line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
+    const header = split(rows[0]).map((h) => h.toLowerCase());
+    const at = (...names: string[]) => header.findIndex((h) => names.includes(h));
+    const iName = at('line', 'name', 'budget line', 'description');
+    const iDept = at('department', 'dept');
+    const iDonor = at('donor', 'donorcode', 'donor code');
+    const iAmount = at('amount', 'total', 'allocation');
+    const qCols = ['q1', 'q2', 'q3', 'q4'].map((q) => at(q, q.toUpperCase()));
+    if (iName === -1)
+      throw new BadRequestException('No line-name column found — expected one of: line, name, budget line, description');
+    if (iAmount === -1 && qCols.some((c) => c === -1))
+      throw new BadRequestException('Provide either an amount column or all four of q1, q2, q3, q4');
+
+    // Naira in the sheet, kobo on the wire. A finance team types 1,250,000 — not 125000000.
+    const toKobo = (cell: string | undefined) => {
+      const n = Number(String(cell ?? '').replace(/[^0-9.-]/g, ''));
+      if (!isFinite(n) || n < 0) return null;
+      return BigInt(Math.round(n * 100));
+    };
+
+    const allocations: z.infer<typeof AllocationSchema>[] = [];
+    const rejected: { row: number; reason: string }[] = [];
+    for (let r = 1; r < rows.length; r += 1) {
+      const cells = split(rows[r]);
+      const name = cells[iName];
+      if (!name) { rejected.push({ row: r + 1, reason: 'no line name' }); continue; }
+      let total: bigint | null;
+      let quarters: string[] | undefined;
+      if (iAmount !== -1) {
+        total = toKobo(cells[iAmount]);
+      } else {
+        const qs = qCols.map((c) => toKobo(cells[c]));
+        if (qs.some((q) => q === null)) { rejected.push({ row: r + 1, reason: 'a quarter is not a number' }); continue; }
+        quarters = qs.map((q) => q!.toString());
+        total = qs.reduce((s, q) => s! + q!, 0n);
+      }
+      if (total === null) { rejected.push({ row: r + 1, reason: 'amount is not a number' }); continue; }
+      if (total <= 0n) { rejected.push({ row: r + 1, reason: 'amount is zero' }); continue; }
+      allocations.push({
+        line: {
+          name,
+          department: iDept === -1 ? undefined : cells[iDept] || undefined,
+          donorCode: iDonor === -1 ? undefined : cells[iDonor] || undefined,
+        },
+        amountKobo: total.toString(),
+        ...(quarters ? { quartersKobo: quarters } : {}),
+      });
+    }
+    if (!allocations.length)
+      throw new BadRequestException(`No usable budget lines in the file${rejected.length ? ` — ${rejected.length} row(s) rejected` : ''}`);
+
+    const version = await this.createVersion(user, {
+      fiscalYear,
+      note: dto.note ?? `Imported from ${dto.name ?? 'a spreadsheet'}`,
+      allocations,
+    }, ip);
+    await this.audit.log({
+      actorId: user.id, actorEmail: user.email, action: 'BUDGET_IMPORTED',
+      entityType: 'budget_version', entityId: version.id,
+      // Rejected rows are recorded, not silently skipped: a budget that imported 40 of 47
+      // lines and said nothing is how a shortfall becomes a surprise in month three.
+      data: { file: dto.name ?? null, fiscalYear, imported: allocations.length, rejected }, ip,
+    });
+    return { ...version, imported: allocations.length, rejected };
+  }
+
   /** BUD-01: activate a version; any prior ACTIVE version of the year is SUPERSEDED. */
   async activateVersion(user: AuthedUser, versionId: string, ip?: string) {
     const version = await db.query.budgetVersions.findFirst({ where: eq(schema.budgetVersions.id, versionId) });
@@ -377,6 +478,14 @@ export class BudgetsController {
   createVersion(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {
     const dto = CreateVersionSchema.parse(body);
     return this.svc.createVersion(user, dto, req.ip);
+  }
+
+  /** BUD-04: import a spreadsheet as a DRAFT version — never as the live budget. */
+  @Post('import')
+  @RequireRoles('FINANCE')
+  importVersion(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {
+    const dto = ImportBudgetSchema.parse(body);
+    return this.svc.importVersion(user, dto, req.ip);
   }
 
   @Post('versions/:id/activate')

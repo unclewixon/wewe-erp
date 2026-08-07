@@ -202,6 +202,7 @@ export const emailOutbox = pgTable('email_outbox', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+
 export const settings = pgTable('settings', {
   id: cuid('id'),
   key: text('key').notNull().unique(),
@@ -314,6 +315,37 @@ export const documents = pgTable('documents', {
   legalHold: boolean('legal_hold').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * DMS-09: a scanning run. Pages are captured first and indexed afterwards, so a batch
+ * carries its own state and the pages hang off it — an unindexed page is a real thing
+ * that exists, not an absence.
+ */
+export const digitisationBatches = pgTable('digitisation_batches', {
+  id: cuid('id'),
+  ref: text('ref').notNull().unique(),
+  source: text('source').notNull(),                       // where the paper came from
+  estimatedPages: integer('estimated_pages').notNull().default(0),
+  defaultFolderId: text('default_folder_id').references(() => docFolders.id),
+  operator: text('operator'),
+  status: text('status').notNull().default('OPEN'),       // OPEN | CLOSED
+  createdById: text('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const digitisationPages = pgTable('digitisation_pages', {
+  id: cuid('id'),
+  batchId: text('batch_id').notNull().references(() => digitisationBatches.id),
+  pageNumber: integer('page_number').notNull(),
+  documentClass: text('document_class'),
+  title: text('title'),
+  reference: text('reference'),
+  /** PENDING until someone indexes it, INDEXED once classified, FLAGGED when unusable. */
+  status: text('status').notNull().default('PENDING'),
+  flagReason: text('flag_reason'),
+  indexedById: text('indexed_by_id').references(() => users.id),
+  indexedAt: timestamp('indexed_at', { withTimezone: true }),
+}, (t) => [uniqueIndex('digi_page_uq').on(t.batchId, t.pageNumber)]);
 
 export const docVersions = pgTable('doc_versions', {
   id: cuid('id'),
