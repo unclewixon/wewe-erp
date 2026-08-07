@@ -107,11 +107,16 @@ export class AdminUsersController {
       name: user.name, title: user.title, departmentId: user.departmentId,
       roles: user.roles.map((r) => ({ code: r.role.code, departmentId: r.departmentId })),
     };
-    await db.update(schema.users).set({
+    // A roles-only PATCH leaves nothing to set on the user row itself, and Drizzle rejects
+    // an empty .set() with "No values to set" — which surfaced as a 500 on the most common
+    // use of this endpoint. Only touch the row when a scalar field actually changed.
+    const scalarChanges = {
       ...(dto.name !== undefined ? { name: dto.name } : {}),
       ...(dto.title !== undefined ? { title: dto.title } : {}),
       ...(dto.departmentId !== undefined ? { departmentId: dto.departmentId } : {}),
-    }).where(eq(schema.users.id, id));
+    };
+    if (Object.keys(scalarChanges).length > 0)
+      await db.update(schema.users).set(scalarChanges).where(eq(schema.users.id, id));
     if (dto.roles) await this.setRoles(id, dto.roles);
 
     const after = {
