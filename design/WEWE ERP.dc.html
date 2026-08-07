@@ -5333,7 +5333,7 @@
                   <div style="font-size:13px; color:#6B7280; line-height:1.6;">Type your name and pick a hand. A typed signature is legally equivalent under the Nigerian Evidence Act, and the audit trail records that it was typed.</div>
                   <div style="display:flex; flex-direction:column; gap:7px; margin-top:16px;">
                     <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Your name as it should appear</label>
-                    <input value="Ibrahim Musa" style="height:44px; padding:0 14px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+                    <input value="{{ sigTyped }}" onChange="{{ sigSetTyped }}" style="height:44px; padding:0 14px; border:1px solid #E3E5E8; border-radius:11px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
                   </div>
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;">
                     <div style="padding:20px; border-radius:12px; background:#F5F6F8; box-shadow:inset 0 0 0 1.5px #E0572E; display:flex; align-items:center; justify-content:center;">
@@ -6684,15 +6684,15 @@
               <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
                 <div style="display:flex; align-items:center; gap:10px; padding:13px 20px; border-bottom:1px solid #EEF0F3; flex-wrap:wrap;">
                   <div style="display:flex; align-items:center; gap:6px;">
-                    <button onClick="{{ noop }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;">‹</button>
-                    <span style="font-size:12px; font-weight:600; color:#3B3B3B; font-variant-numeric:tabular-nums;">Page 3 of 24</span>
-                    <button onClick="{{ noop }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;">›</button>
+                    <button onClick="{{ dvPrev }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;" style-hover="background:#F7F8FA">‹</button>
+                    <span style="font-size:12px; font-weight:600; color:#3B3B3B; font-variant-numeric:tabular-nums;">{{ dvPageLabel }}</span>
+                    <button onClick="{{ dvNext }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;" style-hover="background:#F7F8FA">›</button>
                   </div>
                   <span style="width:1px; height:20px; background:#E3E5E8;"></span>
                   <div style="display:flex; align-items:center; gap:6px;">
-                    <button onClick="{{ noop }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;">−</button>
-                    <span style="font-size:12px; font-weight:600; color:#3B3B3B; font-variant-numeric:tabular-nums;">100%</span>
-                    <button onClick="{{ noop }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;">+</button>
+                    <button onClick="{{ dvZoomOut }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;" style-hover="background:#F7F8FA">−</button>
+                    <span style="font-size:12px; font-weight:600; color:#3B3B3B; font-variant-numeric:tabular-nums;">{{ dvZoomLabel }}</span>
+                    <button onClick="{{ dvZoomIn }}" style="width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;" style-hover="background:#F7F8FA">+</button>
                   </div>
                   <span style="width:1px; height:20px; background:#E3E5E8;"></span>
                   <div style="display:flex; align-items:center; gap:8px; height:30px; padding:0 10px; border-radius:8px; background:#F7F8FA; border:1px solid #E3E5E8;">
@@ -6732,10 +6732,10 @@
                     <div style="font-size:10px; color:#9AA0A8; text-align:center;">24 pages</div>
                   </div>
 
-                  <div style="flex:1; min-width:0; background:#fff; border-radius:6px; padding:38px 44px; box-shadow:0 1px 3px rgba(16,24,40,.10), 0 12px 30px rgba(16,24,40,.08);">
+                  <div style="flex:1; min-width:0; background:#fff; border-radius:6px; padding:{{ dvPad }}; box-shadow:0 1px 3px rgba(16,24,40,.10), 0 12px 30px rgba(16,24,40,.08);">
                     <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid #EEF0F3;">
                       <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#9AA0A8;">Cooperative agreement · USAID-LON-24</div>
-                      <div style="font-size:11px; color:#C4C8CE; font-variant-numeric:tabular-nums;">Page 3</div>
+                      <div style="font-size:11px; color:#C4C8CE; font-variant-numeric:tabular-nums;">{{ dvPageLabel }}</div>
                     </div>
                     <div style="font-size:16px; font-weight:600; color:#1A1D21; margin-top:24px;">Article 4 — Allowable costs and rates</div>
                     <div style="font-size:13px; color:#3B3B3B; line-height:1.85; margin-top:14px; text-wrap:pretty;">4.1  The Recipient shall charge only costs that are reasonable, allocable and allowable under the terms of this agreement and applicable regulations. Costs incurred outside the period of performance are not allowable.</div>
@@ -8711,25 +8711,40 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Requests expire after</label>
-            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>30 days</option><option>14 days</option><option>60 days</option><option>90 days</option></select>
+            <select value="{{ ssExpiry }}" onChange="{{ ssSetExpiry }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option value="14">14 days</option><option value="30">30 days</option><option value="60">60 days</option><option value="90">90 days</option></select>
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Remind a signatory after</label>
-            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>3 days, then weekly</option><option>7 days, then weekly</option><option>No reminders</option></select>
+            <select value="{{ ssRemind }}" onChange="{{ ssSetRemind }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option value="3">3 days, then weekly</option><option value="7">7 days, then weekly</option><option value="0">No reminders</option></select>
           </div>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
-            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+          <div onClick="{{ ssToggle2fa }}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA; cursor:pointer;">
+            <sc-if value="{{ ssTwoFactor }}" hint-placeholder-val="{{ true }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            </sc-if>
+            <sc-if value="{{ ssTwoFactorOff }}" hint-placeholder-val="{{ false }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; border:1.5px solid #D3D6DB; background:#fff;"></span>
+            </sc-if>
             <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Require the authenticator code to sign</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Staff re-confirm identity at the moment of signing, not just at login</div></div>
           </div>
-          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
-            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+          <div onClick="{{ ssToggleWatermark }}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA; cursor:pointer;">
+            <sc-if value="{{ ssWatermark }}" hint-placeholder-val="{{ true }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            </sc-if>
+            <sc-if value="{{ ssWatermarkOff }}" hint-placeholder-val="{{ false }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; border:1.5px solid #D3D6DB; background:#fff;"></span>
+            </sc-if>
             <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Watermark documents shown to outside signatories</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Their name and the timestamp appear on every page they see</div></div>
           </div>
-          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
-            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+          <div onClick="{{ ssToggleTyped }}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA; cursor:pointer;">
+            <sc-if value="{{ ssTyped }}" hint-placeholder-val="{{ true }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            </sc-if>
+            <sc-if value="{{ ssTypedOff }}" hint-placeholder-val="{{ false }}">
+              <span style="width:20px; height:20px; flex:none; border-radius:6px; border:1.5px solid #D3D6DB; background:#fff;"></span>
+            </sc-if>
             <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Allow a typed signature</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Binding under the Evidence Act; the method is recorded on the certificate</div></div>
           </div>
         </div>
@@ -11324,7 +11339,7 @@ const PAGE_SPECS = {
             ['WW/VEH/0008','Toyota Corolla 2014','Core','₦0.00','Sold','g:DISPOSED 12/05/2026']] } },
 
   '/documents/signatures': { title:'E-signature requests', sub:'Signer order is enforced · external signers gate on an emailed code',
-    actions:['New signature request'],
+    actions:['Signature settings','New signature request'],
     stats:[['In progress','3','1 with external signer'],['Completed this month','9','Average 1.4 days'],['Declined','0',''],['Certificates issued','9','With hash and QR']],
     table:{ title:'Requests', cols:[['Document',null,'minmax(200px,1fr)'],['Signers','r','100px'],['Signed','r','100px'],['Waiting on',null,'190px'],['Sent',null,'120px'],['Status',null,'150px']],
       rows:[['Security services contract — Halogen','3','2','Chuka Obi (external)','02/08/2026','a:IN PROGRESS'],
@@ -12464,6 +12479,9 @@ class Component extends DCLogic {
     notifRead: {},
     prefs: {},
     sigTab: 'draw',
+    ssExpiry: 30, ssRemind: 3, ss2fa: true, ssWatermark: true, ssTyped: true,
+    sigTyped: 'Ibrahim Musa', sigFont: 'script', sigInk: '',
+    dvPage: 3, dvZoom: 100,
     delTo: '',
     delActive: false,
     chainType: 'Requisition',
@@ -12690,9 +12708,9 @@ class Component extends DCLogic {
       this.toast(typeof res === 'string' && res ? res : (fallbackMsg || 'Submitted.'));
       return true;
     }
-    this.setState({ toastError: false });
-    if (fallbackMsg) this.toast(fallbackMsg);
-    return false;
+    return this.fail(fallbackMsg
+      ? fallbackMsg.replace(/\.$/, '') + ' — not connected yet, so nothing was saved.'
+      : 'That is not connected yet. Nothing was saved.');
   }
   act(ref, verb, note) {
     const fn = typeof window !== 'undefined' && window.__weweAct;
@@ -12838,7 +12856,13 @@ class Component extends DCLogic {
     const pos = e => { const r = el.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     el.addEventListener('pointerdown', e => { drawing = true; const [x,y] = pos(e); ctx.beginPath(); ctx.moveTo(x,y); });
     el.addEventListener('pointermove', e => { if (!drawing) return; const [x,y] = pos(e); ctx.lineTo(x,y); ctx.stroke(); });
-    window.addEventListener('pointerup', () => { drawing = false; });
+    const commit = () => {
+      if (!drawing) return;
+      drawing = false;
+      try { this.setState({ sigInk: el.toDataURL('image/png') }); } catch (e) { /* tainted canvas */ }
+    };
+    window.addEventListener('pointerup', commit);
+    el.addEventListener('pointerleave', commit);
   }
 
   componentDidUpdate() {
@@ -13816,8 +13840,22 @@ class Component extends DCLogic {
         }, 'Signature request sent.');
         if (ok) this.setState({ dlg:null });
       },
+      ssExpiry: String(this.state.ssExpiry),
+      ssSetExpiry: e => this.setState({ ssExpiry: parseInt(e.target.value, 10) || 30 }),
+      ssRemind: String(this.state.ssRemind),
+      ssSetRemind: e => this.setState({ ssRemind: parseInt(e.target.value, 10) }),
+      ssTwoFactor: this.state.ss2fa, ssTwoFactorOff: !this.state.ss2fa,
+      ssToggle2fa: () => this.setState({ ss2fa: !this.state.ss2fa }),
+      ssWatermark: this.state.ssWatermark, ssWatermarkOff: !this.state.ssWatermark,
+      ssToggleWatermark: () => this.setState({ ssWatermark: !this.state.ssWatermark }),
+      ssTyped: this.state.ssTyped, ssTypedOff: !this.state.ssTyped,
+      ssToggleTyped: () => this.setState({ ssTyped: !this.state.ssTyped }),
       sigSettingsSave: () => { const ok = this.hook('SaveSignatureSettings', {
-        defaultExpiryDays: 30, remindAfterDays: 3, requireTwoFactor: true, watermarkExternal: true, allowTyped: true
+        defaultExpiryDays: this.state.ssExpiry,
+        remindAfterDays: this.state.ssRemind,
+        requireTwoFactor: this.state.ss2fa,
+        watermarkExternal: this.state.ssWatermark,
+        allowTyped: this.state.ssTyped
       }, 'Signature settings saved.'); if (ok) this.setState({ dlg:null }); },
       cert: (() => {
         const m = /[?&]id=([^&]+)/.exec(route);
@@ -14652,8 +14690,41 @@ class Component extends DCLogic {
       sigDraw: this.state.sigTab === 'draw', sigType: this.state.sigTab === 'type', sigUpload: this.state.sigTab === 'upload',
       sigTabs: [['draw','Draw'],['type','Type'],['upload','Upload']].map(([k, label]) => ({
         label, on: this.state.sigTab === k, off: this.state.sigTab !== k, onClick: () => this.setState({ sigTab:k }) })),
-      padRef: el => { if (el) this.initPad(el); },
-      saveSig: () => this.hook('SaveSignature', {}, 'Signature saved.'),
+      padRef: el => { this._pad = el; if (el) this.initPad(el); },
+      sigTyped: this.state.sigTyped,
+      sigSetTyped: e => this.setState({ sigTyped: e.target.value }),
+      sigFontScript: this.state.sigFont === 'script', sigFontBlock: this.state.sigFont === 'block',
+      sigPickScript: () => this.setState({ sigFont:'script' }),
+      sigPickBlock: () => this.setState({ sigFont:'block' }),
+      sigClear: () => { this.setState({ sigInk:'' }); const c = this._pad; if (c) { const x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); } },
+      sigUploadPick: () => {
+        const el = document.createElement('input');
+        el.type = 'file'; el.accept = 'image/png,image/jpeg';
+        el.style.position = 'fixed'; el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.onchange = () => {
+          const f = el.files && el.files[0];
+          if (!f) return;
+          const fr = new FileReader();
+          fr.onload = () => this.setState({ sigInk: String(fr.result || '') });
+          fr.readAsDataURL(f);
+        };
+        el.click();
+        setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 60000);
+      },
+      sigHasInk: !!this.state.sigInk,
+      saveSig: () => {
+        const mode = this.state.sigTab;
+        if (mode === 'type') {
+          const name = String(this.state.sigTyped || '').trim();
+          if (!name) { this.fail('Type the name that should appear before saving.'); return; }
+          this.hook('SaveSignature', { method:'typed', typed:name, font:this.state.sigFont }, 'Signature saved.');
+          return;
+        }
+        const data = this.state.sigInk;
+        if (!data) { this.fail(mode === 'upload' ? 'Choose an image of your signature first.' : 'Draw your signature before saving.'); return; }
+        this.hook('SaveSignature', { method: mode === 'upload' ? 'uploaded' : 'drawn', mime: mode === 'upload' ? 'image/png' : 'image/png', dataBase64: data.indexOf(',') > -1 ? data.slice(data.indexOf(',') + 1) : data }, 'Signature saved.');
+      },
 
       prefRows: NOTIF_PREFS.map((p, i) => {
         const mode = this.state.prefs[i] === undefined ? p.mode : this.state.prefs[i];
@@ -14927,6 +14998,10 @@ class Component extends DCLogic {
       bfPick: () => {
         const el = document.createElement('input');
         el.type = 'file';
+        el.style.position = 'fixed';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 60000);
         el.accept = '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
         el.onchange = () => this.readFiles(el.files, 'bfFile');
         el.click();
@@ -14973,6 +15048,16 @@ class Component extends DCLogic {
       qbMapped: this.state.qbMap.perdiem ? 38 : 37,
       qbUnmapped: this.state.qbMap.perdiem ? 0 : 1,
       docs: stripe(DOCS.map(d2 => ({ ...d2, notConf: !d2.conf, onClick: () => this.go('/documents/view?id=' + encodeURIComponent(d2.name)) }))),
+      dvPageLabel: 'Page ' + this.state.dvPage + ' of 24',
+      dvZoomLabel: this.state.dvZoom + '%',
+      dvPrev: () => this.setState({ dvPage: Math.max(1, this.state.dvPage - 1) }),
+      dvNext: () => this.setState({ dvPage: Math.min(24, this.state.dvPage + 1) }),
+      dvZoomOut: () => this.setState({ dvZoom: Math.max(50, this.state.dvZoom - 25) }),
+      dvZoomIn: () => this.setState({ dvZoom: Math.min(200, this.state.dvZoom + 25) }),
+      dvFontBody: (13 * this.state.dvZoom / 100).toFixed(1) + 'px',
+      dvFontHead: (16 * this.state.dvZoom / 100).toFixed(1) + 'px',
+      dvPad: (38 * this.state.dvZoom / 100).toFixed(0) + 'px ' + (44 * this.state.dvZoom / 100).toFixed(0) + 'px',
+      dvThumbs: [1, 2, 3, 4].map(p => ({ n:p, sel: this.state.dvPage === p, unsel: this.state.dvPage !== p, onClick: () => this.setState({ dvPage:p }) })),
       isDocView: base('/documents/view'),
       dv: (() => {
         const m = /[?&]id=([^&]+)/.exec(route);

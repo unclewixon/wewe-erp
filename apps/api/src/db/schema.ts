@@ -36,6 +36,15 @@ export const users = pgTable('users', {
   // AUTH-04: progressive lockout
   failedAttempts: integer('failed_attempts').notNull().default(0),
   lockedUntil: timestamp('locked_until', { withTimezone: true }),
+  // DMS-09: the person's own signature, captured once and reused at each ceremony.
+  // Belongs on the user rather than in settings: it is not configuration, it is them.
+  // 'drawn' and 'uploaded' store base64 image bytes; 'typed' stores the text and font.
+  signatureMethod: text('signature_method'),           // drawn | typed | uploaded
+  signatureMime: text('signature_mime'),
+  signatureData: text('signature_data'),               // base64 for drawn/uploaded
+  signatureTyped: text('signature_typed'),             // the text for typed
+  signatureFont: text('signature_font'),
+  signatureUpdatedAt: timestamp('signature_updated_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

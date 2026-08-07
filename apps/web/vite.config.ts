@@ -39,27 +39,12 @@ function localCdnResources(): Plugin {
   // counts against). Both are objects, so they merge per-key like TXN_DETAIL — a live round
   // overrides its fixture, and rounds we have no data for keep theirs.
   // The document viewer's page arrows (‹ ›) and zoom (− +) are bound to the design's generic
-  // `noop`, which pops "Confirm this action. It is recorded against your name in the user
-  // activity monitor and cannot be deleted afterwards." That is a placeholder meant for
-  // unimplemented ACTIONS, and it is actively misleading on a page arrow: it claims an audit
-  // record for a control that does nothing. Strip the binding so they are silently inert
-  // until the viewer has real page state. Recorded as gap 40.
-  DATA_WRAPS.push([
-    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u2039</button>",
-    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u2039</button>",
-  ]);
-  DATA_WRAPS.push([
-    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u203a</button>",
-    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u203a</button>",
-  ]);
-  DATA_WRAPS.push([
-    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">\u2212</button>",
-    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">\u2212</button>",
-  ]);
-  DATA_WRAPS.push([
-    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">+</button>",
-    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">+</button>",
-  ]);
+  // Phase 1.16 gave the document viewer real page and zoom state (dvPage/dvZoom, driving
+  // dvPrev/dvNext/dvZoomIn/dvZoomOut and the dvPageLabel/dvZoomLabel indicators), so the four
+  // substitutions that stripped `onClick="{{ noop }}"` from the ‹ › − + buttons are removed:
+  // their anchors no longer exist and the controls work on their own. Gap 40 closed by Design.
+  // Kept as a note because a replace() that matches nothing fails SILENTLY — when a bundle
+  // lands, re-check every anchor before assuming the transforms still apply.
   // The Vendor registry nav item pointed at '/procurement', which has no page spec, while the
   // register — with its "Add a vendor" action, Export, Filters, Bank and Blacklist — is defined
   // under '/procurement/vendors'. So the whole vendor registration flow was built and working

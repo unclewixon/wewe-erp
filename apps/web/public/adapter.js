@@ -1644,7 +1644,25 @@
 
   // Still refused: a saved personal signature has no payload (the design sends {}) and
   // nowhere to persist. Recorded as the remaining half of gap 39.
-  window.__weweSaveSignature = function () { return false; };
+  // ---- A person's own signature, captured once and reused at each ceremony (DMS-09) ----
+  // This refused while the payload was empty — there was nothing to store. Phase 1.16
+  // commits the pad's ink on pointer-up and binds the Type and Upload tabs, so it now
+  // arrives as one of:
+  //   { method:'drawn',    mime:'image/png', dataBase64 }
+  //   { method:'typed',    typed:'Ibrahim A. Musa', font:'script' }
+  //   { method:'uploaded', mime, dataBase64 }
+  // The engine refuses a typed signature when policy has turned typed signatures off,
+  // so that refusal surfaces here as the server's own message rather than a generic one.
+  window.__weweSaveSignature = function (p) {
+    var method = (p && p.method) || '';
+    if (!method) throw new Error('Draw, type or upload your signature before saving.');
+    if (method !== 'typed' && !(p && p.dataBase64)) throw new Error('Nothing was captured — draw your signature before saving.');
+    var res = put('/v1/esign/signature', p);
+    if (!res) return false;
+    return method === 'typed'
+      ? 'Signature saved as typed text.'
+      : 'Signature saved. It will be applied at each signing.';
+  };
 
   // ---- Budgets ----
   // The builder addresses lines by name and splits each into quarters; the engine allocates a
@@ -1711,7 +1729,38 @@
   // side of this is now done. It stays refused because the ENGINE has no budget-import endpoint
   // to receive it. That is our work, not Design's, and until it exists announcing "validation
   // running" would describe nothing.
-  window.__weweUploadBudget = function () { return false; };
+  // ---- Budgets: import a spreadsheet as a DRAFT version (BUD-04) ----
+  // This refused outright until now, and correctly: the payload carried only
+  // { fiscalYear } with no file, and there was no endpoint to receive one. Phase 1.16
+  // gave the import screen a working picker — the input existed before but was never
+  // appended to the document, so it could never open a dialog — and it now sends
+  // { fiscalYear:'FY2026', name, mime, dataBase64 }, which is exactly what
+  // POST /v1/budgets/import takes.
+  //
+  // The import lands as a DRAFT and never as the live budget; someone still has to
+  // activate it. That is the point of BUD-04 — a spreadsheet is not an approval.
+  window.__weweUploadBudget = function (p) {
+    var data = (p && p.dataBase64) || '';
+    if (!data) throw new Error('No file was attached — choose a budget file first.');
+    var res = post('/v1/budgets/import', {
+      fiscalYear: (p && p.fiscalYear) || '',
+      name: (p && p.name) || undefined,
+      mime: (p && p.mime) || undefined,
+      dataBase64: data,
+    });
+    if (!res) return false;
+    var n = res.imported || 0;
+    var bad = (res.rejected || []).length;
+    var where = res.versionNo ? 'draft v' + res.versionNo : 'a new draft';
+    // A partial import is the dangerous case: 40 of 47 lines in, silence about the other
+    // seven, and the shortfall surfaces in month three. The engine records rejected rows
+    // in the audit log rather than dropping them; say so here too, on the toast the
+    // person actually reads.
+    return 'Imported ' + n + ' budget line' + (n === 1 ? '' : 's') + ' into ' + where +
+      (bad
+        ? ' — ' + bad + ' row' + (bad === 1 ? ' was' : 's were') + ' rejected and recorded in the audit log. Review before activating.'
+        : '. It is a draft until you activate it.');
+  };
 
   window.__weweActivateBudgetVersion = function (p) {
     // The design labels versions 'v<versionNo>' — that is what the activate dialog carries.

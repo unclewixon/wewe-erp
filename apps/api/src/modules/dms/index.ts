@@ -13,14 +13,15 @@ import {
 import { EsignController, EsignExternalController, EsignService } from './esign';
 import { DigitisationController, DigitisationService } from './digitisation';
 import { EsignSettingsController, EsignSettingsService } from './esign-settings';
+import { SignatureController, SignatureService } from './signature';
 
 export const controllers = [
   FoldersController, DocumentsController, LinksController, SearchController,
   EsignController, EsignExternalController,
-  DigitisationController, EsignSettingsController,
+  DigitisationController, EsignSettingsController, SignatureController,
 ];
 
-export const providers = [DocStorageService, { provide: NullOcrService, useClass: TesseractOcrService }, DmsService, EsignService, DigitisationService, EsignSettingsService];
+export const providers = [DocStorageService, { provide: NullOcrService, useClass: TesseractOcrService }, DmsService, EsignService, DigitisationService, EsignSettingsService, SignatureService];
 
 /** Idempotent reference data: DOC_DISPOSAL type + root folder tree. */
 export async function seedDefaults(): Promise<void> {
