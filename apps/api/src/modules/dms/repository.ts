@@ -353,6 +353,41 @@ export class DocumentsController {
     return { document: this.svc.docJson(doc), warning };
   }
 
+  /**
+   * DMS-02: the repository listing.
+   *
+   * There was no route for this: documents could only be reached one folder at a time via
+   * GET /v1/dms/folders/:id/documents, so anything with folderId null — every upload whose
+   * folder could not be resolved — existed in the database and appeared in NO screen. A
+   * document you cannot see is a document you cannot put a legal hold on, add to an
+   * evidence pack, or produce for an auditor, which is most of what the repository is for.
+   *
+   * Readability is filtered per document exactly as search does it; a confidential folder
+   * anywhere up the chain hides its contents. Disposed documents are excluded — the row
+   * survives for the audit trail, it is not a document any more.
+   */
+  @Get()
+  async list(
+    @CurrentUser() user: AuthedUser,
+    @Query('folderId') folderId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const max = Math.min(Number(limit) || 500, 1000);
+    const rows = await db.select().from(schema.documents)
+      .where(folderId ? eq(schema.documents.folderId, folderId) : undefined)
+      .orderBy(desc(schema.documents.createdAt))
+      .limit(max);
+    const ctx = this.svc.userCtx(user);
+    const out = [];
+    for (const d of rows) {
+      if (d.name === '[DISPOSED]') continue;
+      const folderConf = await this.svc.folderChainConfidential(d.folderId);
+      if (!canReadDocument(ctx, d, folderConf)) continue;
+      out.push(this.svc.docJson(d));
+    }
+    return out;
+  }
+
   /** DMS-07: every open is audit-logged as DOC_VIEWED. */
   @Get(':id')
   async view(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {

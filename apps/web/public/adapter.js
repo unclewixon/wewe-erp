@@ -1120,7 +1120,30 @@
     var nameById = {};
     var people = xhr('GET', '/v1/admin/users') || xhr('GET', '/v1/staff') || [];
     (Array.isArray(people) ? people : []).forEach(function (u) { if (u.id) nameById[u.id] = u.name; });
+    // Walking the folder tree misses every document with no folder, and those are exactly
+    // the ones an operator most needs to find again. List them all in one call and label
+    // each with its folder path; anything unfiled is shown as such rather than dropped.
+    var pathById = {}, confById = {};
+    folders.forEach(function (f) { pathById[f.id] = f.path; confById[f.id] = f.conf; });
+    var all = xhr('GET', '/v1/dms/documents');
     var out = [];
+    if (Array.isArray(all)) {
+      all.forEach(function (d) {
+        if (d.name === '[DISPOSED]') return;
+        out.push({
+          name: d.name,
+          // Same row shape the per-folder walk produces — the design binds these keys.
+          folder: d.folderId ? (pathById[d.folderId] || 'Unknown folder') : 'Unfiled',
+          size: fmtBytes(d.sizeBytes),
+          ver: 'v' + d.currentVersion,
+          by: nameById[d.uploadedById] || '—',
+          when: ddmmyyyy(d.createdAt),
+          conf: !!d.confidential || (d.folderId ? confById[d.folderId] : false),
+        });
+      });
+      return out;
+    }
+    // Fall back to the per-folder walk if the listing route is unavailable (older engine).
     folders.forEach(function (f) {
       var docs = xhr('GET', '/v1/dms/folders/' + f.id + '/documents');
       if (!Array.isArray(docs)) return;
@@ -1536,7 +1559,19 @@
     var data = String((p && p.dataBase64) || '');
     if (!name || !data) return false;
     var body = { name: name, mime: String((p && p.mime) || 'application/octet-stream'), dataBase64: data };
-    if (p.folderId) body.folderId = p.folderId;
+    // The folder picker carries the design's own ids ('fld_usaid_lon_24') and path labels
+    // ('Grants / USAID-LON-24'); the engine's folders are UUIDs. Passing one through
+    // straight 404s "Folder not found" on EVERY upload. Translate here, the way vendors
+    // and RFQs already are — that translation is what this layer is for.
+    var chosen = p && p.folderId;
+    var note = '';
+    if (chosen) {
+      var realId = resolveFolderId(chosen);
+      if (realId) body.folderId = realId;
+      // Filing it at the top level silently is how a document goes missing. Upload it —
+      // losing the file helps nobody — but say plainly where it actually landed.
+      else note = ' Filed at the top level: there is no folder matching "' + chosen + '" on the server.';
+    }
     if (p.confidential) body.confidential = true;
     var res = post('/v1/dms/documents', body);
     var doc = res && res.document;            // upload answers { document, warning }
@@ -1544,9 +1579,32 @@
     // A duplicate is worth saying out loud: the same file already in the repository under
     // another name is how a document set quietly grows two versions of the truth.
     return res.warning
-      ? doc.name + ' uploaded — note: ' + res.warning
-      : doc.name + ' uploaded.';
+      ? doc.name + ' uploaded — note: ' + res.warning + note
+      : doc.name + ' uploaded.' + note;
   };
+
+  /**
+   * Map whatever the folder picker gave us onto a real folder id.
+   * Accepts a UUID, a design id ('fld_usaid_lon_24'), a leaf name ('USAID-LON-24') or a
+   * path label ('Grants / USAID-LON-24'). Matching is on the normalised leaf, so
+   * 'fld_usaid_lon_24' and 'Grants / USAID-LON-24' both land on the same folder.
+   * Returns null rather than guessing when nothing matches — a document filed in the
+   * wrong folder is worse than one filed at the root and reported as such.
+   */
+  function resolveFolderId(raw) {
+    var want = String(raw || '').trim();
+    if (!want) return null;
+    var flat = [];
+    (function walk(nodes) {
+      (nodes || []).forEach(function (n) { flat.push(n); if (n.children && n.children.length) walk(n.children); });
+    })(get('/v1/dms/folders') || []);
+    var byId = flat.filter(function (f) { return f.id === want; })[0];
+    if (byId) return byId.id;
+    var norm = function (s) { return String(s || '').toLowerCase().replace(/^fld[_-]/, '').replace(/[^a-z0-9]+/g, ''); };
+    var leaf = norm(want.indexOf('/') > -1 ? want.split('/').pop() : want);
+    var hits = flat.filter(function (f) { return norm(f.name) === leaf; });
+    return hits.length === 1 ? hits[0].id : null;   // ambiguous is not a match
+  }
 
   window.__weweCreateSignatureRequest = function (p) {
     // The design describes signatories with an order and a kind; the engine takes signers that
@@ -1603,9 +1661,23 @@
     return 'Batch ' + res.ref + ' opened for ' + (res.estimatedPages || 0) + ' page(s).';
   };
   function currentBatch(p) {
-    // The design sends batchId:'B-024' — a fixture. Prefer the batch this session created.
+    // The design sends batchId:'B-024' — a fixture, and the indexing screen has no batch
+    // picker. Preferring the batch this session created was too narrow: an operator opens
+    // the indexing screen to work the batch already in progress, usually in a fresh
+    // session, and every page they indexed was silently refused before reaching the server.
     var given = String((p && p.batchId) || '').trim();
-    return window.__weweDigitisationBatch || (/^DGB-/.test(given) ? given : null);
+    if (window.__weweDigitisationBatch) return window.__weweDigitisationBatch;
+    if (/^DGB-/.test(given)) return given;
+    // Fall back to the newest batch still open. Guessing between several open batches
+    // would file pages against the wrong one, so only do this when it is unambiguous
+    // which batch is being worked.
+    var batches = get('/v1/dms/digitisation/batches') || [];
+    var open = (Array.isArray(batches) ? batches : []).filter(function (x) {
+      return x && x.id && String(x.status || 'OPEN').toUpperCase() !== 'CLOSED';
+    });
+    if (!open.length) throw new Error('There is no open digitisation batch — create one before indexing.');
+    open.sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+    return open[0].id;
   }
   window.__weweIndexPage = function (p) {
     var batch = currentBatch(p);
