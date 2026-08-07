@@ -1,0 +1,12 @@
+From: WEWE ERP <no-reply@wewe.org>
+To: tunde.balogun@wewe.org
+Subject: SLA breached: REQ-2026-0001 is stuck at the SUPERVISOR stage
+Date: Thu, 06 Aug 2026 11:32:24 GMT
+X-WEWE-Queued-At: 2026-08-06T11:31:24.079Z
+Content-Type: text/plain; charset=utf-8
+
+REQ-2026-0001 — Field visit — Nasarawa cluster monitoring
+
+This transaction exceeded its 24h SLA at the SUPERVISOR stage and has been escalated.
+Open it in WEWE ERP: /requisitions/bc0cf9e2-da45-4d0d-802c-3baab0b7741f
+

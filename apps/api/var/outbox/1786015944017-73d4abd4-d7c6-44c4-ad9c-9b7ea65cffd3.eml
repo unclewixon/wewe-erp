@@ -1,0 +1,12 @@
+From: WEWE ERP <no-reply@wewe.org>
+To: tunde.balogun@wewe.org
+Subject: SLA breached: ADV-2026-0001 is stuck at the SUPERVISOR stage
+Date: Thu, 06 Aug 2026 11:32:24 GMT
+X-WEWE-Queued-At: 2026-08-06T11:31:24.183Z
+Content-Type: text/plain; charset=utf-8
+
+ADV-2026-0001 — Travel advance — Kano supervision visit
+
+This transaction exceeded its 24h SLA at the SUPERVISOR stage and has been escalated.
+Open it in WEWE ERP: /requisitions/6620dd77-9cff-4e51-8b73-8611c99f00e8
+

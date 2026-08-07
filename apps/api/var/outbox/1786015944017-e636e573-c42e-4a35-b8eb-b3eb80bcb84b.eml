@@ -1,0 +1,12 @@
+From: WEWE ERP <no-reply@wewe.org>
+To: tunde.balogun@wewe.org
+Subject: SLA breached: LVE-2026-0002 is stuck at the HR_OFFICER stage
+Date: Thu, 06 Aug 2026 11:32:24 GMT
+X-WEWE-Queued-At: 2026-08-06T11:31:24.195Z
+Content-Type: text/plain; charset=utf-8
+
+LVE-2026-0002 — Annual Leave — Chiamaka Eze
+
+This transaction exceeded its 24h SLA at the HR_OFFICER stage and has been escalated.
+Open it in WEWE ERP: /requisitions/e4bd9991-3536-4d22-9b94-7c4a78a3b82e
+
