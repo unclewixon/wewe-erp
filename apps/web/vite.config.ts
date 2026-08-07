@@ -38,6 +38,28 @@ function localCdnResources(): Plugin {
   // screen picks from) and PO records (keyed by PO ref, carrying the lines a goods receipt
   // counts against). Both are objects, so they merge per-key like TXN_DETAIL — a live round
   // overrides its fixture, and rounds we have no data for keep theirs.
+  // The document viewer's page arrows (‹ ›) and zoom (− +) are bound to the design's generic
+  // `noop`, which pops "Confirm this action. It is recorded against your name in the user
+  // activity monitor and cannot be deleted afterwards." That is a placeholder meant for
+  // unimplemented ACTIONS, and it is actively misleading on a page arrow: it claims an audit
+  // record for a control that does nothing. Strip the binding so they are silently inert
+  // until the viewer has real page state. Recorded as gap 40.
+  DATA_WRAPS.push([
+    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u2039</button>",
+    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u2039</button>",
+  ]);
+  DATA_WRAPS.push([
+    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u203a</button>",
+    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:14px;\">\u203a</button>",
+  ]);
+  DATA_WRAPS.push([
+    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">\u2212</button>",
+    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">\u2212</button>",
+  ]);
+  DATA_WRAPS.push([
+    "<button onClick=\"{{ noop }}\" style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">+</button>",
+    "<button style=\"width:30px; height:30px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#5B6068; font-size:13px;\">+</button>",
+  ]);
   // The Vendor registry nav item pointed at '/procurement', which has no page spec, while the
   // register — with its "Add a vendor" action, Export, Filters, Bank and Blacklist — is defined
   // under '/procurement/vendors'. So the whole vendor registration flow was built and working
