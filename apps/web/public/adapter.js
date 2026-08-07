@@ -472,31 +472,10 @@
     };
   }
 
-  // Write-bridge: an Approve button inside a row whose text carries a LIVE ref → real engine call.
-  // Return/Reject stay design-side until the comment drawer is bound (design gap — a note is mandatory).
-  document.addEventListener('click', function (ev) {
-    var btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
-    if (!btn || btn.textContent.trim() !== 'Approve') return;
-    var node = btn, ref = null;
-    for (var up = 0; up < 6 && node; up++) {
-      var m = (node.innerText || '').match(/\b((?:REQ|ADV|RET|VIR|PO|LVE|TSH|PAY)-\d{4}-\d{4})\b/);
-      if (m) { ref = m[1]; break; }
-      node = node.parentElement;
-    }
-    if (!ref || !window.__weweRefMap[ref]) return; // fixture row → leave to the design's own noop
-    ev.stopPropagation(); ev.preventDefault();
-    btn.disabled = true;
-    fetch('/v1/requisitions/' + window.__weweRefMap[ref] + '/action', {
-      method: 'POST', credentials: 'include',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ verb: 'approve' }),
-    }).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-      .then(function (res) {
-        if (res.ok) { console.info('[wewe] approved', ref, '→', res.body.status); location.reload(); }
-        else { console.warn('[wewe] approve blocked:', res.body.message); btn.disabled = false; }
-      })
-      .catch(function () { btn.disabled = false; });
-  }, true);
+  // The row-level Approve write-bridge that used to live here is gone. Phase 1.9's decision
+  // panel routes Approve through the same drawer as Return and Reject, so this bridge only
+  // stole the click, skipped the confirmation step, and then reloaded the page. Removing it
+  // makes all three verbs behave alike and drops the adapter's last location.reload().
 
   // Patch a register row IN PLACE after the engine moves it. The design builds REQ_ROWS with an
   // identity map (`TXNS.map(t => t)`), so the row OBJECTS are shared between the two arrays —
@@ -1393,7 +1372,12 @@
       if (budgetLineId) line.budgetLineId = budgetLineId;
       return line;
     });
-    var res = post('/v1/requisitions', { title: p.purpose, lines: lines, submit: true });
+    var body = { title: p.purpose, lines: lines, submit: true };
+    // Phase 1.10: over budget with headroom makes the justification mandatory before submit.
+    // Carry it through — the engine records it in the audit trail beside the budget warning,
+    // and dropping it here would mean the initiator wrote it for nothing.
+    if (p.overBudgetJustification) body.overBudgetJustification = p.overBudgetJustification;
+    var res = post('/v1/requisitions', body);
     registerNewTxn(res);
     return 'Requisition ' + res.ref + ' submitted for approval.';
   };

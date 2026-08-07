@@ -23,6 +23,10 @@ const CreateSchema = z.object({
   donorCode: z.string().max(40).optional().nullable(),
   lines: z.array(LineSchema).min(1).max(50),
   submit: z.boolean().optional(),
+  // REQ-02: when a requisition exceeds the available budget the initiator must say why.
+  // The UI gates submit on it; accepting it here is what makes it durable — zod strips
+  // unknown keys, so before this the written justification was silently discarded.
+  overBudgetJustification: z.string().max(2000).optional(),
 });
 const ActionSchema = z.object({
   verb: z.enum(['approve', 'reject', 'return']),
@@ -84,6 +88,9 @@ export class RequisitionsService {
       data: {
         title: dto.title, amountKobo: amountKobo.toString(), lines: dto.lines.length,
         ...(budgetCheck.violations.length > 0 ? { budgetWarnings: budgetCheck.violations } : {}),
+        // The justification belongs in the hash-chained trail, beside the warning it answers:
+        // that pairing is the evidence an auditor needs and it cannot be edited afterwards.
+        ...(dto.overBudgetJustification ? { overBudgetJustification: dto.overBudgetJustification } : {}),
       }, ip,
     });
     if (dto.submit) await this.workflow.submit(tx.id, user, ip);

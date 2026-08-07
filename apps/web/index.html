@@ -809,83 +809,6 @@
               <a href="#/requisitions">Requisitions</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">New requisition</span>
               <span style="display:inline-flex; align-items:center; gap:6px; margin-left:8px; height:24px; padding:0 10px; border-radius:999px; background:#F3F4F5; font-size:11px; font-weight:600; color:#6B7280;">Draft saved 09:41</span>
             </div>
-            <div style="display:flex; align-items:center; gap:10px; padding:0 4px;">
-              <span style="font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#9AA0A8;">Budget state</span>
-              <sc-for list="{{ obModes }}" as="m" hint-placeholder-count="2">
-                <sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ m.onClick }}" style="height:30px; padding:0 12px; border:none; border-radius:999px; background:#1A1D21; color:#fff; font-size:11px; font-weight:600;">{{ m.label }}</button>
-                </sc-if>
-                <sc-if value="{{ m.off }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ m.onClick }}" style="height:30px; padding:0 12px; border:1px solid #E3E5E8; border-radius:999px; background:#fff; color:#3B3B3B; font-size:11px; font-weight:500;" style-hover="border-color:#E0572E; color:#B23F1D">{{ m.label }}</button>
-                </sc-if>
-              </sc-for>
-            </div>
-
-            <sc-if value="{{ obWarn }}" hint-placeholder-val="{{ true }}">
-              <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 18px; border-radius:14px; background:#FFF7ED; border:1px solid #FDE3C4;">
-                <span style="width:8px; height:8px; margin-top:6px; border-radius:999px; background:#B45309; flex:none;"></span>
-                <div style="flex:1;">
-                  <div style="font-size:13px; font-weight:600; color:#8A4B0B;">{{ obOverCount }} lines exceed the headroom on their budget line</div>
-                  <div style="font-size:12px; color:#8A4B0B; margin-top:5px; line-height:1.55;">Total shortfall {{ obShortTotal }}. You can still submit, but you must justify it and Finance will see the justification before deciding. A virement request is usually the cleaner route.</div>
-                </div>
-                <a href="#/budgets/virements" style="height:32px; padding:0 12px; border:1px solid #E8D3B4; border-radius:8px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B; display:inline-flex; align-items:center; flex:none; text-decoration:none;">Request a virement</a>
-              </div>
-            </sc-if>
-            <sc-if value="{{ obBlock }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 18px; border-radius:14px; background:#FBEAE4; border:1px solid #F3D6CB;">
-                <span style="width:8px; height:8px; margin-top:6px; border-radius:999px; background:#C2410C; flex:none;"></span>
-                <div style="flex:1;">
-                  <div style="font-size:13px; font-weight:600; color:#9C3309;">This requisition cannot be submitted</div>
-                  <div style="font-size:12px; color:#9C3309; margin-top:5px; line-height:1.55;">Every line is over its budget line and the donor’s award has no uncommitted balance left. Justification does not help here — the money genuinely is not there. Move funds by virement, or wait for the next tranche.</div>
-                </div>
-                <a href="#/budgets/virements" style="height:32px; padding:0 12px; border:1px solid #E8BCA9; border-radius:8px; background:#fff; font-size:12px; font-weight:600; color:#9C3309; display:inline-flex; align-items:center; flex:none; text-decoration:none;">Request a virement</a>
-              </div>
-            </sc-if>
-
-            <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
-              <div style="padding:20px 24px 14px 24px;">
-                <div style="font-size:15px; font-weight:600; color:#1A1D21;">Budget check, line by line</div>
-                <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Checked live against committed spend as you build the requisition</div>
-              </div>
-              <div style="display:grid; grid-template-columns:minmax(130px,1fr) 128px 128px 128px 112px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
-                <div>Budget line</div><div style="text-align:right;">This request</div><div style="text-align:right;">Available</div><div style="text-align:right;">Shortfall</div><div>State</div>
-              </div>
-              <sc-for list="{{ obLines }}" as="l" hint-placeholder-count="3">
-                <div style="display:grid; grid-template-columns:minmax(130px,1fr) 128px 128px 128px 112px; column-gap:10px; align-items:center; padding:14px 24px; background:{{ l.bg }};">
-                  <div style="font-size:13px; font-weight:500; color:#1A1D21; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ l.line }}</div>
-                  <div style="font-size:12px; text-align:right; color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ l.amountF }}</div>
-                  <div style="font-size:12px; text-align:right; color:#3B3B3B; font-variant-numeric:tabular-nums;">{{ l.availF }}</div>
-                  <div>
-                    <sc-if value="{{ l.over }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px; text-align:right; color:#9C3309; font-weight:600; font-variant-numeric:tabular-nums;">{{ l.shortF }}</div></sc-if>
-                    <sc-if value="{{ l.fine }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px; text-align:right; color:#C4C8CE;">—</div></sc-if>
-                  </div>
-                  <div>
-                    <sc-if value="{{ l.over }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">OVER BUDGET</span></sc-if>
-                    <sc-if value="{{ l.fine }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">WITHIN BUDGET</span></sc-if>
-                  </div>
-                </div>
-              </sc-for>
-              <sc-if value="{{ obWarn }}" hint-placeholder-val="{{ true }}">
-                <div style="padding:18px 24px; background:#FAFBFC; border-top:1px solid #EEF0F3;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Why should this be approved over budget?</label>
-                    <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
-                  </div>
-                  <textarea placeholder="Finance and the Managing Director read this before deciding. Say what changed and why it could not wait." style="width:100%; min-height:76px; margin-top:9px; padding:12px 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; outline:none; resize:vertical; line-height:1.55;"></textarea>
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px;">
-                    <span style="font-size:11px; color:#9AA0A8;">Over-budget requisitions always route to the Managing Director, whatever the value.</span>
-                    <button onClick="{{ noop }}" style="height:40px; padding:0 18px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600; flex:none;" style-hover="background:#C8481F">Submit with justification</button>
-                  </div>
-                </div>
-              </sc-if>
-              <sc-if value="{{ obBlock }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 24px; background:#FAFBFC; border-top:1px solid #EEF0F3;">
-                  <span style="font-size:12px; color:#9C3309; line-height:1.5;">Submission is disabled while any line has no funding at all.</span>
-                  <button onClick="{{ noop }}" style="height:40px; padding:0 18px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600; flex:none;">Submit blocked — no budget</button>
-                </div>
-              </sc-if>
-            </div>
-
             <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start;">
               <div style="display:flex; flex-direction:column; gap:12px;">
                 <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
@@ -988,7 +911,28 @@
                       <div style="display:flex; justify-content:space-between;"><span>This requisition</span><span style="font-weight:600;">{{ nrTotal }}</span></div>
                       <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #FDE3C4;"><span>Shortfall</span><span style="font-weight:700;">{{ nrShortF }}</span></div>
                     </div>
-                    <a href="#/budgets/virements" style="display:flex; align-items:center; justify-content:center; margin-top:14px; height:38px; border:1px solid #E4C79A; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B; text-decoration:none;">Raise a virement request</a>
+                    <div style="display:flex; flex-direction:column; gap:7px; margin-top:14px; padding-top:14px; border-top:1px solid #FDE3C4;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-size:12px; font-weight:600; color:#8A4B0B;">Why should this be approved over budget?</label>
+                        <span style="height:19px; padding:0 7px; border-radius:5px; background:rgba(194,65,12,.12); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+                      </div>
+                      <textarea value="{{ nrJustify }}" onChange="{{ setNrJustify }}" placeholder="Finance and the Managing Director read this before deciding. Say what changed and why it could not wait." style="min-height:72px; padding:10px 12px; border:1px solid #E4C79A; border-radius:9px; background:#fff; font-size:12px; color:#1A1D21; outline:none; resize:vertical; line-height:1.5;" style-focus="border-color:#B45309"></textarea>
+                    </div>
+                    <a href="#/budgets/virements" style="display:flex; align-items:center; justify-content:center; margin-top:12px; height:38px; border:1px solid #E4C79A; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B; text-decoration:none;">Raise a virement request instead</a>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ nrBlocked }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#FBEAE4; border:1px solid #F3D6CB; border-radius:16px; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="width:22px; height:22px; border-radius:999px; background:#C2410C; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">!</span>
+                      <div style="font-size:14px; font-weight:600; color:#9C3309;">No budget on this line</div>
+                    </div>
+                    <div style="font-size:13px; color:#9C3309; line-height:1.6; margin-top:10px; text-wrap:pretty;">There is no uncommitted balance at all on <span style="font-weight:600;">{{ nrBudget }}</span>. A justification does not help here — the money genuinely is not there. Move funds by virement, or wait for the next tranche.</div>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px; font-size:12px; color:#9C3309; font-variant-numeric:tabular-nums;">
+                      <div style="display:flex; justify-content:space-between;"><span>Line balance</span><span style="font-weight:600;">{{ nrAvail }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>This requisition</span><span style="font-weight:600;">{{ nrTotal }}</span></div>
+                    </div>
+                    <a href="#/budgets/virements" style="display:flex; align-items:center; justify-content:center; margin-top:14px; height:38px; border:1px solid #E8BCA9; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#9C3309; text-decoration:none;">Request a virement</a>
                   </div>
                 </sc-if>
                 <sc-if value="{{ nrFits }}" hint-placeholder-val="{{ true }}">
@@ -1008,6 +952,14 @@
                 <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                   <sc-if value="{{ nrValid }}" hint-placeholder-val="{{ true }}">
                     <button onClick="{{ nrSubmit }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Submit for approval</button>
+                  </sc-if>
+                  <sc-if value="{{ nrNeedsJustify }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Justification required</button>
+                    <div style="font-size:11px; color:#8A4B0B; margin-top:9px; line-height:1.5;">This is over budget. Explain why in the panel above before you can submit.</div>
+                  </sc-if>
+                  <sc-if value="{{ nrBlocked }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Submit blocked — no budget</button>
+                    <div style="font-size:11px; color:#9C3309; margin-top:9px; line-height:1.5;">The line has no uncommitted balance. Raise a virement first.</div>
                   </sc-if>
                   <sc-if value="{{ nrBlank }}" hint-placeholder-val="{{ false }}">
                     <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Complete every line first</button>
@@ -10414,6 +10366,7 @@ class Component extends DCLogic {
     fulfil: {},
     obMode: 'warn',
     nrPurpose: '',
+    nrJustify: '',
     nrBudget: 'Field monitoring & supervision',
     nrLines: [{ desc:'', qty:1, unit:0 }],
     dmsFolder: 'All documents',
@@ -11629,12 +11582,23 @@ class Component extends DCLogic {
       nrTotal: money(this.nrSum()),
       nrCount: this.state.nrLines.length + (this.state.nrLines.length === 1 ? ' line' : ' lines'),
       nrAvail: money(this.nrCap()),
-      nrOver: this.nrSum() > this.nrCap(),
+      nrOver: this.nrSum() > this.nrCap() && this.nrCap() > 0,
       nrFits: this.nrSum() <= this.nrCap(),
+      nrBlocked: this.nrSum() > this.nrCap() && this.nrCap() === 0,
+      nrOverPct: this.nrCap() > 0 ? Math.round((this.nrSum() - this.nrCap()) / this.nrCap() * 100) : 0,
+      nrJustify: this.state.nrJustify,
+      setNrJustify: e => this.setState({ nrJustify: e.target.value }),
+      nrJustifyOk: String(this.state.nrJustify || '').trim().length >= 12,
+      nrJustifyShort: String(this.state.nrJustify || '').trim().length < 12,
       nrShortF: money(Math.max(0, this.nrSum() - this.nrCap())),
       nrRemainF: money(Math.max(0, this.nrCap() - this.nrSum())),
       nrBlank: this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
-      nrValid: this.state.nrLines.length > 0 && !this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
+      nrValid: this.state.nrLines.length > 0
+        && !this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0)
+        && !(this.nrSum() > this.nrCap() && this.nrCap() === 0)
+        && !(this.nrSum() > this.nrCap() && this.nrCap() > 0 && String(this.state.nrJustify || '').trim().length < 12),
+      nrNeedsJustify: this.nrSum() > this.nrCap() && this.nrCap() > 0 && String(this.state.nrJustify || '').trim().length < 12
+        && this.state.nrLines.length > 0 && !this.state.nrLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
       nrRoute: (() => {
         const t = this.nrSum();
         return [
@@ -11646,7 +11610,12 @@ class Component extends DCLogic {
         ].map((x, i, arr) => ({ name:x.name, who:x.who, on:x.on, off: !x.on, last: i === arr.length - 1, notLast: i !== arr.length - 1 }));
       })(),
       nrStages: 3 + (this.nrSum() >= 250000 ? 1 : 0) + (this.nrSum() >= 1000000 ? 1 : 0),
-      nrSubmit: () => { this.hook('CreateRequisition', { purpose:this.state.nrPurpose, budgetLine:this.state.nrBudget, lines:this.state.nrLines, totalKobo:this.nrSum()*100 }, 'Requisition submitted for approval.'); this.go('/requisitions'); },
+      nrSubmit: () => {
+        const p = { purpose:this.state.nrPurpose, budgetLine:this.state.nrBudget, lines:this.state.nrLines, totalKobo:this.nrSum()*100 };
+        if (this.nrSum() > this.nrCap()) p.overBudgetJustification = String(this.state.nrJustify || '').trim();
+        this.hook('CreateRequisition', p, 'Requisition submitted for approval.');
+        this.go('/requisitions');
+      },
       nrSaveDraft: () => this.hook('SaveRequisitionDraft', { purpose:this.state.nrPurpose, lines:this.state.nrLines }, 'Draft saved.'),
       obWarn: this.state.obMode === 'warn', obBlock: this.state.obMode === 'block',
       obModes: [['warn','Warn and allow with justification'],['block','Block — no headroom at all']].map(([k, label]) => ({
