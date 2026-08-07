@@ -454,10 +454,32 @@
   }
 
   var queue = xhr('GET', '/v1/requisitions?scope=queue');
+  // The ref map is what turns a reference on screen into something the engine can act on.
+  // It used to carry requisitions only, so a retirement, advance or virement shown anywhere
+  // resolved to nothing and its Approve/Return did nothing — the approval surface is generic
+  // and was being starved of everything except requisitions.
   window.__weweRefMap = {};
   var all = xhr('GET', '/v1/requisitions?scope=all') || [];
   all.forEach(function (t) { window.__weweRefMap[t.ref] = t.id; });
+  ['/v1/advances?scope=all', '/v1/retirements?scope=all', '/v1/virements'].forEach(function (url) {
+    var rows = xhr('GET', url);
+    if (Array.isArray(rows)) rows.forEach(function (t) { if (t && t.ref) window.__weweRefMap[t.ref] = t.id; });
+  });
 
+  // "Awaiting my approval" means every transaction type that runs the five-stage engine, not
+  // just requisitions. Retirements, advances and virements were invisible here, which is why
+  // they appeared to stall — nobody could see them, let alone act on them.
+  ['/v1/advances?scope=queue', '/v1/retirements?scope=queue'].forEach(function (url) {
+    var rows = xhr('GET', url);
+    if (Array.isArray(rows) && rows.length) queue = (queue || []).concat(rows);
+  });
+  var vrs = xhr('GET', '/v1/virements');
+  if (Array.isArray(vrs)) {
+    // Virements have no queue scope, so take the ones still moving through the chain.
+    queue = (queue || []).concat(vrs.filter(function (v) {
+      return ['APPROVED', 'DECLINED', 'REJECTED', 'WITHDRAWN'].indexOf(v.status) === -1;
+    }));
+  }
   if (Array.isArray(queue)) {
     queue.forEach(function (t) { window.__weweRefMap[t.ref] = t.id; });
     var totalKobo = queue.reduce(function (s, t) { return s + BigInt(t.amountKobo || '0'); }, 0n);
@@ -472,8 +494,8 @@
         stats: [
           ['In my queue', String(queue.length), fmtNaira(totalKobo.toString()) + ' total value'],
           ['Overdue at my stage', String(overdue.length), overdue.slice(0, 2).map(function (t) { return t.ref; }).join(' and ') || 'Nothing overdue'],
-          ['Live data', 'ON', 'Rows from the workflow engine'],
-          ['Signed in as', (window.__weweUser || ''), 'Change with ?as=persona'],
+          ['Live data', 'ON', 'Every transaction type in the chain'],
+          ['Signed in as', (window.__weweUser || ''), (window.__weweRoleLabel || '')],
         ],
         table: {
           title: 'Queue, oldest first',
