@@ -38,6 +38,14 @@ function localCdnResources(): Plugin {
   // screen picks from) and PO records (keyed by PO ref, carrying the lines a goods receipt
   // counts against). Both are objects, so they merge per-key like TXN_DETAIL — a live round
   // overrides its fixture, and rounds we have no data for keep theirs.
+  // The Vendor registry nav item pointed at '/procurement', which has no page spec, while the
+  // register — with its "Add a vendor" action, Export, Filters, Bank and Blacklist — is defined
+  // under '/procurement/vendors'. So the whole vendor registration flow was built and working
+  // but unreachable from the menu. Point the nav at the page that exists.
+  DATA_WRAPS.push([
+    "['Vendor registry','/procurement']",
+    "['Vendor registry','/procurement/vendors']",
+  ]);
   // "Signed in as" showed a fixture persona — the shell reads `ROLES[role]`, whose names are
   // hardcoded, and `role` falls back to 'finance', so every session displayed Ibrahim Musa
   // whoever had actually signed in. Overwrite the identity fields from the real session, and

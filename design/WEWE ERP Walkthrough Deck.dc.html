@@ -21,7 +21,7 @@
 
 <x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
 
-<section data-label="Title" data-speaker-notes="Good morning, and thank you for making the time. Over the next hour I'll walk you through the WEWE ERP — the system that now runs our requisitions, approvals, budgets, grants, procurement, people and audit trail end to end. My goal is simple: by the time we finish, every person in this room understands what the system does, where they fit in it, and why it makes our work faster and our records cleaner. This isn't a technical talk — I'll show you the actual screens you'll use." style="position:relative; width:100%; height:100%; background:#12100F; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:96px 110px;">
+<section data-label="Title" data-speaker-notes="Good morning, and thank you for making the time. Over the next hour I'll walk you through the WEWE ERP — the system that now runs our requisitions, approvals, budgets, grants, procurement, people and audit trail end to end. My goal is simple: by the time we finish, every person in this room understands what the system does, where they fit in it, and why it makes our work faster and our records cleaner. This isn't a technical talk — I'll show you the actual screens you'll use." style="position:relative; width:100%; height:100%; background:#12100F; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:76px 96px;">
   <div style="position:absolute; top:-360px; right:-260px; width:1080px; height:1080px; border-radius:999px; background:radial-gradient(circle at 35% 35%, rgba(224,87,46,.30), rgba(224,87,46,0) 62%);"></div>
   <div style="position:absolute; bottom:-420px; left:-200px; width:900px; height:900px; border-radius:999px; background:radial-gradient(circle at 50% 50%, rgba(224,87,46,.12), rgba(224,87,46,0) 60%);"></div>
 
@@ -29,14 +29,14 @@
     <span style="width:64px; height:64px; border-radius:17px; background:#E0572E; color:#fff; font-size:31px; font-weight:800; display:flex; align-items:center; justify-content:center;">W</span>
     <div>
       <div style="font-size:25px; font-weight:700; letter-spacing:-.01em;">WEWE ERP</div>
-      <div style="font-size:25px; color:rgba(255,255,255,.52); margin-top:5px;">Widows and Orphans Empowerment Organisation</div>
+      <div style="font-size:24px; color:rgba(255,255,255,.52); margin-top:4px;">Widows and Orphans Empowerment Organisation</div>
     </div>
   </div>
 
   <div style="position:relative;">
     <div style="font-size:24px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:#E0572E;">System walkthrough</div>
-    <div style="font-size:112px; font-weight:800; line-height:1.02; letter-spacing:-.035em; margin-top:26px; max-width:1360px;">One approval chain.<br />Five stages.<br /><span style="color:#E0572E;">Zero paper.</span></div>
-    <div style="font-size:26px; color:rgba(255,255,255,.62); margin-top:34px; max-width:960px; line-height:1.55;">Every requisition, advance, budget line and donor report — visible from initiation to final approval, on one permanent record.</div>
+    <div style="font-size:92px; font-weight:800; line-height:1.04; letter-spacing:-.035em; margin-top:20px; max-width:1200px;">One approval chain.<br />Five stages.<br /><span style="color:#E0572E;">Zero paper.</span></div>
+    <div style="font-size:26px; color:rgba(255,255,255,.62); margin-top:26px; max-width:900px; line-height:1.5;">Every requisition, advance and donor report — visible from initiation to final approval, on one permanent record.</div>
   </div>
 
   <div style="position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:40px; padding-top:36px; border-top:1px solid rgba(255,255,255,.13);">
@@ -79,46 +79,6 @@
       <div style="position:relative; font-size:24px; color:rgba(255,255,255,.5); padding-top:34px; border-top:1px solid rgba(255,255,255,.14);">Controls are now held by the system.</div>
     </div>
   </div>
-</section>
-
-<section data-label="Agenda" data-speaker-notes="Here's the map. We start with foundations — the single idea the whole system is built on, who the players are, and how you read your dashboard. Then module by module: the money side, then people and operations, then documents and the audit trail, then the platform pieces. We finish with exactly where we are on the road to production." style="position:relative; width:100%; height:100%; background:#fff; color:#12100F; padding:72px 96px; display:flex; flex-direction:column;">
-  <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#9A9490;">What we'll cover</div>
-  <div style="font-size:66px; font-weight:800; letter-spacing:-.03em; margin-top:18px;">Six sections, one hour</div>
-
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; margin-top:40px; flex:1;">
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#12100F; color:#fff;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">01</div>
-      <div><div style="font-size:29px; font-weight:700;">Foundations</div><div style="font-size:25px; color:rgba(255,255,255,.55); margin-top:8px; line-height:1.4;">The approval chain, the nine roles, your dashboard</div></div>
-    </div>
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#F4F3F1;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">02</div>
-      <div><div style="font-size:29px; font-weight:700;">The money modules</div><div style="font-size:25px; color:#7A736E; margin-top:8px; line-height:1.4;">Requisitions, advances, retirements, budgets, grants</div></div>
-    </div>
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#F4F3F1;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">03</div>
-      <div><div style="font-size:29px; font-weight:700;">People &amp; operations</div><div style="font-size:25px; color:#7A736E; margin-top:8px; line-height:1.4;">HR, leave, timesheets, payroll, procurement, assets, stores</div></div>
-    </div>
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#F4F3F1;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">04</div>
-      <div><div style="font-size:29px; font-weight:700;">Documents &amp; assurance</div><div style="font-size:25px; color:#7A736E; margin-top:8px; line-height:1.4;">The library, e-signatures, the tamper-evident audit trail</div></div>
-    </div>
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#F4F3F1;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">05</div>
-      <div><div style="font-size:29px; font-weight:700;">Platform &amp; security</div><div style="font-size:25px; color:#7A736E; margin-top:8px; line-height:1.4;">Permissions, reports, QuickBooks, email, hardening</div></div>
-    </div>
-    <div style="display:flex; align-items:flex-start; gap:26px; padding:32px 34px; border-radius:22px; background:#F4F3F1;">
-      <div style="font-size:40px; font-weight:800; color:#E0572E; letter-spacing:-.02em; line-height:1;">06</div>
-      <div><div style="font-size:29px; font-weight:700;">Go-live</div><div style="font-size:25px; color:#7A736E; margin-top:8px; line-height:1.4;">What's ready, what's left, and who owns each piece</div></div>
-    </div>
-  </div>
-</section>
-
-<section data-label="01 Foundations" data-speaker-notes="Before any single module, four things make the whole system click: the approval chain everything travels down, the roles people play, how you sign in securely, and the dashboard you land on every morning. Get these four and every module afterwards is a variation on a theme." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">01</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">Foundations</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:900px; line-height:1.5;">The one idea, the people who use it, and your day-to-day starting point.</div>
 </section>
 
 <section data-label="The chain" data-speaker-notes="This is the heart of the system — please remember this picture, because almost everything else is a version of it. Any request involving money is created by an initiator, then moves left to right through up to four approval stages: the supervisor, then internal audit, then finance, and finally the Managing Director. At each stage the approver can approve and pass it on, return it to the initiator to fix something, or reject it outright. The chain is smart: requests under five hundred thousand naira skip the MD automatically. You configure those thresholds once; the system then enforces them every single time." style="position:relative; width:100%; height:100%; background:#fff; color:#12100F; padding:68px 88px; display:flex; flex-direction:column;">
@@ -248,36 +208,6 @@
   </div>
 </section>
 
-<section data-label="Sign in" data-speaker-notes="You use your WEWE work email and a password you set. Because this system holds financial and staff information, we require two-factor authentication: after your password you enter a six-digit code from an authenticator app, the same way your bank works. If someone tries wrong passwords repeatedly the account locks progressively. When you first get your account you'll set your password and enrol your authenticator. One tip: keep your backup codes somewhere safe, because they're shown only once." style="position:relative; width:100%; height:100%; background:#12100F; color:#fff; display:flex; overflow:hidden;">
-  <div style="width:660px; flex:none; padding:88px 64px 88px 96px; display:flex; flex-direction:column;">
-    <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#E0572E;">Getting in</div>
-    <div style="font-size:60px; font-weight:800; letter-spacing:-.03em; margin-top:16px; line-height:1.08;">Signing in securely</div>
-    <div style="display:flex; flex-direction:column; gap:34px; margin-top:52px;">
-      <div>
-        <div style="font-size:27px; font-weight:700;">Your work email</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.58); margin-top:10px; line-height:1.55;">Personal addresses are not accepted, so every action ties to a WEWE identity.</div>
-      </div>
-      <div>
-        <div style="font-size:27px; font-weight:700;">A six-digit code</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.58); margin-top:10px; line-height:1.55;">Two-factor authentication from an app on your phone. Required for every role that touches money.</div>
-      </div>
-      <div>
-        <div style="font-size:27px; font-weight:700;">Ten backup codes</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.58); margin-top:10px; line-height:1.55;">Shown once at enrolment. Print them or store them in a password manager.</div>
-      </div>
-      <div>
-        <div style="font-size:27px; font-weight:700;">Progressive lockout</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.58); margin-top:10px; line-height:1.55;">Repeated wrong attempts lock the account for longer each time, and every lock is logged.</div>
-      </div>
-    </div>
-    <div style="flex:1;"></div>
-    <div style="font-size:25px; color:rgba(255,255,255,.42); padding-top:30px; border-top:1px solid rgba(255,255,255,.14); line-height:1.55;">Your system administrator can clear a lock immediately — a suspension is deliberate and different.</div>
-  </div>
-  <div style="flex:1; min-width:0; position:relative; background:#0A0908; display:flex; align-items:center; padding:88px 96px 88px 0;">
-    <img src="shots/01-sign-in.jpg" alt="WEWE ERP sign-in screen" style="width:100%; border-radius:20px 0 0 20px; box-shadow:0 40px 90px rgba(0,0,0,.55); display:block;" />
-  </div>
-</section>
-
 <section data-label="Dashboard" data-speaker-notes="This is where you'll start every day. The dashboard adapts to your role — a finance officer sees budget and disbursement numbers; a supervisor sees what's waiting for their approval. The most important element is the queue, filtered to 'awaiting me' — that's your to-do list. Click any item and you see the whole story. The headline chart shows where all live items sit across the chain, so managers can see at a glance where the bottleneck is this week — here, Finance holds 39% of live items and 46% of live value." style="position:relative; width:100%; height:100%; background:#F4F3F1; color:#12100F; padding:64px 88px; display:flex; flex-direction:column;">
   <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:48px;">
     <div>
@@ -356,14 +286,6 @@
       <div style="font-size:25px; color:rgba(255,255,255,.5); text-align:right;">04/08 · 16:05</div>
     </div>
   </div>
-</section>
-
-<section data-label="02 Money" data-speaker-notes="This section is the financial core — the requests that move money and the controls around them. Everything here rides the approval chain you just learned, and everything is recorded in kobo, exactly, so there's never a rounding surprise. We'll go: requisitions, then advances and their retirement, then the budgets those spend against, and finally the grants that fund it all." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">02</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">The money modules</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:1000px; line-height:1.5;">Requisitions · Advances &amp; travel · Retirements · Budgets &amp; virements · Grants</div>
 </section>
 
 <section data-label="Requisitions" data-speaker-notes="Requisitions are the workhorse — the everyday 'we need to spend on this' request. You give it a title, then add line items: description, quantity and unit cost, and the system totals it. You tag each line to the budget line it draws from, and as you do, the system checks that budget in real time — it will either warn you that a line is over budget, or block it entirely, depending on policy. This register view shows the whole financial year: the stage dots tell you at a glance how far each item has travelled, and the amber and red states show returns and rejections without you opening anything." style="position:relative; width:100%; height:100%; background:#F4F3F1; color:#12100F; padding:64px 88px; display:flex; flex-direction:column;">
@@ -522,14 +444,6 @@
       </div>
     </div>
   </div>
-</section>
-
-<section data-label="03 People" data-speaker-notes="So far we've followed the money. Now the people who do the work and the things we buy and own. This section covers HR and leave, how we record effort on grants, payroll, procurement from vendor to purchase order, and how we track assets and stores. Same system, same audit trail, same approval discipline." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">03</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">People &amp; operations</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:1060px; line-height:1.5;">HR &amp; leave · Timesheets &amp; effort · Payroll · Procurement · Assets · Stores</div>
 </section>
 
 <section data-label="HR" data-speaker-notes="The HR module starts with the staff profile — grade, hire date, contract end, bank and pension details, emergency contact, next of kin. Two things to note. First, this record feeds other modules — payroll pulls salary and allowances from here, and staff letters draw on it too, so we maintain the information once. Second, privacy is enforced at the field level: look at the directory on the right — bank details are masked to everyone except Finance and HR. That's not a screen setting, it's a sensitivity set enforced in the engine, and every access to it is logged." style="position:relative; width:100%; height:100%; background:#F4F3F1; color:#12100F; padding:64px 88px; display:flex; flex-direction:column;">
@@ -698,14 +612,6 @@
   </div>
 </section>
 
-<section data-label="04 Assurance" data-speaker-notes="This section is where WEWE's credibility lives. It's the part that makes a donor or an auditor trust everything we've just seen. We'll cover the document library, electronic signatures, the tamper-evident audit trail at the core of the system, how internal audit raises and tracks issues, and how we give an outside audit firm safe, limited access." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">04</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">Documents &amp; assurance</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:1080px; line-height:1.5;">The library · Search &amp; OCR · E-signatures · The audit trail · Flags &amp; findings · External auditors</div>
-</section>
-
 <section data-label="Documents" data-speaker-notes="The document library is our single organised store for the paperwork that backs everything else. It's version-aware: a new upload keeps the old one in history rather than silently overwriting it. Documents can be marked confidential. And because a lot of our source documents are scans, it runs OCR — look at the search here, 'per diem circular' found the rate inside a scanned PDF, on page 3. On the right is the signature side: three signatories, two internal and one external, with a certificate of completion recording the document hash and a fourteen-event audit trail." style="position:relative; width:100%; height:100%; background:#fff; color:#12100F; padding:64px 88px; display:flex; flex-direction:column;">
   <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:48px;">
     <div>
@@ -792,31 +698,6 @@
   </div>
 </section>
 
-<section data-label="Audit tools" data-speaker-notes="Internal audit isn't just an approval stage; it has its own tools. If an auditor sees something that needs explaining they raise a flag against that specific transaction, tracked until it's closed. Broader issues go into the findings register: each with a severity, an owner who must act, a due date and a status. And when a donor reviews us, they don't want a number — they want the evidence. The system assembles an evidence pack: the linked documents and the relevant slice of the audit trail, in one bundle. This is how we show not just that we find issues, but that we close them." style="position:relative; width:100%; height:100%; background:#F4F3F1; color:#12100F; padding:72px 96px; display:flex; flex-direction:column;">
-  <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#9A9490;">Module</div>
-  <div style="font-size:58px; font-weight:800; letter-spacing:-.03em; margin-top:14px;">Flags, findings &amp; evidence packs</div>
-
-  <div style="display:grid; grid-template-columns:minmax(0,1fr) 470px; gap:30px; margin-top:30px; flex:1; min-height:0;">
-    <div style="min-width:0; display:flex; align-items:flex-start;">
-      <img src="shots/12-audit-compliance.jpg" alt="Internal audit compliance dashboard with flags and findings" style="width:100%; border-radius:18px; box-shadow:0 26px 64px rgba(18,16,15,.16); display:block;" />
-    </div>
-    <div style="display:flex; flex-direction:column; gap:13px;">
-      <div style="background:#fff; border-radius:18px; padding:22px 24px;">
-        <div style="font-size:25px; font-weight:700;">A flag is attached to a transaction</div>
-        <div style="font-size:25px; color:#7A736E; margin-top:9px; line-height:1.4;">Raised against the specific item, answered by the person responsible, and tracked until closed. Never a note in a report nobody reads.</div>
-      </div>
-      <div style="background:#fff; border-radius:18px; padding:22px 24px;">
-        <div style="font-size:25px; font-weight:700;">A finding has an owner and a date</div>
-        <div style="font-size:25px; color:#7A736E; margin-top:9px; line-height:1.4;">Severity, owner, due date, status. Management can see what is open, what is overdue, and whose it is.</div>
-      </div>
-      <div style="background:#12100F; color:#fff; border-radius:18px; padding:22px 24px; flex:1;">
-        <div style="font-size:25px; font-weight:700;">Evidence packs, on request</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.58); margin-top:9px; line-height:1.4;">For any transaction or period, the system bundles the linked documents with the relevant slice of the audit trail. A review becomes a routine exchange rather than a fire drill.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section data-label="External auditor" data-speaker-notes="When an external firm audits a specific grant, we don't hand over the keys to everything. We create a read-only account scoped to just that donor and just that period, and it expires automatically on a date we set. They see exactly what they're entitled to review, they can't change anything, every document they open is watermarked and logged, and their access doesn't linger after the engagement ends. Notice the navigation on the left is deliberately shorter — the modules they have no business in simply aren't there. It's enforced by the system, not by us remembering to switch the account off." style="position:relative; width:100%; height:100%; background:#12100F; color:#fff; display:flex; overflow:hidden;">
   <div style="width:620px; flex:none; padding:68px 56px 68px 96px; display:flex; flex-direction:column;">
     <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#E0572E;">Assurance</div>
@@ -845,14 +726,6 @@
   <div style="flex:1; min-width:0; background:#0A0908; display:flex; align-items:center; padding:68px 88px 80px 0;">
     <img src="shots/19-external-auditor.jpg" alt="External auditor portal with read-only, time-boxed scoped access" style="width:100%; border-radius:20px 0 0 20px; box-shadow:0 40px 90px rgba(0,0,0,.55); display:block;" />
   </div>
-</section>
-
-<section data-label="05 Platform" data-speaker-notes="The last group is the connective tissue — the parts that decide who can do what, get information out to donors and management, connect us to QuickBooks and email, and keep the whole thing safe. Less glamorous than the modules, but this is what makes it a system rather than a collection of screens." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">05</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">Platform &amp; security</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:1060px; line-height:1.5;">Permissions · Notifications · Reports · QuickBooks · Email · Security · Backups</div>
 </section>
 
 <section data-label="Permissions" data-speaker-notes="Everything you've seen is governed by permissions. Fifty-seven modules across seven areas, each against seven actions — view, create, edit, submit, approve, export, configure. Many rights are scoped to your own department. On top of that the system blocks conflicting combinations: eight blocking segregation-of-duties rules that cannot be waived in the interface. Here is the Finance role as an example: it can view, create, edit and submit a requisition, and export it — but it cannot approve one, because rule SOD-01 blocks the same party raising and approving. And it holds no rights at all over Roles and permissions. The administrator manages this from a matrix, changes are staged and published deliberately, and every change is itself written to the audit trail." style="position:relative; width:100%; height:100%; background:#fff; color:#12100F; padding:64px 88px; display:flex; flex-direction:column;">
@@ -1003,80 +876,9 @@
     </div>
   </div>
 
-  <div style="position:relative; display:flex; align-items:center; gap:20px; margin-top:34px; padding:28px 32px; border-radius:18px; background:rgba(224,87,46,.14); border:1px solid rgba(224,87,46,.4);">
-    <span style="width:12px; height:12px; border-radius:999px; background:#E0572E; flex:none;"></span>
-    <div style="font-size:27px; line-height:1.5;"><span style="font-weight:700;">Still to do, and we won't skip it:</span> <span style="color:rgba(255,255,255,.72);">an independent penetration test by an outside firm before any real donor data goes in. Best practice, and frankly a requirement.</span></div>
-  </div>
-</section>
-
-<section data-label="06 Go-live" data-speaker-notes="We've covered the whole system. Let me close by being straight with you about where we actually stand — what's ready today, what's genuinely left, and what we each need to do to get to full production. No overselling." style="position:relative; width:100%; height:100%; background:#E0572E; color:#fff; overflow:hidden; display:flex; flex-direction:column; justify-content:center; padding:0 110px;">
-  <div style="position:absolute; top:-300px; right:-180px; width:900px; height:900px; border-radius:999px; background:rgba(255,255,255,.09);"></div>
-  <div style="position:absolute; bottom:-380px; right:120px; width:700px; height:700px; border-radius:999px; background:rgba(255,255,255,.06);"></div>
-  <div style="position:relative; font-size:200px; font-weight:800; letter-spacing:-.05em; line-height:1; opacity:.28;">06</div>
-  <div style="position:relative; font-size:82px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">Go-live</div>
-  <div style="position:relative; font-size:29px; color:rgba(255,255,255,.78); margin-top:24px; max-width:1000px; line-height:1.5;">Where we are, what's left, and how we get there together.</div>
-</section>
-
-<section data-label="A day in the life" data-speaker-notes="To bring it together, picture three ordinary days. Amina, an initiator, logs in, raises a requisition for a field visit, and gets a notification when it's approved — or returned for a quick fix. Ibrahim in finance starts on his queue, records the day's disbursements, checks the weekly report that arrived by email, and posts approved entries to QuickBooks. And Folake, our MD, glances at the pipeline, approves the handful of large items that need her, and knows every action is on the permanent record. Same system, three very different days — each person touches only their part, and the whole thing stays coordinated." style="position:relative; width:100%; height:100%; background:#fff; color:#12100F; padding:72px 96px; display:flex; flex-direction:column;">
-  <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#9A9490;">Recap</div>
-  <div style="font-size:58px; font-weight:800; letter-spacing:-.03em; margin-top:14px;">Three ordinary days</div>
-
-  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:28px; margin-top:44px; flex:1; min-height:0;">
-    <div style="border:1px solid #EDEAE6; border-radius:22px; padding:36px 34px; display:flex; flex-direction:column;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <span style="width:52px; height:52px; border-radius:999px; background:#FBEAE4; color:#9C3309; font-size:24px; font-weight:700; display:flex; align-items:center; justify-content:center;">AY</span>
-        <div><div style="font-size:27px; font-weight:700;">Amina</div><div style="font-size:24px; color:#9A9490;">Programme Officer</div></div>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:20px; margin-top:32px;">
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Raises a requisition from a template — two minutes.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Gets notified the moment it moves, or comes back.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Files her timesheet; effort totals 100%.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Retires her advance with receipts attached.</div>
-      </div>
-      <div style="flex:1;"></div>
-      <div style="font-size:24px; color:#9A9490; padding-top:26px; border-top:1px solid #EDEAE6;">Never chases a signature again.</div>
-    </div>
-    <div style="border:1px solid #EDEAE6; border-radius:22px; padding:36px 34px; display:flex; flex-direction:column;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <span style="width:52px; height:52px; border-radius:999px; background:#FFF7ED; color:#8A4B0B; font-size:24px; font-weight:700; display:flex; align-items:center; justify-content:center;">IM</span>
-        <div><div style="font-size:27px; font-weight:700;">Ibrahim</div><div style="font-size:24px; color:#9A9490;">Finance Manager</div></div>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:20px; margin-top:32px;">
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Clears the queue — six items, budget checked as he goes.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Records disbursements; retirement clocks start.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Reviews two QuickBooks exceptions and reposts.</div>
-        <div style="font-size:25px; color:#4A443F; line-height:1.5;">Monday's register arrived by email already.</div>
-      </div>
-      <div style="flex:1;"></div>
-      <div style="font-size:24px; color:#9A9490; padding-top:26px; border-top:1px solid #EDEAE6;">Month end stops being an event.</div>
-    </div>
-    <div style="border-radius:22px; padding:36px 34px; background:#12100F; color:#fff; display:flex; flex-direction:column;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <span style="width:52px; height:52px; border-radius:999px; background:#E0572E; color:#fff; font-size:24px; font-weight:700; display:flex; align-items:center; justify-content:center;">FA</span>
-        <div><div style="font-size:27px; font-weight:700;">Folake</div><div style="font-size:24px; color:rgba(255,255,255,.5);">Managing Director</div></div>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:20px; margin-top:32px;">
-        <div style="font-size:25px; color:rgba(255,255,255,.72); line-height:1.5;">Two decisions today. Nothing else needs her.</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.72); line-height:1.5;">Sees the whole organisation on one screen.</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.72); line-height:1.5;">Knows where the bottleneck is — Finance, 46% of value.</div>
-        <div style="font-size:25px; color:rgba(255,255,255,.72); line-height:1.5;">Signs the payroll as the second signature.</div>
-      </div>
-      <div style="flex:1;"></div>
-      <div style="font-size:24px; color:rgba(255,255,255,.42); padding-top:26px; border-top:1px solid rgba(255,255,255,.14);">Oversight without asking for a report.</div>
-    </div>
-  </div>
-</section>
-
-<section data-label="MD view" data-speaker-notes="This is what oversight looks like in practice — the Managing Director's screen. Two decisions for her today and nothing else needing her attention. Org spend for August against plan. Three active grants. Median approval time of four point one days, with Finance named as the bottleneck. She doesn't ask anyone for a report to know this; it's simply the state of the organisation, on one screen, derived from the same records everyone else is working in." style="position:relative; width:100%; height:100%; background:#0A0908; color:#fff; padding:64px 80px; display:flex; flex-direction:column;">
-  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:48px;">
-    <div>
-      <div style="font-size:24px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#E0572E;">Oversight</div>
-      <div style="font-size:54px; font-weight:800; letter-spacing:-.03em; margin-top:12px;">The whole organisation, one screen</div>
-    </div>
-    <div style="font-size:25px; color:rgba(255,255,255,.5); text-align:right; flex:none; line-height:1.5;">Managing Director view<br />2 decisions · median 4.1 days to approve</div>
-  </div>
-  <div style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; margin-top:34px;">
-    <img src="shots/18-md-dashboard.jpg" alt="Managing Director dashboard showing the whole organisation" style="max-width:100%; max-height:100%; border-radius:18px; box-shadow:0 40px 90px rgba(0,0,0,.6); display:block;" />
+  <div style="position:relative; display:flex; align-items:flex-start; gap:20px; margin-top:34px; padding:28px 32px; border-radius:18px; background:rgba(224,87,46,.14); border:1px solid rgba(224,87,46,.4);">
+    <span style="width:12px; height:12px; margin-top:12px; border-radius:999px; background:#E0572E; flex:none;"></span>
+    <div style="flex:1; min-width:0;"><div style="font-size:26px; font-weight:700; line-height:1.4;">Still to do, and we won't skip it</div><div style="font-size:25px; color:rgba(255,255,255,.72); line-height:1.5; margin-top:6px;">An independent penetration test by an outside firm before any real donor data goes in.</div></div>
   </div>
 </section>
 
