@@ -2045,4 +2045,68 @@
     }
     return 'Legal hold applied to ' + ids.length + (ids.length === 1 ? ' document.' : ' documents.');
   };
+
+  // ---- Honest refusals for actions with no engine behind them ----
+  //
+  // The design's dispatcher, when no hook is registered, does this:
+  //
+  //     this.setState({ toastError: false });
+  //     if (fallbackMsg) this.toast(fallbackMsg);
+  //     return false;
+  //
+  // — a success-styled toast for something that never happened. "Two-step
+  // verification is on." when 2FA is off, "Other sessions signed out." when they
+  // are still live, "Delegation cancelled." when the delegate still holds the
+  // authority. On a system whose whole purpose is an auditable approval trail,
+  // an action that reports success it did not achieve is worse than one that is
+  // plainly missing: the user stops looking.
+  //
+  // Registering a hook that returns { ok:false, reason } routes through this.fail()
+  // instead, so the screen shows the reason in an error toast and the operator
+  // knows to do it another way. These are placeholders to be DELETED as each
+  // endpoint lands — never a permanent home for a feature.
+  var NOT_BUILT = {
+    // security and delegated authority — the dangerous three, silent failure here
+    // means someone believes an access control took effect when it did not
+    Enrol2fa: 'Two-step verification cannot be enrolled from here yet — it is NOT on. Nothing changed.',
+    SignOutOtherSessions: 'Other sessions were NOT signed out — that is not connected yet. They are still active.',
+    StartDelegation: 'Delegation cannot be started yet — no authority was delegated.',
+    CancelDelegation: 'Delegation was NOT cancelled — that is not connected yet. The delegate still holds it.',
+    PublishRole: 'Role changes were not published — permissions are unchanged.',
+    CreateRole: 'Roles cannot be created from here yet. Nothing was saved.',
+    // people and payroll
+    CreateStaff: 'Staff records cannot be created from here yet — no record, no invite.',
+    StartOnboarding: 'Onboarding cannot be started yet. No tasks were assigned.',
+    ApproveTimesheet: 'Timesheet approval is not connected yet. Nothing was approved.',
+    SignAppraisal: 'Appraisals cannot be signed here yet. Nothing was signed.',
+    CreateObjective: 'Objectives cannot be set from here yet. Nothing was sent.',
+    EmailPayslip: 'Payslips cannot be emailed from here yet — nothing was sent.',
+    QueryPayslip: 'Payslip queries are not connected yet. HR was not notified.',
+    // money movement
+    RaiseRemittancePayment: 'Remittance payments cannot be raised from here yet. No payment exists.',
+    SettleRefund: 'Refund settlement is not connected yet. Nothing was recorded.',
+    RepostQuickBooks: 'Reposting to QuickBooks is not connected yet. The exceptions are unchanged.',
+    // stores and assets
+    ReverseIssue: 'Issues cannot be reversed from here yet. The stock was not returned.',
+    StartAssetVerification: 'Verification campaigns cannot be launched yet. None was started.',
+    // configuration and reporting
+    SaveWorkflowChain: 'Workflow chains cannot be saved from here yet — the chain is unchanged.',
+    SaveForm: 'Forms cannot be saved from here yet. Nothing was saved.',
+    PublishForm: 'Forms cannot be published from here yet. Nothing was published.',
+    ShareForm: 'Form invitations are not connected yet. Nothing was sent.',
+    SaveTemplate: 'Templates cannot be saved from here yet.',
+    CopyTemplate: 'Templates cannot be copied from here yet.',
+    SaveReport: 'Reports cannot be saved to the library yet. Nothing was saved.',
+    CreateRecord: 'That record type cannot be created from here yet. Nothing was saved.',
+    CreateDonor: 'Donors cannot be created from here yet. Nothing was saved.',
+    ChaseReturn: 'Chasers are not connected yet — no reminder was sent.',
+    Export: 'Export is not connected yet. No file was produced.',
+  };
+  Object.keys(NOT_BUILT).forEach(function (name) {
+    // never shadow a real implementation, including one added after this block
+    if (typeof window['__wewe' + name] === 'function') return;
+    window['__wewe' + name] = (function (reason) {
+      return function () { return { ok: false, reason: reason }; };
+    })(NOT_BUILT[name]);
+  });
 })();

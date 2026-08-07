@@ -127,3 +127,15 @@ Making them work is not wiring. `Page 3 of 24` is a hardcoded literal, there is 
 
 - The Phase-1 web UI committed in this repo was built from the design *tokens* before the verbatim rule was declared. It is functionally correct but **interim**: each screen is to be replaced by a verbatim port of the corresponding design markup, wired to the real API. Tracked in BUILD_PLAN Phase 1.
 - `support.js` remains excluded (prototype runtime only, per the design README).
+
+## Found by clicking the actual screens (not by calling hooks)
+
+Items 35, 37, 38 and 39 were marked **BUILT** on the strength of API tests (`gaps.mjs`, 21/21) and hooks invoked through `page.evaluate`. That proves the endpoint and the adapter contract. It does not prove a user can reach either. Driving the real controls in Chromium found that two of them cannot be reached at all — the engine work stands, but the feature does not exist for a user:
+
+41. **Budget import has no file input.** `#/budgets/import` renders, and "Re-upload file" opens a dialog gated on *"Choose a file first"* — but there is no `input[type=file]` anywhere on the page, so the gate can never be satisfied and no file can be chosen. Clicking through produced zero requests. The importer built for item 35 (`POST /v1/budgets/versions/import`, CSV parsing, line creation) is unreachable from the UI. Needs a file picker wired to the existing "Choose a file first" gate; the payload shape `UploadBudget` already sends (`{ fiscalYear, name, mime, dataBase64 }`) is correct and needs no change.
+
+42. **E-signature policy has no settings control.** `#/documents/signatures` offers "New signature request", Filters and Export, and nothing else. There is no settings form, so `SaveSignatureSettings` — the hook item 39 describes, now backed by `GET`/`PUT /v1/esign/settings` — has no surface to be called from. The policy fields (`defaultExpiryDays`, `remindAfterDays`, `requireTwoFactor`, `watermarkExternal`, `allowTyped`) persist correctly when called directly; a user cannot get at them.
+
+**Untested, claimed neither way:** digitisation (`#/documents/digitisation`). "New batch" opens a real dialog with a name field, a page count, two selects and a "Create the batch" button, all present and correctly gated. The probe's selector did not match that button label, so the submit was never clicked and it is unknown whether the batch reaches `POST /v1/dms/digitisation/batches`. Finish this by clicking "Create the batch" and asserting the request fires.
+
+**Method note.** Calling `window.__weweX(payload)` tests the adapter, not the product. Every integration bug this project has hit — the unreachable vendor register, the builder that could not persist, the queue that showed only requisitions, the version list showing fixtures — was invisible at hook level and obvious on the first real click. Verify through the controls, and treat an API-level pass as a prerequisite rather than a result.
