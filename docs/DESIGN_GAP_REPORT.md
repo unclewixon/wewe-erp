@@ -27,7 +27,7 @@ Plus **47 spec-driven secondary pages** (stats + table pattern) covering: requis
 
 **Workflow & requisitions**
 10. Workflow chain configuration editor — only a legacy spec stub (`/admin/workflow-old`) exists; the visual five-node editor with thresholds/SLA/versions needs a real design.
-11. Bulk-approve confirmation modal (the queue page has the button; the modal flow is unbuilt).
+11. ~~Bulk-approve confirmation modal (the queue page has the button; the modal flow is unbuilt).~~ **CLOSED** — Phase 2 built it (selection bar → "Approve all" → "Approve N items?" → "Approve selected"), and it now writes to the engine. Two follow-ups in item 24.
 12. Fulfilment / goods-received closure state on a requisition.
 13. Over-budget warning state on the new-requisition form (REQ-02 hard-block and warn-with-override variants).
 
@@ -42,17 +42,17 @@ Plus **47 spec-driven secondary pages** (stats + table pattern) covering: requis
 19. HR letter generation screen + letter template.
 
 **Discovered during integration (Phase C write-wiring)**
-20. Transaction detail page is hard-bound to the fixture ref `REQ-2026-0187` (its route is a fixed entry in KNOWN and its content reads fixture consts). It needs template binding to the route parameter so any live ref renders. Until then, live rows can be listed and actioned from the queue but not opened in detail.
-21. Return/Reject need the comment drawer bound to the action (a note is mandatory in the engine); the current buttons are visual no-ops. Approve is wired live via the integration bridge; Return/Reject wait on this binding.
+20. ~~Transaction detail page is hard-bound to the fixture ref `REQ-2026-0187`.~~ **CLOSED** (Phase 2 + serve-time transform, ticket T-00). Verified 06/08/2026: live refs open from the register and render their own lines, history and tracker.
+21. ~~Return/Reject are visual no-ops pending the comment drawer.~~ **CLOSED** (Phase 2 delivered G21). Verified 06/08/2026: the decision drawer is bound, the note is mandatory, and both verbs write to the engine. The remaining problem is not the binding but the *failure* path — see item 25.
 
-**Discovered during the requisition-module production review**
+**Discovered during the requisition-module production review** — issued to Design as `docs/CLAUDE_DESIGN_PHASE3_REQUEST.md`
 
-22. **No Withdraw control on a requisition.** The engine supports it (`POST /v1/transactions/:id/withdraw`, initiator-only, verified working) and the detail payload returns `permissions.canWithdraw`, but the design bundle has no button anywhere in the requisition flow. The only "Withdraw and edit" in the bundle belongs to timesheets. An initiator currently cannot pull back their own pending requisition from the UI.
-23. **No Resubmit control on a returned requisition.** `POST /v1/transactions/:id/resubmit` works and `permissions.canResubmit` is returned, but a RETURNED requisition offers the initiator no way forward in the UI. This breaks the return loop: a supervisor can return with a note, and the initiator then has no control to send it back. Needed on the requisition detail page when `canResubmit` is true.
+**Root cause behind 22 and 23:** the detail page's `Your decision` panel infers the viewer's role from the transaction's current *stage* rather than reading the `permissions` object the API returns on every requisition. It therefore offers the current stage's actions to whoever is looking — including the initiator — and never offers initiator-side actions to anyone. Evidence captured against the running deployment in `docs/design-requests/`.
+
+22. **No Withdraw control on a requisition.** The engine supports it (`POST /v1/transactions/:id/withdraw`, initiator-only, verified working) and the detail payload returns `permissions.canWithdraw: true`, but no button exists anywhere in the requisition flow. The only "Withdraw and edit" in the bundle belongs to timesheets. An initiator cannot pull back their own pending requisition. Worse, on that same screen the panel offers them **Approve / Return / Reject** on a requisition they raised — an action that is never legitimate for them (the engine refuses it, correctly).
+23. **No Resubmit control on a returned requisition.** `POST /v1/transactions/:id/resubmit` works and `permissions.canResubmit: true` is returned, but a RETURNED requisition tells its own initiator *"No decision is open to you."* This breaks the return loop: a supervisor returns with a note, the note displays correctly, and the one person who must act on it has no control to do so. Needed on the detail page whenever `canResubmit` is true.
 24. **Bulk confirm reports the wrong count.** `confirmBulk` clears `selected` in the same `setState` it then reads for the toast, so the message always reads "0 items approved in one action." even on a successful run. The write itself is now live via the integration bridge; only the count in the copy is wrong.
 25. **`act()` announces success even when the engine refuses.** The design's `act()` toasts `"<ref> — <verb> submitted."` unconditionally, ignoring the hook's return value and swallowing its throw. A rejected write (wrong stage, missing note, insufficient permission) is therefore reported to the approver as if it succeeded. The hook returns `false` and logs the reason; the design needs to honour that and surface an error state.
-
-Note against item 21 above: Return/Reject are **no longer** visual no-ops — the decision drawer is bound and both verbs write to the engine with their mandatory note. Item 21 is closed apart from the failure-surface issue captured in 25.
 
 ## Design exceeds the feature spec (adopt into the build plan)
 
