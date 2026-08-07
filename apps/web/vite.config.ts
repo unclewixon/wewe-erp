@@ -38,6 +38,27 @@ function localCdnResources(): Plugin {
   // screen picks from) and PO records (keyed by PO ref, carrying the lines a goods receipt
   // counts against). Both are objects, so they merge per-key like TXN_DETAIL — a live round
   // overrides its fixture, and rounds we have no data for keep theirs.
+  // "Signed in as" showed a fixture persona — the shell reads `ROLES[role]`, whose names are
+  // hardcoded, and `role` falls back to 'finance', so every session displayed Ibrahim Musa
+  // whoever had actually signed in. Overwrite the identity fields from the real session, and
+  // let the real role pick the nav, so the shell describes the person in front of it.
+  DATA_WRAPS.push([
+    "ped access',['dash','req','adv','aud']],['Evidence',['dms','rep']]] }\n};\n",
+    "ped access',['dash','req','adv','aud']],['Evidence',['dms','rep']]] }\n};\n" +
+    "try {\n" +
+    "  if (window.__weweUser) {\n" +
+    "    for (var __k in ROLES) {\n" +
+    "      ROLES[__k].name = window.__weweUser;\n" +
+    "      if (window.__weweUserTitle) ROLES[__k].title = window.__weweUserTitle;\n" +
+    "      if (window.__weweRoleLabel) ROLES[__k].label = window.__weweRoleLabel;\n" +
+    "    }\n" +
+    "  }\n" +
+    "} catch (e) { /* identity is cosmetic — never let it break the shell */ }\n",
+  ]);
+  DATA_WRAPS.push([
+    "ROLES[this.state.role] ? this.state.role : 'finance'",
+    "ROLES[this.state.role] ? this.state.role : (window.__weweRoleKey || 'finance')",
+  ]);
   DATA_WRAPS.push(['const RFQ_ROUNDS = {', 'const RFQ_ROUNDS = Object.assign({']);
   DATA_WRAPS.push(["000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n};", "000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n}, (window.__weweData && window.__weweData.RFQ_ROUNDS) || {});"]);
   DATA_WRAPS.push(['const PO_RECORDS = {', 'const PO_RECORDS = Object.assign({']);

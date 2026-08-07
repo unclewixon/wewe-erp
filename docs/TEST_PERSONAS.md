@@ -4,19 +4,37 @@ Verified against the live deployment. **Every account below signs in with `Passw
 
 Sign in at the app URL with the persona you want to be. The old `?as=` URL switch is gone — it granted a session without a credential check, so switching persona now means signing out and signing in as that person.
 
+## Super admin (for presenting)
+
+| Email | Password | Roles |
+|---|---|---|
+| `superadmin@wewe.org` | `zObG5BBCfHnQ` | SYSTEM_ADMIN · FINANCE · INTERNAL_AUDIT · SUPERVISOR · FINAL_APPROVER · HR_OFFICER · INITIATOR |
+
+Verified: reads **20/20** module endpoints and writes across requisitions, vendors and RFQs.
+
+**It still cannot push one transaction through the whole chain, and that is deliberate.** Segregation of duties is not a permission, so no amount of role-granting switches it off:
+
+```
+approving its own requisition -> refused: an initiator cannot act on their own transaction
+approving someone else's      -> ok
+approving the SAME one twice  -> refused: this user has already approved a stage on this transaction
+```
+
+To demonstrate a full approval chain on stage, use the separate personas below — that is the product working, not a limitation to apologise for.
+
 ## The accounts
 
 | Email | Role | Department |
 |---|---|---|
 | `amina.yusuf@wewe.org` | Initiator | Programmes |
 | `chiamaka.eze@wewe.org` | Initiator | M&E |
-| `emeka.nwosu@wewe.org` | Initiator | Operations |
-| `blessing.adeyemi@wewe.org` | HR Officer · Initiator | Finance & Admin |
+| `emeka.nwosu@wewe.org` | Initiator (procurement) | Procurement |
+| `blessing.adeyemi@wewe.org` | HR Officer · Initiator · **Supervisor** | Human Resources |
 | `fatima.bello@wewe.org` | Finance · Initiator | Finance & Admin |
-| `tunde.balogun@wewe.org` | **Supervisor** (Programmes + M&E) · Initiator | Programmes |
+| `tunde.balogun@wewe.org` | **Supervisor** (all departments) · Initiator | Programmes |
 | `ngozi.okafor@wewe.org` | **Internal Audit** | Grants & Compliance |
 | `ibrahim.musa@wewe.org` | **Finance** | Finance & Admin |
-| `folake.adeyemi@wewe.org` | **Final Approver (MD)** | Finance & Admin |
+| `folake.adeyemi@wewe.org` | **Final Approver (MD)** | Operations |
 | `k.adeleke@auditfirm.ng` | External Auditor (read-only scope) | Grants & Compliance |
 | `admin@wewe.org` | System Admin | Operations |
 
@@ -48,7 +66,11 @@ To see a **return loop**: raise as Amina → sign in as Tunde → *Return for co
 
 To see the **over-budget justification**: raise a requisition larger than the remaining balance on its budget line. The panel turns amber and submit stays disabled until a justification is written; it is stored in the audit trail next to the budget warning. If the line has no headroom at all the panel turns red and blocks entirely — no justification is offered, because a written excuse cannot create money that isn't there.
 
-## Known gap — three departments have no supervisor
+## Departments
+
+Seven now, with people spread by what they actually do: Programmes, M&E, Finance & Admin, Operations, Grants & Compliance, **Human Resources** and **Procurement**. The last two were added because HR and procurement work had no home and four of eleven people were sitting in Finance & Admin.
+
+## ~~Known gap — three departments have no supervisor~~ RESOLVED
 
 Tunde is the only Supervisor in the system, scoped to **Programmes and M&E**. Requisitions raised from the other three departments reach the Supervisor stage and stop there permanently — nobody can action them:
 
@@ -59,4 +81,4 @@ blessing.adeyemi@wewe.org (Finance & Admin)    → stalls
 fatima.bello@wewe.org     (Finance & Admin)    → stalls
 ```
 
-Confirmed: an Operations requisition refused with *"Current stage requires the SUPERVISOR role for this department"*. This is a seeding gap, not a bug — the engine is enforcing department scope correctly. If you want every persona to be testable, grant a department-scoped Supervisor role for the missing departments in **Admin → Roles & permissions**, or raise everything as Amina.
+Resolved by `scripts/grant-supervisors.mjs`: Tunde and Blessing now hold organisation-wide Supervisor, so a requisition from any department can be approved. Two people hold it rather than one, because segregation of duties blocks self-approval — a lone supervisor's own requisitions would stall the same way.

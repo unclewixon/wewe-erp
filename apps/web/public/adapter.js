@@ -193,6 +193,30 @@
   }
   window.__weweUser = me.user && me.user.name;
   window.__weweSignedInEmail = me.user && me.user.email;
+  // The shell's "Signed in as" block, and which nav it shows, are driven from these.
+  (function publishIdentity() {
+    var u = me.user || {}, codes = (u.roles || []).map(function (r) { return r.code; });
+    window.__weweUserTitle = [u.title, u.departmentName].filter(Boolean).join(' · ') || null;
+    // Highest-privilege role first — that is the one worth naming under someone's name, and
+    // it decides which navigation the shell offers.
+    var ORDER = [
+      ['SYSTEM_ADMIN', 'admin', 'System Administrator'],
+      ['FINAL_APPROVER', 'md', 'Final Approver'],
+      ['FINANCE', 'finance', 'Finance'],
+      ['INTERNAL_AUDIT', 'audit', 'Internal Audit'],
+      ['SUPERVISOR', 'supervisor', 'Supervisor'],
+      ['HR_OFFICER', 'hr', 'HR'],
+      ['EXTERNAL_AUDITOR', 'extaudit', 'External Auditor'],
+      ['INITIATOR', 'initiator', 'Initiator'],
+    ];
+    for (var i = 0; i < ORDER.length; i++) {
+      if (codes.indexOf(ORDER[i][0]) !== -1) {
+        window.__weweRoleKey = ORDER[i][1];
+        window.__weweRoleLabel = ORDER[i][2];
+        return;
+      }
+    }
+  })();
   installSignOut();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', skipPresentationalSignIn);
   else skipPresentationalSignIn();
