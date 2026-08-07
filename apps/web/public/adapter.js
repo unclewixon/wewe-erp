@@ -1392,6 +1392,19 @@
     return 'Draft ' + res.ref + ' saved.';
   };
 
+  // ---- Procurement: raise a request for quotation ----
+  // The only procurement write the design currently emits. Everything else in the module —
+  // adding a quote, awarding a winning quote, raising the PO, receipting goods, vendors and
+  // contracts — is fully built and tested on the engine but has no control in the bundle to
+  // trigger it, so it cannot be wired from here. Recorded for Design as gap 29.
+  window.__weweSendRfq = function (p) {
+    var title = String((p && p.title) || '').trim();
+    if (title.length < 3) return false; // the engine's own floor — fail before the round trip
+    var res = post('/v1/rfqs', { title: title });
+    if (!res || !res.ref) return false;
+    return 'Request for quotation ' + res.ref + ' created.';
+  };
+
   // ---- Payroll: compute the run, then release it for approval ----
   window.__weweSubmitPayroll = function (p) {
     var run = post('/v1/payroll/runs', { period: p.period });
