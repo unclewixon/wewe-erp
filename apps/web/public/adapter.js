@@ -1097,7 +1097,74 @@
   function put(url, body) { return req('PUT', url, body === undefined ? {} : body); }
   function patch(url, body) { return req('PATCH', url, body === undefined ? {} : body); }
   function get(url) { return req('GET', url); }
-  var me = get('/v1/auth/me') || {};
+
+  // The design binds `const TXNS = window.__weweData.TXNS` ONCE at parse time, so it holds a
+  // reference to that exact array. A write that only hits the server leaves the register showing
+  // the page-load snapshot: the row the user just saved is missing until a full browser reload,
+  // which reads as "it didn't save". Mutating the array IN PLACE (never reassigning it) is what
+  // the design's own reference sees; the design's `go()` right after each hook re-renders and
+  // picks the new row up. Reloading instead is not an option — auth is client-side design state,
+  // so location.reload() would bounce the user back to the sign-in screen.
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function ddmmyyyy(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+  function txnRow(res) {
+    var amount = 0;
+    try { amount = Number(BigInt(res.amountKobo || '0') / 100n); } catch (e) { amount = 0; }
+    var status = String(res.status || '').toLowerCase();
+    return {
+      ref: res.ref, title: res.title,
+      who: (res.initiator && res.initiator.name) || '',
+      dept: (res.department && res.department.name) || '',
+      donor: res.donorCode || 'Core',
+      amount: amount,
+      stage: status === 'approved' ? 5 : (Number(res.currentStage || 0) + 1),
+      status: status,
+      aging: status === 'draft' ? '—' : 'On time',
+      date: ddmmyyyy(res.submittedAt || res.createdAt),
+    };
+  }
+  // Mutating TXNS alone is not enough: the register renders from
+  //   const REQ_ROWS = TXNS.map(t => t);            (design bundle, one site)
+  // a copy taken once at design-parse time that lives in module scope, with no handle on window.
+  // That one call is an IDENTITY map, so intercepting `map` on the TXNS array — which the adapter
+  // publishes BEFORE the design parses — lets us keep a reference to each full-list copy and add
+  // new rows to them later. A non-identity map (say `t => t.ref`) is passed through untracked.
+  var TXN_CLONES = [];
+  (function trackTxnClones() {
+    var src = window.__weweData && window.__weweData.TXNS;
+    if (!Array.isArray(src) || src.__weweTracked) return;
+    try {
+      Object.defineProperty(src, 'map', {
+        enumerable: false, configurable: true, writable: true,
+        value: function (fn, thisArg) {
+          var out = Array.prototype.map.call(this, fn, thisArg);
+          var identity = out.length === this.length;
+          for (var i = 0; identity && i < out.length; i++) if (out[i] !== this[i]) identity = false;
+          if (identity) TXN_CLONES.push(out);
+          return out;
+        },
+      });
+      Object.defineProperty(src, '__weweTracked', { value: true, enumerable: false });
+    } catch (e) { /* non-fatal — the row simply won't show until the next page load */ }
+  })();
+
+  // Make a just-created transaction visible to the design without a reload.
+  function registerNewTxn(res) {
+    if (!res || !res.ref) return;
+    try {
+      window.__weweRefMap = window.__weweRefMap || {};
+      window.__weweRefMap[res.ref] = res.id; // lets the Approve write-bridge act on the new row
+      var row = txnRow(res);
+      var d = window.__weweData;
+      if (d && Array.isArray(d.TXNS) && d.TXNS.indexOf(row) === -1) d.TXNS.unshift(row);
+      TXN_CLONES.forEach(function (arr) { if (arr.indexOf(row) === -1) arr.unshift(row); });
+    } catch (e) { /* never let a display refresh break a write that already succeeded */ }
+  }
 
   // ---- Requisitions: create + submit for approval ----
   window.__weweCreateRequisition = function (p) {
@@ -1115,6 +1182,7 @@
       return line;
     });
     var res = post('/v1/requisitions', { title: p.purpose, lines: lines, submit: true });
+    registerNewTxn(res);
     return 'Requisition ' + res.ref + ' submitted for approval.';
   };
 
@@ -1124,6 +1192,7 @@
       return { description: l.desc, qty: l.qty, unitKobo: String(Math.round(l.unit * 100)) };
     });
     var res = post('/v1/requisitions', { title: p.purpose, lines: lines });
+    registerNewTxn(res);
     return 'Draft ' + res.ref + ' saved.';
   };
 
