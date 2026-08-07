@@ -663,6 +663,10 @@
       if (!d) return;
       var firstLine = (d.lines || [])[0];
       detail[d.ref] = {
+        // Phase 1.9's decision panel renders from `d.permissions` and only falls back to guessing
+        // from the design's local persona when it is missing — which is why Withdraw and Resubmit
+        // never appeared. The engine already computes these per viewer; pass them straight through.
+        permissions: d.permissions || undefined,
         budgetLine: (firstLine && firstLine.budgetLine && firstLine.budgetLine.name) || '—',
         allocated: 0, committed: 0,
         lines: (d.lines || []).map(function (l) { return [l.description, l.qty, Number(l.unitKobo)]; }),

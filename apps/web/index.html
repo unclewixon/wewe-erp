@@ -6747,7 +6747,7 @@
 </sc-if>
 
 <sc-if value="{{ isExt }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed; inset:0; z-index:80; background:#EDEEF0; overflow-y:auto;">
+  <div style="position:fixed; inset:0; z-index:40; background:#EDEEF0; overflow-y:auto;">
     <div style="max-width:820px; margin:0 auto; padding:32px 24px 64px 24px;">
       <div style="display:flex; align-items:center; gap:12px; padding-bottom:20px;">
         <span style="width:34px; height:34px; border-radius:9px; background:#E0572E; color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center;">W</span>
@@ -11456,7 +11456,7 @@ class Component extends DCLogic {
       ].map((r, i) => ({ n: i + 1, desc:r[0], qty:r[1], rate:money(r[2]), total:money(r[3]), bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
       poSub: money(4464000), poVat: money(334800), poTotal: money(4798800),
       isCert: base('/documents/certificate'),
-      isExt: base('/sign/external'),
+      isExt: auth === 'in' && base('/sign/external'),
       signers: CERT_SIGNERS.map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
       docHash: '9f2c4a7b1e8d63f05a9c2b47de81f36a0c5e7924b8d1a36f47c092e5b6a83d1c',
       hashOk: this.state.hashOk, hashBad: !this.state.hashOk,
