@@ -240,6 +240,13 @@ export const budgetAllocations = pgTable('budget_allocations', {
   versionId: text('version_id').notNull().references(() => budgetVersions.id),
   budgetLineId: text('budget_line_id').notNull().references(() => budgetLines.id),
   amountKobo: bigint('amount_kobo', { mode: 'bigint' }).notNull(),
+  /**
+   * BUD-02: how the year's allocation is phased across Q1–Q4, as four kobo strings.
+   * The builder collects this and it is what makes a budget a plan rather than a total;
+   * amountKobo stays the authoritative annual figure that every budget check measures
+   * against. Nullable because allocations created before phasing existed have none.
+   */
+  quartersKobo: jsonb('quarters_kobo'),
 }, (t) => [uniqueIndex('alloc_uq').on(t.versionId, t.budgetLineId)]);
 
 export const advances = pgTable('advances', {

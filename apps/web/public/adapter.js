@@ -1537,20 +1537,33 @@
   // those is reported rather than swallowed, because silently dropping part of a budget is
   // the kind of thing nobody notices until the numbers are wrong.
   function budgetAllocationsFrom(p) {
-    var catalogue = get('/v1/meta/budget-lines') || [];
-    var byName = {};
-    catalogue.forEach(function (l) { byName[String(l.name).trim().toLowerCase()] = l.id; });
+    // The engine now accepts a line DEFINITION, not just an id, so a budget built from
+    // scratch saves: any line the organisation does not have yet is created with the
+    // version. Rows are matched to an existing line by name where one exists, which the
+    // engine does for us — we just pass what the builder collected.
     var allocations = [], skipped = [];
     (p && p.lines || []).forEach(function (row) {
-      var id = byName[String(row.name || '').trim().toLowerCase()];
-      var kobo = (row.quartersKobo || []).reduce(function (s, q) { return s + (Number(q) || 0); }, 0);
-      if (!id) { skipped.push(row.name || '(unnamed)'); return; }
-      if (kobo <= 0) return;                       // an untouched row is not an allocation
-      allocations.push({ budgetLineId: id, amountKobo: String(Math.round(kobo)) });
+      var name = String(row.name || '').trim();
+      var quarters = (row.quartersKobo || []).map(function (q) { return String(Math.round(Number(q) || 0)); });
+      var total = quarters.reduce(function (s, q) { return s + Number(q); }, 0);
+      if (!name) { skipped.push('(unnamed line)'); return; }
+      if (total <= 0) return;                      // an untouched row is not an allocation
+      allocations.push({
+        line: {
+          name: name,
+          department: row.department || undefined,
+          donorCode: row.donorCode && row.donorCode !== 'Core' ? row.donorCode : undefined,
+          category: row.category || undefined,
+        },
+        amountKobo: String(total),
+        quartersKobo: quarters,
+      });
     });
     return { allocations: allocations, skipped: skipped };
   }
   function fiscalYearFrom(v) {
+    // 'FY2027' -> 2027. New lines are created in this year, so a builder working on next
+    // year's budget no longer collides with this year's lines.
     var m = String(v || '').match(/(\d{4})/);
     return m ? Number(m[1]) : new Date().getFullYear();
   }
@@ -1563,11 +1576,7 @@
     });
     if (!res || !res.id) return false;
     var msg = built.allocations.length + ' line' + (built.allocations.length === 1 ? '' : 's') + ' saved';
-    if (built.skipped.length) {
-      msg += ', ' + built.skipped.length + ' skipped — no budget line exists named ' +
-        built.skipped.slice(0, 2).map(function (n) { return '"' + n + '"'; }).join(', ') +
-        (built.skipped.length > 2 ? ' and others' : '');
-    }
+    if (built.skipped.length) msg += ', ' + built.skipped.length + ' skipped for having no name';
     return { msg: msg, id: res.id };
   }
   window.__weweSaveBudgetDraft = function (p) {

@@ -13,9 +13,31 @@ import {
 } from './money.logic';
 import { getSetting } from './settings.util';
 
+const KoboString = z.string().regex(/^\d+$/, 'must be a non-negative integer kobo string');
+
+/**
+ * BUD-02: a line the budget is being built with, rather than one that already exists.
+ * Building a budget means deciding what the lines ARE — so a version may define them.
+ * Any line not already present for the fiscal year is created as part of the version.
+ */
+const LineDefinitionSchema = z.object({
+  name: z.string().min(2).max(200),
+  code: z.string().max(40).optional(),
+  departmentId: z.string().optional(),
+  department: z.string().max(120).optional(),   // by name, which is what a builder knows
+  donorCode: z.string().max(40).optional().nullable(),
+  category: z.string().max(120).optional(),
+});
 const AllocationSchema = z.object({
-  budgetLineId: z.string().min(1),
-  amountKobo: z.string().regex(/^\d+$/, 'amountKobo must be a non-negative integer kobo string'),
+  budgetLineId: z.string().min(1).optional(),
+  line: LineDefinitionSchema.optional(),
+  amountKobo: KoboString,
+  /** Q1–Q4 phasing; must sum to amountKobo when given. */
+  quartersKobo: z.array(KoboString).length(4).optional(),
+}).refine((a) => a.budgetLineId || a.line, {
+  message: 'each allocation needs either a budgetLineId or a line definition',
+}).refine((a) => !a.quartersKobo || a.quartersKobo.reduce((s, q) => s + BigInt(q), 0n) === BigInt(a.amountKobo), {
+  message: 'quartersKobo must add up to amountKobo',
 });
 const CreateVersionSchema = z.object({
   fiscalYear: z.number().int().min(2000).max(2100),
@@ -150,31 +172,95 @@ export class BudgetsService {
   constructor(private readonly audit: AuditService) {}
 
   /** BUD-01: create a DRAFT budget version with its allocations (Finance). */
+  /** Derive a stable, unique code from a line name: FIELD_MONITORING, then -2, -3 on collision. */
+  private async codeForLine(name: string, fiscalYear: number): Promise<string> {
+    const base = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 28)
+      || 'LINE';
+    const stem = `${base}-${String(fiscalYear).slice(-2)}`;
+    const taken = await db.select({ code: schema.budgetLines.code }).from(schema.budgetLines);
+    const used = new Set(taken.map((t) => t.code));
+    if (!used.has(stem)) return stem;
+    for (let n = 2; n < 500; n += 1) if (!used.has(`${stem}-${n}`)) return `${stem}-${n}`;
+    throw new BadRequestException(`Cannot derive a unique code for budget line "${name}"`);
+  }
+
   async createVersion(user: AuthedUser, dto: z.infer<typeof CreateVersionSchema>, ip?: string) {
-    const lineIds = dto.allocations.map((a) => a.budgetLineId);
-    if (new Set(lineIds).size !== lineIds.length)
-      throw new BadRequestException('Duplicate budgetLineId in allocations');
-    const lines = await db.select().from(schema.budgetLines).where(inArray(schema.budgetLines.id, lineIds));
-    const known = new Map(lines.map((l) => [l.id, l]));
+    // Resolve every allocation to a real budget line id, creating lines the builder has
+    // defined but the organisation does not have yet. A budget is the act of deciding what
+    // the lines are, so refusing an unknown name would make the builder unusable.
+    const byId = new Map((await db.select().from(schema.budgetLines)
+      .where(inArray(schema.budgetLines.id, dto.allocations.map((a) => a.budgetLineId ?? '').filter(Boolean))))
+      .map((l) => [l.id, l]));
+    const yearLines = await db.select().from(schema.budgetLines)
+      .where(eq(schema.budgetLines.fiscalYear, dto.fiscalYear));
+    const byName = new Map(yearLines.map((l) => [l.name.trim().toLowerCase(), l]));
+    const departments = await db.select().from(schema.departments);
+
+    const resolved: { budgetLineId: string; amountKobo: bigint; quartersKobo: string[] | null }[] = [];
+    const created: { code: string; name: string }[] = [];
     for (const a of dto.allocations) {
-      const line = known.get(a.budgetLineId);
-      if (!line) throw new BadRequestException(`Unknown budget line ${a.budgetLineId}`);
-      if (line.fiscalYear !== dto.fiscalYear)
-        throw new BadRequestException(`Budget line ${line.code} belongs to fiscal year ${line.fiscalYear}, not ${dto.fiscalYear}`);
+      let lineId: string;
+      if (a.budgetLineId) {
+        const line = byId.get(a.budgetLineId);
+        if (!line) throw new BadRequestException(`Unknown budget line ${a.budgetLineId}`);
+        if (line.fiscalYear !== dto.fiscalYear)
+          throw new BadRequestException(`Budget line ${line.code} belongs to fiscal year ${line.fiscalYear}, not ${dto.fiscalYear}`);
+        lineId = line.id;
+      } else {
+        const def = a.line!;
+        const hit = byName.get(def.name.trim().toLowerCase());
+        if (hit) {
+          lineId = hit.id;
+        } else {
+          // A new line needs a home department. Take it from the definition when the builder
+          // names one, otherwise from the person building the budget.
+          const dept = def.departmentId
+            ? departments.find((d) => d.id === def.departmentId)
+            : def.department
+              ? departments.find((d) => d.name.trim().toLowerCase() === def.department!.trim().toLowerCase())
+              : departments.find((d) => d.id === user.departmentId);
+          if (!dept) {
+            throw new BadRequestException(
+              `Budget line "${def.name}" needs a department — "${def.department ?? ''}" did not match one, and your profile has none`,
+            );
+          }
+          const [made] = await db.insert(schema.budgetLines).values({
+            code: def.code?.trim() || await this.codeForLine(def.name, dto.fiscalYear),
+            name: def.name.trim(),
+            departmentId: dept.id,
+            fiscalYear: dto.fiscalYear,
+            allocatedKobo: BigInt(a.amountKobo),
+            donorCode: def.donorCode ?? null,
+          }).returning();
+          byName.set(made.name.trim().toLowerCase(), made);
+          created.push({ code: made.code, name: made.name });
+          lineId = made.id;
+        }
+      }
+      if (resolved.some((r) => r.budgetLineId === lineId))
+        throw new BadRequestException('The same budget line appears twice in this version');
+      resolved.push({ budgetLineId: lineId, amountKobo: BigInt(a.amountKobo), quartersKobo: a.quartersKobo ?? null });
     }
+
     const existing = await db.select().from(schema.budgetVersions)
       .where(eq(schema.budgetVersions.fiscalYear, dto.fiscalYear));
     const versionNo = existing.reduce((m, v) => Math.max(m, v.versionNo), 0) + 1;
     const [version] = await db.insert(schema.budgetVersions).values({
       fiscalYear: dto.fiscalYear, versionNo, status: 'DRAFT', note: dto.note ?? null, createdById: user.id,
     }).returning();
-    await db.insert(schema.budgetAllocations).values(dto.allocations.map((a) => ({
-      versionId: version.id, budgetLineId: a.budgetLineId, amountKobo: BigInt(a.amountKobo),
+    await db.insert(schema.budgetAllocations).values(resolved.map((r) => ({
+      versionId: version.id, budgetLineId: r.budgetLineId, amountKobo: r.amountKobo,
+      quartersKobo: r.quartersKobo,
     })));
     await this.audit.log({
       actorId: user.id, actorEmail: user.email, action: 'BUDGET_VERSION_CREATED',
       entityType: 'budget_version', entityId: version.id,
-      data: { fiscalYear: dto.fiscalYear, versionNo, allocations: dto.allocations.length }, ip,
+      data: {
+        fiscalYear: dto.fiscalYear, versionNo, allocations: resolved.length,
+        // Lines created by this version are recorded by name and code: a new line is a
+        // decision about the shape of the budget, not a detail of one allocation.
+        ...(created.length ? { linesCreated: created } : {}),
+      }, ip,
     });
     return this.getVersion(version.id);
   }
@@ -230,6 +316,7 @@ export class BudgetsService {
       id: schema.budgetAllocations.id,
       budgetLineId: schema.budgetAllocations.budgetLineId,
       amountKobo: schema.budgetAllocations.amountKobo,
+      quartersKobo: schema.budgetAllocations.quartersKobo,
       code: schema.budgetLines.code,
       name: schema.budgetLines.name,
       departmentId: schema.budgetLines.departmentId,
@@ -244,6 +331,7 @@ export class BudgetsService {
       allocations: allocs.map((a) => ({
         id: a.id, budgetLineId: a.budgetLineId, code: a.code, name: a.name,
         departmentId: a.departmentId, amountKobo: a.amountKobo.toString(),
+        quartersKobo: (a.quartersKobo as string[] | null) ?? null,
       })),
     };
   }
