@@ -45,6 +45,15 @@ Plus **47 spec-driven secondary pages** (stats + table pattern) covering: requis
 20. Transaction detail page is hard-bound to the fixture ref `REQ-2026-0187` (its route is a fixed entry in KNOWN and its content reads fixture consts). It needs template binding to the route parameter so any live ref renders. Until then, live rows can be listed and actioned from the queue but not opened in detail.
 21. Return/Reject need the comment drawer bound to the action (a note is mandatory in the engine); the current buttons are visual no-ops. Approve is wired live via the integration bridge; Return/Reject wait on this binding.
 
+**Discovered during the requisition-module production review**
+
+22. **No Withdraw control on a requisition.** The engine supports it (`POST /v1/transactions/:id/withdraw`, initiator-only, verified working) and the detail payload returns `permissions.canWithdraw`, but the design bundle has no button anywhere in the requisition flow. The only "Withdraw and edit" in the bundle belongs to timesheets. An initiator currently cannot pull back their own pending requisition from the UI.
+23. **No Resubmit control on a returned requisition.** `POST /v1/transactions/:id/resubmit` works and `permissions.canResubmit` is returned, but a RETURNED requisition offers the initiator no way forward in the UI. This breaks the return loop: a supervisor can return with a note, and the initiator then has no control to send it back. Needed on the requisition detail page when `canResubmit` is true.
+24. **Bulk confirm reports the wrong count.** `confirmBulk` clears `selected` in the same `setState` it then reads for the toast, so the message always reads "0 items approved in one action." even on a successful run. The write itself is now live via the integration bridge; only the count in the copy is wrong.
+25. **`act()` announces success even when the engine refuses.** The design's `act()` toasts `"<ref> — <verb> submitted."` unconditionally, ignoring the hook's return value and swallowing its throw. A rejected write (wrong stage, missing note, insufficient permission) is therefore reported to the approver as if it succeeded. The hook returns `false` and logs the reason; the design needs to honour that and surface an error state.
+
+Note against item 21 above: Return/Reject are **no longer** visual no-ops — the decision drawer is bound and both verbs write to the engine with their mandatory note. Item 21 is closed apart from the failure-surface issue captured in 25.
+
 ## Design exceeds the feature spec (adopt into the build plan)
 
 - **Inventory & stores module** (GRN, issues, counts, movement log) — not in Features Spec v1.1; added to BUILD_PLAN Phase 6 as INV-01…04 (spec addendum needed).

@@ -333,6 +333,79 @@
       })
       .catch(function () { btn.disabled = false; });
   }, true);
+
+  // Patch a register row IN PLACE after the engine moves it. The design builds REQ_ROWS with an
+  // identity map (`TXNS.map(t => t)`), so the row OBJECTS are shared between the two arrays —
+  // mutating one is seen by the register without rebuilding anything.
+  var ROLE_NEXT = { SUPERVISOR: 1, INTERNAL_AUDIT: 2, FINANCE: 3, FINAL_APPROVER: 4 };
+  window.__wewePatchTxnRow = function (ref, status, stageRole) {
+    try {
+      var rows = (window.__weweData && window.__weweData.TXNS) || [];
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].ref !== ref) continue;
+        var s = String(status || '').toLowerCase();
+        rows[i].status = s;
+        if (s === 'approved') { rows[i].stage = 5; rows[i].aging = 'Closed today'; }
+        else if (s === 'rejected') rows[i].aging = 'Rejected today';
+        else if (s === 'returned') rows[i].aging = 'Returned just now';
+        else if (s === 'pending' && ROLE_NEXT[stageRole]) { rows[i].stage = ROLE_NEXT[stageRole] + 1; rows[i].aging = 'On time'; }
+        return true;
+      }
+    } catch (e) { /* display-only */ }
+    return false;
+  };
+
+  // T-02: bulk approve. The design's confirmBulk only raises a toast — it never calls the engine,
+  // so "N items approved in one action." was announced while nothing at all was written. Act on
+  // the selected rows that carry a LIVE ref, then let the design close the modal and toast.
+  function refNear(node) {
+    for (var up = 0; up < 6 && node; up++) {
+      var m = (node.innerText || '').match(/\b((?:REQ|ADV|RET|VIR|PO|LVE|TSH|PAY)-\d{4}-\d{4})\b/);
+      if (m) return m[1];
+      node = node.parentElement;
+    }
+    return null;
+  }
+  // Selection has to be tracked as the user ticks it: the design keeps `selected` in component
+  // state we cannot read, and by the time the confirm modal is up the table is unmounted, so
+  // there are no checked boxes left to inspect.
+  var picked = [];
+  document.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (!t) return;
+    if (t.tagName === 'INPUT' && t.type === 'checkbox') {
+      var r = refNear(t);
+      if (r && window.__weweRefMap[r]) {
+        var at = picked.indexOf(r);
+        if (at === -1) picked.push(r); else picked.splice(at, 1);
+      }
+      return;
+    }
+    var btn = t.closest ? t.closest('button') : null;
+    if (!btn) return;
+    var label = btn.textContent.trim();
+    if (label === 'Clear') { picked = []; return; }
+    if (label !== 'Approve selected') return;
+    var refs = picked.slice();
+    if (!refs.length) return; // every selected row is a fixture → leave the design's behaviour alone
+    var res = xhr('POST', '/v1/requisitions/bulk-action', {
+      ids: refs.map(function (r) { return window.__weweRefMap[r]; }), verb: 'approve',
+    });
+    if (!res || !res.succeeded) {
+      // Nothing was written: swallow the click so the design cannot claim a success that
+      // did not happen. The modal stays open, which is the honest outcome.
+      ev.stopPropagation(); ev.preventDefault();
+      console.warn('[wewe] bulk approve wrote nothing:', (res && res.results) || 'request failed');
+      return;
+    }
+    picked = [];
+    (res.results || []).forEach(function (r) { if (r.ok) window.__wewePatchTxnRow(r.ref, r.status); });
+    if (res.succeeded < res.requested) {
+      console.warn('[wewe] bulk approve partial — ' + res.succeeded + '/' + res.requested + ' written:',
+        res.results.filter(function (r) { return !r.ok; }));
+    }
+    console.info('[wewe] bulk approved ' + res.succeeded + '/' + res.requested);
+  }, true);
 })();
 
 /* ---- Phase D: live dashboards (active persona), grant totals, outstanding advances page ---- */
@@ -694,16 +767,14 @@
   window.__weweAct = function (ref, verb, note) {
     var id = window.__weweRefMap && window.__weweRefMap[ref];
     if (!id) { console.warn('[wewe] __weweAct: fixture ref, no engine call:', ref); return false; }
-    fetch('/v1/transactions/' + id + '/action', {
-      method: 'POST', credentials: 'include',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ verb: verb, comment: note || undefined }),
-    }).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-      .then(function (res) {
-        if (res.ok) { console.info('[wewe] ' + verb + ' ' + ref + ' →', res.body.status); location.reload(); }
-        else console.warn('[wewe] ' + verb + ' blocked:', res.body.message);
-      })
-      .catch(function (e) { console.warn('[wewe] act failed', e); });
+    // Synchronous on purpose: the design toasts and re-renders the instant this returns, so the
+    // row has to be patched by then. It also lets the old location.reload() go — sign-in is
+    // client-side design state with no persistence, so reloading dumped the approver back on the
+    // login screen after every single approve, return or reject.
+    var res = xhr('POST', '/v1/transactions/' + id + '/action', { verb: verb, comment: note || undefined });
+    if (!res) { console.warn('[wewe] ' + verb + ' ' + ref + ' was refused by the engine — nothing was written'); return false; }
+    if (window.__wewePatchTxnRow) window.__wewePatchTxnRow(ref, res.status, res.currentStageRole);
+    console.info('[wewe] ' + verb + ' ' + ref + ' →', res.status);
     return true;
   };
 })();
