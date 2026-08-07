@@ -1471,6 +1471,63 @@
     return 'Draft ' + res.ref + ' saved.';
   };
 
+  // ---- Budgets ----
+  // The builder addresses lines by name and splits each into quarters; the engine allocates a
+  // single kobo total against an existing budget line id. It has no endpoint for creating a
+  // budget line, so a row naming a line that does not exist cannot be saved — the count of
+  // those is reported rather than swallowed, because silently dropping part of a budget is
+  // the kind of thing nobody notices until the numbers are wrong.
+  function budgetAllocationsFrom(p) {
+    var catalogue = get('/v1/meta/budget-lines') || [];
+    var byName = {};
+    catalogue.forEach(function (l) { byName[String(l.name).trim().toLowerCase()] = l.id; });
+    var allocations = [], skipped = [];
+    (p && p.lines || []).forEach(function (row) {
+      var id = byName[String(row.name || '').trim().toLowerCase()];
+      var kobo = (row.quartersKobo || []).reduce(function (s, q) { return s + (Number(q) || 0); }, 0);
+      if (!id) { skipped.push(row.name || '(unnamed)'); return; }
+      if (kobo <= 0) return;                       // an untouched row is not an allocation
+      allocations.push({ budgetLineId: id, amountKobo: String(Math.round(kobo)) });
+    });
+    return { allocations: allocations, skipped: skipped };
+  }
+  function fiscalYearFrom(v) {
+    var m = String(v || '').match(/(\d{4})/);
+    return m ? Number(m[1]) : new Date().getFullYear();
+  }
+  function saveBudgetVersion(p, note) {
+    var built = budgetAllocationsFrom(p);
+    if (!built.allocations.length) return false;   // nothing the engine can record
+    var res = post('/v1/budgets/versions', {
+      fiscalYear: fiscalYearFrom(p && p.fiscalYear), note: note,
+      allocations: built.allocations,
+    });
+    if (!res || !res.id) return false;
+    var msg = built.allocations.length + ' line' + (built.allocations.length === 1 ? '' : 's') + ' saved';
+    if (built.skipped.length) {
+      msg += ', ' + built.skipped.length + ' skipped — no budget line exists named ' +
+        built.skipped.slice(0, 2).map(function (n) { return '"' + n + '"'; }).join(', ') +
+        (built.skipped.length > 2 ? ' and others' : '');
+    }
+    return { msg: msg, id: res.id };
+  }
+  window.__weweSaveBudgetDraft = function (p) {
+    var r = saveBudgetVersion(p, 'Draft saved from the budget builder');
+    return r ? 'Budget version saved — ' + r.msg + '.' : false;
+  };
+  window.__weweSubmitBudget = function (p) {
+    var r = saveBudgetVersion(p, 'Submitted from the budget builder');
+    if (!r) return false;
+    // Deliberately does NOT repeat the design's "submitted to Finance, then the Managing
+    // Director" — no budget approval chain exists in the engine (the nine transaction types
+    // do not include one), so saying that would describe a route the money never takes.
+    return 'Budget version saved — ' + r.msg + '. Publish it from Version history to make it the live budget.';
+  };
+  // No file reaches this hook (the payload is only a fiscal year) and the engine has no import
+  // endpoint, so there is nothing to send. Refused rather than left undefined, which would let
+  // the design announce "validation running" over an upload that never happened.
+  window.__weweUploadBudget = function () { return false; };
+
   // ---- Procurement (Phase 1.11) ----
   // The design addresses things the way a buyer does — a vendor by name, an RFQ or PO by its
   // printed reference — while the engine keys on ids. These resolvers close that gap; without
