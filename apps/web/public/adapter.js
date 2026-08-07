@@ -2,13 +2,15 @@
  * WEWE ERP data adapter (Phase B) — feeds LIVE API data into the verbatim design's
  * render paths. NOT a design file; the design bundle stays byte-identical (cmp guard).
  *
- * Persona bridge: open the app with ?as=<persona> to load data as that user —
- *   initiator | supervisor | audit | finance | md | hr | procurement | admin | extaudit
- * (defaults to admin). The design's own sign-in/persona switcher stays untouched;
- * changing the DATA persona = reload with a different ?as=.
+ * Authentication: the session is created by the person signing in, never by this file.
+ * The design's sign-in screen is presentational — it only flips local state and never
+ * calls the engine — so the real credential check is bridged here: the form is
+ * intercepted, the credentials go to /v1/auth/login (argon2 + lockout + per-IP throttle
+ * + TOTP when enrolled), and nothing loads until the engine has issued a session cookie.
+ * To work as a given persona, sign in as that person.
  *
  * Synchronous XHR is deliberate: the design compiles its consts at boot, so data must
- * exist before support.js runs. Dev-bridge pattern; production moves to an async gate.
+ * exist before support.js runs.
  */
 (function () {
   function xhr(method, url, body) {
@@ -22,25 +24,187 @@
       return JSON.parse(r.responseText);
     } catch (e) { return null; }
   }
+  // Same call, but keeps the engine's own message on failure so we can show it verbatim.
+  function xhrDetailed(method, url, body) {
+    var r = new XMLHttpRequest();
+    try {
+      r.open(method, url, false); r.withCredentials = true;
+      if (body) r.setRequestHeader('content-type', 'application/json');
+      r.send(body ? JSON.stringify(body) : null);
+    } catch (e) { return { ok: false, message: 'Could not reach the server.' }; }
+    var parsed = null; try { parsed = JSON.parse(r.responseText); } catch (e) { /* non-JSON */ }
+    if (r.status >= 200 && r.status < 300) return { ok: true, body: parsed };
+    var m = parsed && parsed.message;
+    if (Array.isArray(m)) m = m.join('; ');
+    return { ok: false, message: m || 'Sign-in failed (HTTP ' + r.status + ')' };
+  }
 
-  var PERSONAS = {
-    initiator: 'amina.yusuf@wewe.org', supervisor: 'tunde.balogun@wewe.org',
-    audit: 'ngozi.okafor@wewe.org', finance: 'ibrahim.musa@wewe.org',
-    md: 'folake.adeyemi@wewe.org', hr: 'blessing.adeyemi@wewe.org',
-    procurement: 'emeka.nwosu@wewe.org', admin: 'admin@wewe.org',
-    extaudit: 'k.adeleke@auditfirm.ng',
-  };
-  var wanted = new URLSearchParams(location.search).get('as');
-  var email = PERSONAS[wanted] || PERSONAS.admin;
+  function findButton(label) {
+    var bs = document.querySelectorAll('button');
+    for (var i = 0; i < bs.length; i++) {
+      if (bs[i].offsetParent !== null && bs[i].textContent.trim() === label) return bs[i];
+    }
+    return null;
+  }
+  function textInputs() {
+    return [].slice.call(document.querySelectorAll('input')).filter(function (i) {
+      var t = (i.type || 'text').toLowerCase();
+      return i.offsetParent !== null && t !== 'checkbox' && t !== 'radio' && t !== 'hidden';
+    });
+  }
+  function showAuthError(msg) {
+    var id = 'wewe-auth-error', el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = id;
+      el.setAttribute('role', 'alert');
+      el.style.cssText = 'margin:12px 0 0;padding:11px 14px;border-radius:10px;background:#FBEAE4;' +
+        'border:1px solid #F0C4B4;color:#9C3309;font-size:13px;line-height:1.5;';
+      var btn = findButton('Continue') || findButton('Verify and sign in');
+      if (btn && btn.parentElement) btn.parentElement.appendChild(el); else document.body.appendChild(el);
+    }
+    el.textContent = msg;
+  }
+  function clearAuthError() {
+    var el = document.getElementById('wewe-auth-error');
+    if (el && el.parentElement) el.parentElement.removeChild(el);
+  }
+
+  // No session: hold the door. The design's screens still render, but its Continue /
+  // Verify buttons are intercepted so they cannot advance on presentation alone.
+  // The design's sign-in card ships its email and password as fixed literals with no onChange
+  // (`value="n.okafor@wewe.org.ng"`), so React renders them read-only and nobody can type a
+  // credential into them. Replacing each node with a clone drops React's synthetic listeners and
+  // leaves the same input, in the same place, now accepting text. No UI is invented here — the
+  // proper fix is a design one (bound fields + a sign-in hook) and is recorded for Design.
+  function makeSignInFieldsUsable() {
+    var ins = textInputs(), emailEl = null, passEl = null;
+    for (var i = 0; i < ins.length; i++) {
+      var t = (ins[i].type || 'text').toLowerCase();
+      if (t === 'password' && !passEl) passEl = ins[i];
+      else if (!emailEl && t !== 'password') emailEl = ins[i];
+    }
+    if (!emailEl || !passEl || emailEl.dataset.weweLive === '1') return false;
+    [[emailEl, 'Your work email'], [passEl, 'Your password']].forEach(function (pair) {
+      var el = pair[0], clone = el.cloneNode(true);
+      clone.value = '';
+      clone.setAttribute('value', '');
+      clone.setAttribute('placeholder', pair[1]);
+      clone.dataset.weweLive = '1';
+      el.parentNode.replaceChild(clone, el);
+    });
+    return true;
+  }
+
+  function installSignInGate() {
+    var pendingToken = null, passThrough = false;
+    var tries = 0;
+    var poll = setInterval(function () {
+      if (++tries > 60) return clearInterval(poll);
+      if (document.body && /Welcome back/i.test(document.body.innerText) && makeSignInFieldsUsable()) clearInterval(poll);
+    }, 120);
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+      if (!btn) return;
+      if (passThrough) { passThrough = false; return; } // our own re-dispatch — let it reach the design
+      var label = btn.textContent.trim();
+
+      if (label === 'Continue') {
+        var ins = textInputs();
+        var emailEl = null, passEl = null;
+        for (var i = 0; i < ins.length; i++) {
+          var t = (ins[i].type || 'text').toLowerCase();
+          if (t === 'password' && !passEl) passEl = ins[i];
+          else if (!emailEl && t !== 'password') emailEl = ins[i];
+        }
+        if (!emailEl || !passEl) return; // not the sign-in form — leave it alone
+        ev.stopPropagation(); ev.preventDefault();
+        var mail = String(emailEl.value || '').trim(), pw = String(passEl.value || '');
+        if (!mail || !pw) return showAuthError('Enter your work email and password.');
+        clearAuthError();
+        var res = xhrDetailed('POST', '/v1/auth/login', { email: mail, password: pw });
+        if (!res.ok) return showAuthError(res.message);
+        if (res.body && res.body.requires2fa) {
+          // Password accepted, second factor still owed. Let the design show its own 2FA
+          // screen by re-dispatching the click, this time without intercepting it.
+          pendingToken = res.body.pendingToken;
+          clearAuthError();
+          passThrough = true;
+          btn.click();
+          return;
+        }
+        return location.reload(); // session cookie is set — reload boots the app as this user
+      }
+
+      if (label === 'Verify and sign in') {
+        ev.stopPropagation(); ev.preventDefault();
+        if (!pendingToken) return showAuthError('Start again from the sign-in screen.');
+        var code = textInputs().map(function (i) { return String(i.value || '').trim(); }).join('');
+        if (code.length < 6) return showAuthError('Enter the 6-digit code from your authenticator app.');
+        var v = xhrDetailed('POST', '/v1/auth/verify-2fa', { pendingToken: pendingToken, code: code });
+        if (!v.ok) return showAuthError(v.message);
+        return location.reload();
+      }
+    }, true);
+  }
+
+  // Session present: the design still boots on its presentational sign-in screen, so step
+  // past it — the engine has already vouched for this person via the session cookie.
+  // Writing to a controlled React input requires the native setter plus an input event;
+  // assigning .value alone is reverted on the next render.
+  function setControlledValue(el, val) {
+    try {
+      var d = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+      (d && d.set ? d.set : function (v) { this.value = v; }).call(el, val);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch (e) { el.value = val; }
+  }
+  function skipPresentationalSignIn() {
+    var tries = 0;
+    var t = setInterval(function () {
+      if (++tries > 120) return clearInterval(t);
+      // innerText, not textContent: every screen lives in the DOM at once and only the
+      // active one is visible, so textContent reports hidden cards as if they were on
+      // screen. innerText is briefly empty mid-transition — skip those ticks rather than
+      // acting on them.
+      var body = (document.body && document.body.innerText) || '';
+      if (!body.trim()) return;
+      if (/Dashboard/i.test(body)) return clearInterval(t);
+      if (/Two-step verification/i.test(body)) {
+        // The engine already issued the session cookie; this screen is presentation only.
+        // Where the engine DOES require a factor, login returns requires2fa and the gate
+        // above collects the real code — this path is never reached in that case.
+        var otp = [].slice.call(document.querySelectorAll('input[maxlength="6"]')).filter(function (i) { return i.offsetParent !== null; })[0];
+        if (otp && String(otp.value || '').length < 6) return setControlledValue(otp, '000000');
+        var v = findButton('Verify and sign in'); if (v) v.click();
+        return;
+      }
+      if (/Welcome back/i.test(body)) { var c = findButton('Continue'); if (c) c.click(); }
+    }, 120);
+  }
+
+  // Sign out must end the real session, not just the design's local state.
+  function installSignOut() {
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+      if (!btn || btn.textContent.trim() !== 'Sign out') return;
+      ev.stopPropagation(); ev.preventDefault();
+      xhr('POST', '/v1/auth/logout');
+      location.href = location.pathname;
+    }, true);
+  }
 
   var me = xhr('GET', '/v1/auth/me');
-  if (!me || (me.user && me.user.email !== email)) {
-    xhr('POST', '/v1/auth/logout');
-    xhr('POST', '/v1/auth/login', { email: email, password: 'Password1!' });
-    me = xhr('GET', '/v1/auth/me');
+  if (!me || !me.user) {
+    // Not signed in. Load nothing — the engine would refuse it anyway — and bridge the form.
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installSignInGate);
+    else installSignInGate();
+    return;
   }
-  if (!me) return; // API down → design renders its fixtures
   window.__weweUser = me.user && me.user.name;
+  installSignOut();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', skipPresentationalSignIn);
+  else skipPresentationalSignIn();
 
   function naira(kobo) { try { return Number(BigInt(kobo || '0') / 100n); } catch (e) { return 0; } }
   function ddmmyyyy(iso) {
