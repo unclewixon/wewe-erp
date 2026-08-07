@@ -1017,7 +1017,7 @@
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date required</label>
-                      <input value="14/08/2026" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" />
+                      <input type="date" value="2026-08-14" style="height:42px; border-radius:10px; border:1px solid #E3E5E8; background:#F7F8FA; padding:0 14px; font-size:14px; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" />
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Budget line</label>
@@ -3905,6 +3905,142 @@
           </div>
         </sc-if>
 
+        <sc-if value="{{ isDigiIndex }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Indexing" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/documents">Documents</a><span>/</span><a href="#/documents/digitisation">Digitisation</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">Indexing</span>
+            </div>
+
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
+              <div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Indexing — page {{ dg.page }}</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ dg.batch }} · {{ dg.done }} of {{ dg.total }} indexed · {{ dg.remaining }} to go</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; flex:none;">
+                <div style="width:220px;">
+                  <div style="height:8px; border-radius:999px; background:#F0F1F3; overflow:hidden;">
+                    <div style="height:100%; border-radius:999px; background:#EE8034; width:{{ dg.pct }}%;"></div>
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:6px; text-align:right; font-variant-numeric:tabular-nums;">{{ dg.pct }}% of the batch</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:12px; align-items:start;">
+              <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                <div style="display:flex; align-items:center; gap:12px; padding:16px 22px; border-bottom:1px solid #EEF0F3;">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21; flex:1;">Scanned page</div>
+                  <sc-if value="{{ dg.lowOcr }}" hint-placeholder-val="{{ false }}">
+                    <span style="height:26px; padding:0 11px; border-radius:7px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:12px; font-weight:700; display:inline-flex; align-items:center;">OCR {{ dg.ocr }} — CHECK BY EYE</span>
+                  </sc-if>
+                  <sc-if value="{{ dg.goodOcr }}" hint-placeholder-val="{{ true }}">
+                    <span style="height:26px; padding:0 11px; border-radius:7px; background:rgba(30,142,62,.1); color:#166F31; font-size:12px; font-weight:700; display:inline-flex; align-items:center;">OCR {{ dg.ocr }}</span>
+                  </sc-if>
+                  <span style="font-size:12px; color:#9AA0A8; flex:none;">{{ dg.position }}</span>
+                </div>
+                <div style="padding:26px; background:#EDEEF0;">
+                  <div style="background:#fff; border-radius:6px; padding:40px 46px; box-shadow:0 1px 3px rgba(16,24,40,.10), 0 12px 30px rgba(16,24,40,.08); min-height:520px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid #EEF0F3;">
+                      <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#9AA0A8;">Widows Development Organisation</div>
+                      <div style="font-size:11px; color:#C4C8CE; font-variant-numeric:tabular-nums;">Scanned page {{ dg.page }}</div>
+                    </div>
+                    <div style="font-size:16px; font-weight:600; color:#1A1D21; margin-top:24px;">Payment voucher</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; margin-top:20px; font-size:13px;">
+                      <div><div style="font-size:11px; color:#9AA0A8;">Voucher number</div><div style="color:#1A1D21; font-weight:600; margin-top:4px; font-variant-numeric:tabular-nums;">{{ dgRef }}</div></div>
+                      <div><div style="font-size:11px; color:#9AA0A8;">Date</div><div style="color:#1A1D21; font-weight:600; margin-top:4px; font-variant-numeric:tabular-nums;">{{ dgDate }}</div></div>
+                    </div>
+                    <div style="height:1px; background:#EEF0F3; margin:24px 0;"></div>
+                    <div style="display:flex; flex-direction:column; gap:11px;">
+                      <div style="height:11px; border-radius:3px; background:#F1F3F5; width:86%;"></div>
+                      <div style="height:11px; border-radius:3px; background:#F1F3F5; width:72%;"></div>
+                      <div style="height:11px; border-radius:3px; background:#F1F3F5; width:91%;"></div>
+                      <div style="height:11px; border-radius:3px; background:#F1F3F5; width:64%;"></div>
+                    </div>
+                    <div style="height:1px; background:#EEF0F3; margin:24px 0;"></div>
+                    <div style="display:flex; gap:26px; margin-top:30px;">
+                      <div style="flex:1;"><div style="height:1px; background:#DCDEE2;"></div><div style="font-size:10px; color:#9AA0A8; margin-top:6px;">Prepared by</div></div>
+                      <div style="flex:1;"><div style="height:1px; background:#DCDEE2;"></div><div style="font-size:10px; color:#9AA0A8; margin-top:6px;">Approved by</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:16px 22px; background:#FAFBFC; border-top:1px solid #EEF0F3;">
+                  <button onClick="{{ dgBack }}" style="height:34px; padding:0 14px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">← Previous page</button>
+                  <span style="flex:1;"></span>
+                  <span style="font-size:12px; color:#8A8F98;">The page image stays in the batch; indexing only files it</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:15px; font-weight:600; color:#1A1D21;">File this page</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Pre-filled from the OCR text. Correct anything wrong and save.</div>
+
+                  <div style="display:flex; flex-direction:column; gap:14px; margin-top:18px;">
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Document class</label>
+                      <select value="{{ dgCls }}" onChange="{{ dgSetCls }}" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034">
+                        <option>Financial records</option><option>Evidence</option><option>Agreements &amp; amendments</option><option>Procurement records</option><option>Staff records</option><option>Policies</option><option>Reports</option>
+                      </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <div style="display:flex; align-items:center; gap:9px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Title</label>
+                        <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+                      </div>
+                      <input value="{{ dgTitle }}" onChange="{{ dgSetTitle }}" placeholder="How it should read in the repository" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034" />
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Reference</label>
+                        <input value="{{ dgRef }}" onChange="{{ dgSetRef }}" placeholder="If it has one" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:13px; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#EE8034" />
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Document date</label>
+                        <input type="date" value="{{ dgDate }}" onChange="{{ dgSetDate }}" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:13px; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#EE8034" />
+                      </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Files into</label>
+                      <select value="{{ dgFolder }}" onChange="{{ dgSetFolder }}" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034">
+                        <option>Finance / Payments &amp; vouchers</option><option>Finance / Budgets</option><option>Finance / Payroll</option><option>Grants / USAID-LON-24</option><option>Grants / EU-WISH-23</option><option>Procurement</option><option>Human resources</option><option>Audit &amp; evidence</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; gap:9px; margin-top:18px;">
+                    <sc-if value="{{ dgReady }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ dgSave }}" style="flex:1; height:44px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D96C22">Save and next page</button>
+                    </sc-if>
+                    <sc-if value="{{ dgNoTitle }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ noop }}" style="flex:1; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">A title is required</button>
+                    </sc-if>
+                    <button onClick="{{ dgSkip }}" style="height:44px; padding:0 16px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">Can't read it</button>
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:11px; line-height:1.5;">Saving files the page and pulls up the next one without leaving this screen.</div>
+                </div>
+
+                <sc-if value="{{ dg.lowOcr }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 18px; border-radius:14px; background:#FFF7ED; border:1px solid #FDE3C4;">
+                    <span style="width:8px; height:8px; margin-top:6px; border-radius:999px; background:#B45309; flex:none;"></span>
+                    <div style="font-size:13px; color:#8A4B0B; line-height:1.55;"><span style="font-weight:700;">OCR confidence is {{ dg.ocr }}.</span> Below 90% the machine reading is unreliable — read the page yourself before saving, and use “Can’t read it” if the scan is genuinely poor.</div>
+                  </div>
+                </sc-if>
+
+                <div style="background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">This batch</div>
+                  <div style="display:flex; flex-direction:column; gap:11px; margin-top:14px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Pages scanned</span><span style="color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ dg.total }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Indexed</span><span style="color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ dg.done }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Left to do</span><span style="color:#8A4B0B; font-weight:600; font-variant-numeric:tabular-nums;">{{ dg.remaining }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px; padding-top:11px; border-top:1px solid #EEF0F3;"><span style="color:#6B7280;">Operator</span><span style="color:#1A1D21; font-weight:600;">Samuel Adeoye</span></div>
+                  </div>
+                  <a href="#/documents/digitisation" style="display:block; font-size:12px; font-weight:600; margin-top:14px;">Back to batches</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ isCert }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="Signature certificate" style="display:flex; flex-direction:column; gap:14px; max-width:900px;">
             <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
@@ -3913,7 +4049,7 @@
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
               <div>
                 <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Signature certificate</div>
-                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">Amendment 3 — USAID-LON-24 · fully executed 30/07/2026</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ cert.name }} · {{ cert.stateLabel }}</div>
               </div>
               <div style="display:flex; gap:8px; flex:none;">
                 <button onClick="{{ toggleHash }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Re-verify hash</button>
@@ -3952,13 +4088,13 @@
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; padding:20px 0; border-bottom:1px solid #EEF0F3;">
                 <div>
                   <div style="font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9AA0A8;">Document</div>
-                  <div style="font-size:14px; font-weight:600; color:#1A1D21; margin-top:6px;">Amendment 3 — USAID-LON-24</div>
-                  <div style="font-size:12px; color:#6B7280; margin-top:3px;">PDF · 6 pages · 812 KB · version 5</div>
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21; margin-top:6px;">{{ cert.name }}</div>
+                  <div style="font-size:12px; color:#6B7280; margin-top:3px;">{{ cert.meta }}</div>
                 </div>
                 <div>
                   <div style="font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9AA0A8;">Execution</div>
-                  <div style="font-size:14px; font-weight:600; color:#1A1D21; margin-top:6px;">Complete — 3 of 3 signatures</div>
-                  <div style="font-size:12px; color:#6B7280; margin-top:3px; font-variant-numeric:tabular-nums;">Opened 29/07/2026 · closed 30/07/2026 · 19h 19m</div>
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21; margin-top:6px;">{{ cert.stateLabel }}</div>
+                  <div style="font-size:12px; color:#6B7280; margin-top:3px; font-variant-numeric:tabular-nums;">Opened {{ cert.opened }} · {{ cert.elapsed }}</div>
                 </div>
               </div>
 
@@ -4225,7 +4361,7 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                       <div style="display:flex; flex-direction:column; gap:7px;">
                         <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Required by</label>
-                        <input value="21/08/2026" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                        <input type="date" value="2026-08-21" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                       </div>
                       <div style="display:flex; flex-direction:column; gap:7px;">
                         <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Deliver to</label>
@@ -5333,11 +5469,11 @@
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">From</label>
-                      <input value="08/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                      <input type="date" value="2026-08-08" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                     </div>
                     <div style="display:flex; flex-direction:column; gap:7px;">
                       <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Until</label>
-                      <input value="22/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                      <input type="date" value="2026-08-22" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                       <span style="font-size:11px; color:#9AA0A8;">14 days · within the 30-day maximum</span>
                     </div>
                   </div>
@@ -5475,7 +5611,7 @@
                                 <input placeholder="0" style="width:180px; height:38px; margin-top:8px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:12px; font-variant-numeric:tabular-nums; outline:none;" />
                               </sc-if>
                               <sc-if value="{{ f.isDate }}" hint-placeholder-val="{{ false }}">
-                                <input placeholder="DD/MM/YYYY" style="width:180px; height:38px; margin-top:8px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:12px; font-variant-numeric:tabular-nums; outline:none;" />
+                                <input type="date" style="width:180px; height:38px; margin-top:8px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:12px; font-variant-numeric:tabular-nums; outline:none;" />
                               </sc-if>
                               <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
                                 <div style="display:flex; align-items:center; justify-content:space-between; width:260px; height:38px; margin-top:8px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#F7F8FA; font-size:12px; color:#9AA0A8;"><span>Choose…</span><span style="font-size:9px;">▾</span></div>
@@ -5660,7 +5796,7 @@
                       <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
                         <div style="display:flex; flex-direction:column; gap:7px;">
                           <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Closes on</label>
-                          <input value="30/09/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                          <input type="date" value="2026-09-30" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                         </div>
                         <div style="display:flex; flex-direction:column; gap:7px;">
                           <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Response limit</label>
@@ -5969,11 +6105,11 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
                   <div style="display:flex; flex-direction:column; gap:7px;">
                     <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date raised — from</label>
-                    <input value="01/01/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                    <input type="date" value="2026-01-01" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                   </div>
                   <div style="display:flex; flex-direction:column; gap:7px;">
                     <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date raised — to</label>
-                    <input value="31/07/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                    <input type="date" value="2026-07-31" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                   </div>
                   <div style="display:flex; flex-direction:column; gap:7px;">
                     <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Department</label>
@@ -7856,11 +7992,11 @@
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Raised from</label>
-            <input value="01/07/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+            <input type="date" value="2026-07-01" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Raised to</label>
-            <input value="31/07/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+            <input type="date" value="2026-07-31" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
             <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Amount from (₦)</label>
@@ -8328,7 +8464,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date received</label>
-              <input value="04/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-08-04" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
@@ -8397,6 +8533,216 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ dlgNewBatch }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:580px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">New digitisation batch</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">A batch is a box of paper going onto the scanner. OCR runs as pages arrive; indexing happens afterwards.</div>
+
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:20px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">What is being scanned</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <input value="{{ nbSource }}" onChange="{{ nbSetSource }}" placeholder="e.g. Finance vouchers 2023" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034" />
+            <span style="font-size:11px; color:#9AA0A8;">Describe the box as it is labelled, so it can be found again on the shelf</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:150px minmax(0,1fr); gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Pages, roughly</label>
+              <input value="{{ nbPages }}" onChange="{{ nbSetPages }}" placeholder="0" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#EE8034" />
+            </div>
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Operator</label>
+              <select value="{{ nbOperator }}" onChange="{{ nbSetOperator }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>Samuel Adeoye</option><option>Fatima Bello</option><option>Musa Danjuma</option></select>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Files into, by default</label>
+            <select value="{{ nbFolder }}" onChange="{{ nbSetFolder }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;">
+              <option>Finance / Payments &amp; vouchers</option><option>Finance / Budgets</option><option>Finance / Payroll</option><option>Grants / USAID-LON-24</option><option>Grants / EU-WISH-23</option><option>Procurement</option><option>Human resources</option><option>Audit &amp; evidence</option>
+            </select>
+            <span style="font-size:11px; color:#9AA0A8;">The indexer can change this per page — this just saves typing on the common case</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:11px; padding:13px 15px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:8px; height:8px; border-radius:999px; background:#EE8034; flex:none;"></span>
+            <span style="font-size:12px; color:#6B7280; line-height:1.5;">Pages come out searchable. Anything OCR reads below 90% confidence is flagged for a human to check.</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ nbValid }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ nbCreate }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D96C22">Create the batch</button>
+          </sc-if>
+          <sc-if value="{{ nbNoSource }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Say what is being scanned</button>
+          </sc-if>
+          <sc-if value="{{ nbNoPages }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Estimate the page count</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgNewSig }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:660px; max-height:88vh; overflow-y:auto; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">New signature request</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">Signatories sign in the order below. Each one is only notified when the person before them has finished.</div>
+
+        <div style="display:flex; flex-direction:column; gap:7px; margin-top:20px;">
+          <div style="display:flex; align-items:center; gap:9px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Document</label>
+            <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+          </div>
+          <select value="{{ sgDoc }}" onChange="{{ sgSetDoc }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E">
+            <option value="">Choose from the repository…</option>
+            <option>USAID-LON-24 — Award agreement.pdf</option>
+            <option>Amendment 3 — USAID-LON-24.pdf</option>
+            <option>Contract — Chinelo Obi.pdf</option>
+            <option>Safeguarding policy 2026.pdf</option>
+            <option>FY2025 audited financial statements.pdf</option>
+          </select>
+          <span style="font-size:11px; color:#9AA0A8;">The version signed is locked and hashed — later uploads become a new version, not a swap</span>
+        </div>
+
+        <div style="margin-top:22px; padding-top:20px; border-top:1px solid #EEF0F3;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#1A1D21;">Signatories, in order</div>
+              <div style="font-size:11px; color:#9AA0A8; margin-top:3px;">{{ sgCount }}</div>
+            </div>
+            <button onClick="{{ sgAdd }}" style="height:32px; padding:0 13px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">+ Add signatory</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+            <sc-for list="{{ sgParties }}" as="p" hint-placeholder-count="1">
+              <div style="padding:16px; border:1px solid #E3E5E8; border-radius:12px; background:#FCFCFB;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="width:26px; height:26px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ p.n }}</span>
+                  <div style="display:flex; gap:6px; flex:1;">
+                    <sc-if value="{{ p.internal }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ p.onInternal }}" style="height:30px; padding:0 12px; border:none; border-radius:8px; background:#2B2B2C; color:#fff; font-size:11px; font-weight:600;">WEWE staff</button>
+                    </sc-if>
+                    <sc-if value="{{ p.external }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onInternal }}" style="height:30px; padding:0 12px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#3B3B3B; font-size:11px; font-weight:500;" style-hover="border-color:#EE8034; color:#B23F1D">WEWE staff</button>
+                    </sc-if>
+                    <sc-if value="{{ p.external }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onExternal }}" style="height:30px; padding:0 12px; border:none; border-radius:8px; background:#2B2B2C; color:#fff; font-size:11px; font-weight:600;">Outside WEWE</button>
+                    </sc-if>
+                    <sc-if value="{{ p.internal }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ p.onExternal }}" style="height:30px; padding:0 12px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#3B3B3B; font-size:11px; font-weight:500;" style-hover="border-color:#EE8034; color:#B23F1D">Outside WEWE</button>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ p.notFirst }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ p.onUp }}" style="width:28px; height:28px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#8A8F98; font-size:11px; flex:none;" style-hover="background:#F7F8FA">↑</button>
+                  </sc-if>
+                  <sc-if value="{{ p.canRemove }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ p.onRemove }}" style="width:28px; height:28px; border:none; border-radius:8px; background:transparent; color:#A8ADB5; flex:none;" style-hover="background:#FBEAE4; color:#C2410C">✕</button>
+                  </sc-if>
+                </div>
+
+                <sc-if value="{{ p.internal }}" hint-placeholder-val="{{ true }}">
+                  <div style="margin-top:12px;">
+                    <select value="{{ p.who }}" onChange="{{ p.onWho }}" style="width:100%; height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034">
+                      <option value="">Choose a colleague…</option>
+                      <option>Dr. Amina Yusuf — Managing Director</option>
+                      <option>Ibrahim Musa — Finance Manager</option>
+                      <option>Chiamaka Eze — Internal Audit Officer</option>
+                      <option>Emeka Nwosu — Procurement Officer</option>
+                      <option>Blessing Adeyemi — HR Officer</option>
+                    </select>
+                    <div style="font-size:11px; color:#9AA0A8; margin-top:7px;">Signs in the app, verified by password and authenticator</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ p.external }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+                    <input value="{{ p.who }}" onChange="{{ p.onWho }}" placeholder="Full name" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034" />
+                    <input value="{{ p.email }}" onChange="{{ p.onEmail }}" placeholder="name@organisation.org" style="height:40px; padding:0 12px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#EE8034" />
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:7px;">Gets a single-use link and a one-time code by email. No WEWE account needed.</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:180px minmax(0,1fr); gap:16px; margin-top:22px; padding-top:20px; border-top:1px solid #EEF0F3;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Expires on</label>
+            <input type="date" value="{{ sgExpiry }}" onChange="{{ sgSetExpiry }}" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#EE8034" />
+          </div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Message to signatories</label>
+            <input value="{{ sgMsg }}" onChange="{{ sgSetMsg }}" placeholder="Optional — appears in the invitation email" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#EE8034" />
+          </div>
+        </div>
+
+        <sc-if value="{{ sgAnyExternal }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:11px; margin-top:16px; padding:13px 15px; border-radius:10px; background:#F7F8FA;">
+            <span style="width:8px; height:8px; border-radius:999px; background:#EE8034; flex:none;"></span>
+            <span style="font-size:12px; color:#6B7280; line-height:1.5;">Outside signatories see only this document, watermarked with their name. The link dies on the expiry date or once used.</span>
+          </div>
+        </sc-if>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ sgValid }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ sgSend }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D96C22">Send for signature</button>
+          </sc-if>
+          <sc-if value="{{ sgNoDoc }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a document first</button>
+          </sc-if>
+          <sc-if value="{{ sgBadParty }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Every signatory needs a name</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgSigSettings }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:560px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Signature settings</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px;">Defaults applied to every new signature request</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Requests expire after</label>
+            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>30 days</option><option>14 days</option><option>60 days</option><option>90 days</option></select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Remind a signatory after</label>
+            <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>3 days, then weekly</option><option>7 days, then weekly</option><option>No reminders</option></select>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Require the authenticator code to sign</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Staff re-confirm identity at the moment of signing, not just at login</div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Watermark documents shown to outside signatories</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Their name and the timestamp appear on every page they see</div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+            <span style="width:20px; height:20px; flex:none; border-radius:6px; background:#EE8034; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#1A1D21;">Allow a typed signature</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Binding under the Evidence Act; the method is recorded on the certificate</div></div>
+          </div>
+        </div>
+
+        <div style="font-size:11px; color:#9AA0A8; margin-top:18px; line-height:1.55;">Changing these affects new requests only. Anything already out for signature keeps the settings it was sent under.</div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <button onClick="{{ sigSettingsSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#EE8034; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#D96C22">Save settings</button>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ dlgNewContract }}" hint-placeholder-val="{{ false }}">
       <div style="width:100%; max-width:580px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
         <div style="font-size:20px; font-weight:600; color:#1A1D21;">New contract</div>
@@ -8423,11 +8769,11 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Starts</label>
-              <input value="{{ ncStart }}" onChange="{{ ncSetStart }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="{{ ncStart }}" onChange="{{ ncSetStart }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Ends</label>
-              <input value="{{ ncEnd }}" onChange="{{ ncSetEnd }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="{{ ncEnd }}" onChange="{{ ncSetEnd }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:11px; padding:13px 15px; border-radius:10px; background:#F7F8FA;">
@@ -8814,7 +9160,7 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:7px;">
                   <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Expires</label>
-                  <input value="{{ nvExpiry }}" onChange="{{ nvSetExpiry }}" style="width:200px; height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                  <input type="date" value="{{ nvExpiry }}" onChange="{{ nvSetExpiry }}" style="width:200px; height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
                   <span style="font-size:11px; color:#9AA0A8;">The vendor drops out of the invitable list on this date</span>
                 </div>
               </div>
@@ -9092,7 +9438,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Date settled</label>
-              <input value="04/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-08-04" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <sc-if value="{{ refundNeedsRef }}" hint-placeholder-val="{{ true }}">
@@ -9428,7 +9774,7 @@
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                 <div style="display:flex; flex-direction:column; gap:7px;">
                   <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Activity date</label>
-                  <input value="24/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                  <input type="date" value="2026-08-24" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
                 </div>
                 <div style="display:flex; flex-direction:column; gap:7px;">
                   <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Charge to</label>
@@ -9565,7 +9911,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Start date</label>
-              <input value="01/09/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-09-01" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Grade</label>
@@ -9647,7 +9993,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Start date</label>
-              <input value="01/09/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-09-01" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <div>
@@ -9699,7 +10045,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Closing date</label>
-              <input value="18/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-08-18" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Award criterion</label>
@@ -9765,7 +10111,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Deadline</label>
-              <input value="31/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-08-31" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
@@ -10008,7 +10354,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">By when</label>
-              <input value="31/12/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-12-31" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Weight</label>
@@ -10124,11 +10470,11 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Period from</label>
-                <input value="01/09/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                <input type="date" value="2026-09-01" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
               </div>
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Period to</label>
-                <input value="31/08/2028" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                <input type="date" value="2028-08-31" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
               </div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -10212,7 +10558,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:7px;">
               <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Effective date</label>
-              <input value="04/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+              <input type="date" value="2026-08-04" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:7px;">
@@ -10369,6 +10715,53 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:980},&quot;startRole&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;initiator&quot;,&quot;supervisor&quot;,&quot;audit&quot;,&quot;finance&quot;,&quot;md&quot;,&quot;hr&quot;,&quot;procurement&quot;,&quot;admin&quot;,&quot;external&quot;],&quot;default&quot;:&quot;finance&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;skipAuth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;darkMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Appearance&quot;}}">
 const STAGES = ['Initiator', 'Supervisor', 'Internal Audit', 'Finance', 'Final Approver'];
+
+const DIGI_PAGES = [
+  { n:1321, ocr:97.2, guess:{ cls:'Financial records', title:'Payment voucher — PV-2024-0881', ref:'PV-2024-0881', date:'2024-11-14', folder:'Finance / Payments & vouchers' } },
+  { n:1322, ocr:88.4, guess:{ cls:'Financial records', title:'Payment voucher — PV-2024-0882', ref:'PV-2024-0882', date:'2024-11-14', folder:'Finance / Payments & vouchers' } },
+  { n:1323, ocr:94.6, guess:{ cls:'Evidence', title:'Receipt bundle — Enugu field visit', ref:'RET-2024-0143', date:'2024-11-18', folder:'Finance / Payments & vouchers' } },
+  { n:1324, ocr:71.3, guess:{ cls:'Financial records', title:'Bank advice — November', ref:'', date:'2024-11-20', folder:'Finance / Payments & vouchers' } },
+  { n:1325, ocr:99.1, guess:{ cls:'Financial records', title:'Payment voucher — PV-2024-0884', ref:'PV-2024-0884', date:'2024-11-21', folder:'Finance / Payments & vouchers' } }
+];
+
+const ESIGN_DOCS = {
+  'Amendment 3 — USAID-LON-24': {
+    kind:'Award amendment', pages:6, size:'812 KB', hash:'9f2c4a7b1e8d63f05a9c2b47de81f36a0c5e7924b8d1a36f47c092e5b6a83d1c',
+    opened:'29/07/2026', closed:'30/07/2026', elapsed:'19h 19m', state:'complete',
+    signers:[
+      { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'Drawn', verified:'Password + authenticator', when:'29/07/2026 · 14:22', ip:'197.210.44.18', done:true },
+      { name:'Ibrahim Musa', role:'Finance Manager, WEWE', method:'Saved signature', verified:'Password + authenticator', when:'29/07/2026 · 11:05', ip:'197.210.44.18', done:true },
+      { name:'Karen Adeleke', role:'Agreement Officer, USAID Nigeria', method:'Typed', verified:'Email one-time code', when:'30/07/2026 · 09:41', ip:'41.58.112.201', done:true }
+    ] },
+  'MOU — Enugu State Ministry': {
+    kind:'Memorandum', pages:9, size:'1.1 MB', hash:'c41e77a0b98d2f634185ac07e5b3d29f6084c1ba7de35902f8146bc3ad07e912',
+    opened:'15/07/2026', closed:'—', elapsed:'20 days open', state:'open',
+    signers:[
+      { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'Saved signature', verified:'Password + authenticator', when:'15/07/2026 · 16:08', ip:'197.210.44.18', done:true },
+      { name:'Hon. Comm. for Women Affairs', role:'Enugu State Ministry', method:'—', verified:'Email one-time code', when:'Awaiting since 15/07/2026', ip:'—', done:false }
+    ] },
+  'Consultancy — M. Okonkwo': {
+    kind:'Consultant contract', pages:11, size:'642 KB', hash:'7ba0e419cc82d5f13068ae72b94f0c85da6317e920fb4c8d05a7e236194bc0af',
+    opened:'01/08/2026', closed:'—', elapsed:'3 days open', state:'open',
+    signers:[
+      { name:'Maduka Okonkwo', role:'Consultant', method:'—', verified:'Email one-time code', when:'Awaiting since 01/08/2026', ip:'—', done:false },
+      { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'—', verified:'Password + authenticator', when:'Not yet reached', ip:'—', done:false }
+    ] },
+  'Vendor agreement — Sahel Logistics': {
+    kind:'Vendor contract', pages:8, size:'488 KB', hash:'2df6910c74be8a05c1237fd9e04b6a82530917cef4a8bd216730e59c8ab41f07',
+    opened:'03/08/2026', closed:'—', elapsed:'1 day open', state:'open',
+    signers:[
+      { name:'Emeka Nwosu', role:'Procurement Officer, WEWE', method:'Saved signature', verified:'Password + authenticator', when:'03/08/2026 · 10:14', ip:'197.210.44.18', done:true },
+      { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'—', verified:'Password + authenticator', when:'Awaiting since 03/08/2026', ip:'—', done:false }
+    ] },
+  'Lease renewal — Abuja office': {
+    kind:'Property', pages:14, size:'1.4 MB', hash:'e508b3c1927fa46d0b28e7315cd9046ba7f2318e04c95dba6127e3f80a94c5d6',
+    opened:'24/07/2026', closed:'—', elapsed:'Declined 26/07/2026', state:'declined',
+    signers:[
+      { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'Saved signature', verified:'Password + authenticator', when:'24/07/2026 · 09:30', ip:'197.210.44.18', done:true },
+      { name:'Adebayo Properties Ltd', role:'Landlord', method:'Declined', verified:'Email one-time code', when:'26/07/2026 · 14:52', ip:'102.89.14.66', done:false }
+    ] }
+};
 
 const CERT_SIGNERS = [
   { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'Drawn', verified:'Password + authenticator', when:'29/07/2026 · 14:22', ip:'197.210.44.18', done:true },
@@ -10568,7 +10961,7 @@ const KIDS = {
   prc: [['Vendor registry','/procurement'],['RFQs & quotes','/procurement/rfq'],['Purchase orders','/procurement/po'],['New purchase order','/procurement/po/new'],['Contracts','/procurement/contracts']],
   inv: [['Stock on hand','/inventory'],['Activity log','/inventory/log'],['Goods received','/inventory/grn'],['Issues to staff','/inventory/issues'],['Stock counts','/inventory/counts']],
   ast: [['Asset register','/assets'],['Verification campaign','/assets/verification'],['Transfers','/assets/transfers'],['Disposals','/assets/disposals']],
-  dms: [['Repository','/documents'],['Signature certificate','/documents/certificate'],['External signer view','/sign/external'],['Printable documents','/print/travel-authority'],['E-signature','/documents/signatures'],['Digitisation','/documents/digitisation'],['Retention & holds','/documents/retention']],
+  dms: [['Repository','/documents'],['Signature certificate','/documents/certificate'],['External signer view','/sign/external'],['Printable documents','/print/travel-authority'],['E-signature','/documents/signatures'],['Digitisation','/documents/digitisation'],['Indexing','/documents/digitisation/index'],['Retention & holds','/documents/retention']],
   hrm: [['Staff directory','/hr'],['Leave','/hr/leave'],['Onboarding','/hr/onboarding'],['Appraisals','/hr/appraisals']],
   tls: [['My timesheet','/timesheets'],['Approvals','/timesheets/approvals'],['Level of effort','/timesheets/loe']],
   dgm: [['Grants','/grants'],['Donor reports','/grants/reports'],['Reporting calendar','/grants/calendar'],['Programme dashboards','/grants/programmes']],
@@ -12096,7 +12489,21 @@ class Component extends DCLogic {
     bkName: '', bkAcctName: '', bkAcctNo: '', bkReason: '',
     bkRejectMode: false, bkRejectReason: '',
     blVendor: '', blMode: 'blacklist', blReason: '',
-    ncVendor: '', ncTitle: '', ncValue: '', ncStart: '01/09/2026', ncEnd: '31/08/2027',
+    dgAt: 0,
+    dgCls: '',
+    dgTitle: null,
+    dgRef: null,
+    dgDate: null,
+    dgFolder: '',
+    nbSource: '',
+    nbPages: '',
+    nbFolder: 'Finance / Payments & vouchers',
+    nbOperator: 'Samuel Adeoye',
+    sgDoc: '',
+    sgExpiry: '2026-08-31',
+    sgMsg: '',
+    sgParties: [{ kind:'internal', who:'', email:'' }],
+    ncVendor: '', ncTitle: '', ncValue: '', ncStart: '2026-09-01', ncEnd: '2027-08-31',
     caValue: '', caReason: '',
     cpAmount: '', cpNote: '',
     rfqId: 'RFQ-2026-0034',
@@ -12120,7 +12527,7 @@ class Component extends DCLogic {
     nvDd: false,
     nvCac: '',
     nvTax: '',
-    nvExpiry: '31/12/2027',
+    nvExpiry: '2027-12-31',
     pnSource: 'REQ-2026-0181 — Laptops (6) for the M&E team · ₦4,380,000.00',
     pnVendor: '',
     pnTerms: '30 days from goods received note',
@@ -12371,6 +12778,10 @@ class Component extends DCLogic {
         return;
       }
     }
+    if (/^new batch$/i.test(l)) { this.setState({ dlg:{ kind:'newbatch' }, nbSource:'', nbPages:'' }); return; }
+    if (/open indexing screen/i.test(l)) { this.go('/documents/digitisation/index'); return; }
+    if (/new signature request/i.test(l)) { this.setState({ dlg:{ kind:'newsig' }, sgDoc:'', sgExpiry:'2026-08-31', sgMsg:'', sgParties:[{ kind:'internal', who:'', email:'' }] }); return; }
+    if (/signature settings/i.test(l)) { this.setState({ dlg:{ kind:'sigsettings' } }); return; }
     if (/bulk approve/i.test(l)) { this.setState({ dlg:{ kind:'bulk' }, bulkDone:false }); return; }
     if (/^sign$/i.test(l)) { this.setState({ dlg:{ kind:'ceremony', requestId:this.state.esignSelected || '' }, ceremonyStep:1 }); return; }
     if (/certificate/i.test(l)) { this.go('/documents/certificate'); return; }
@@ -13188,7 +13599,7 @@ class Component extends DCLogic {
                 }
                 if (/^(award|quotes)$/i.test(b) && /^RFQ-\d{4}-\d{4}$/.test(String(r[0]))) { this.go('/procurement/award?id=' + r[0]); return; }
                 if (/^sign$/i.test(b)) { this.setState({ dlg:{ kind:'ceremony', requestId:String(r[0] || '') }, ceremonyStep:1, esignSelected:String(r[0] || '') }); return; }
-                if (/^certificate$/i.test(b)) { this.go('/documents/certificate'); return; }
+                if (/^certificate$/i.test(b)) { this.go('/documents/certificate?id=' + encodeURIComponent(String(r[0] || ''))); return; }
                 if (/^(use|edit|copy)$/i.test(b)) { this.setState({ dlg:{ kind:'tpl', row:r, mode:b } }); return; }
                 if (/^docket$/i.test(b)) { this.setState({ dlg:{ kind:'docket', row:r } }); return; }
                 if (/^email$/i.test(b)) { this.setState({ dlg:{ kind:'psmail', row:r } }); return; }
@@ -13216,7 +13627,7 @@ class Component extends DCLogic {
       })) : [],
       isStub: !detBundle && KNOWN.indexOf(path) === -1 && !spec && ['/admin/activity','/hr/staff','/documents/view','/timesheets/approvals','/admin/workflow','/hr/appraisals','/inventory','/inventory/log','/reports/builder','/admin/forms','/admin/forms/build',
         '/auth/2fa','/auth/reset','/auth/setup','/auth/locked','/account/profile','/account/signature','/account/notifications','/account/delegation','/admin/workflow/chain','/documents/certificate','/sign/external','/budgets/line',
-        '/print/travel-authority','/print/purchase-order','/print/hr-letter','/budgets/new',
+        '/print/travel-authority','/print/purchase-order','/print/hr-letter','/budgets/new','/documents/digitisation/index',
         '/procurement/po/view','/procurement/po/new','/procurement/contract','/procurement/award'].indexOf(path) === -1,
       goFb: () => this.go('/admin/forms/build'),
       formResp: [
@@ -13307,8 +13718,133 @@ class Component extends DCLogic {
       poSub: money(4464000), poVat: money(334800), poTotal: money(4798800),
       isCert: base('/documents/certificate'),
       isExt: auth === 'in' && base('/sign/external'),
-      signers: CERT_SIGNERS.map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
-      docHash: '9f2c4a7b1e8d63f05a9c2b47de81f36a0c5e7924b8d1a36f47c092e5b6a83d1c',
+      isDigiIndex: auth === 'in' && base('/documents/digitisation/index'),
+      dlgNewBatch: !!this.state.dlg && this.state.dlg.kind === 'newbatch',
+      dg: (() => {
+        const i = Math.min(this.state.dgAt, DIGI_PAGES.length - 1);
+        const p = DIGI_PAGES[i];
+        const done = 1320 + i;
+        return {
+          page:p.n, total:1940, done, remaining: 1940 - done,
+          pct: Math.round(done / 1940 * 100),
+          ocr: p.ocr.toFixed(1) + '%',
+          lowOcr: p.ocr < 90, goodOcr: p.ocr >= 90,
+          position: (i + 1) + ' of ' + DIGI_PAGES.length + ' in view',
+          batch:'B-024 · Finance vouchers 2024'
+        };
+      })(),
+      dgCls: this.state.dgCls || DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.cls,
+      dgTitle: this.state.dgTitle === null ? DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.title : this.state.dgTitle,
+      dgRef: this.state.dgRef === null ? DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.ref : this.state.dgRef,
+      dgDate: this.state.dgDate === null ? DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.date : this.state.dgDate,
+      dgFolder: this.state.dgFolder || DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.folder,
+      dgSetCls: e => this.setState({ dgCls: e.target.value }),
+      dgSetTitle: e => this.setState({ dgTitle: e.target.value }),
+      dgSetRef: e => this.setState({ dgRef: e.target.value }),
+      dgSetDate: e => this.setState({ dgDate: e.target.value }),
+      dgSetFolder: e => this.setState({ dgFolder: e.target.value }),
+      dgReady: !!String(this.state.dgTitle === null ? DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.title : this.state.dgTitle).trim(),
+      dgNoTitle: !String(this.state.dgTitle === null ? DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].guess.title : this.state.dgTitle).trim(),
+      dgSave: () => {
+        const i = Math.min(this.state.dgAt, DIGI_PAGES.length - 1);
+        const p = DIGI_PAGES[i];
+        const ok = this.hook('IndexPage', {
+          batchId:'B-024', pageNumber:p.n,
+          documentClass: this.state.dgCls || p.guess.cls,
+          title: this.state.dgTitle === null ? p.guess.title : this.state.dgTitle,
+          reference: (this.state.dgRef === null ? p.guess.ref : this.state.dgRef) || undefined,
+          documentDate: this.state.dgDate === null ? p.guess.date : this.state.dgDate,
+          folder: this.state.dgFolder || p.guess.folder
+        }, 'Page indexed.');
+        if (ok) this.setState({ dgAt: Math.min(this.state.dgAt + 1, DIGI_PAGES.length - 1), dgCls:'', dgTitle:null, dgRef:null, dgDate:null, dgFolder:'' });
+      },
+      dgSkip: () => {
+        const ok = this.hook('FlagPage', { batchId:'B-024', pageNumber: DIGI_PAGES[Math.min(this.state.dgAt, DIGI_PAGES.length - 1)].n, reason:'unreadable' }, 'Page flagged for re-scan.');
+        if (ok) this.setState({ dgAt: Math.min(this.state.dgAt + 1, DIGI_PAGES.length - 1), dgCls:'', dgTitle:null, dgRef:null, dgDate:null, dgFolder:'' });
+      },
+      dgBack: () => this.setState({ dgAt: Math.max(0, this.state.dgAt - 1), dgCls:'', dgTitle:null, dgRef:null, dgDate:null, dgFolder:'' }),
+      nbSource: this.state.nbSource,
+      nbSetSource: e => this.setState({ nbSource: e.target.value }),
+      nbPages: this.state.nbPages,
+      nbSetPages: e => this.setState({ nbPages: e.target.value }),
+      nbValid: !!String(this.state.nbSource || '').trim() && (parseInt(this.state.nbPages, 10) || 0) > 0,
+      nbNoSource: !String(this.state.nbSource || '').trim(),
+      nbNoPages: !!String(this.state.nbSource || '').trim() && !((parseInt(this.state.nbPages, 10) || 0) > 0),
+      nbCreate: () => { const ok = this.hook('CreateDigitisationBatch', {
+        source: this.state.nbSource, estimatedPages: parseInt(this.state.nbPages, 10) || 0,
+        defaultFolder: this.state.nbFolder, operator: this.state.nbOperator
+      }, 'Batch created.'); if (ok) this.setState({ dlg:null }); },
+      nbFolder: this.state.nbFolder,
+      nbSetFolder: e => this.setState({ nbFolder: e.target.value }),
+      nbOperator: this.state.nbOperator,
+      nbSetOperator: e => this.setState({ nbOperator: e.target.value }),
+      goIndexing: () => this.go('/documents/digitisation/index'),
+      dlgNewSig: !!this.state.dlg && this.state.dlg.kind === 'newsig',
+      dlgSigSettings: !!this.state.dlg && this.state.dlg.kind === 'sigsettings',
+      sgDoc: this.state.sgDoc,
+      sgSetDoc: e => this.setState({ sgDoc: e.target.value }),
+      sgExpiry: this.state.sgExpiry,
+      sgSetExpiry: e => this.setState({ sgExpiry: e.target.value }),
+      sgMsg: this.state.sgMsg,
+      sgSetMsg: e => this.setState({ sgMsg: e.target.value }),
+      sgParties: this.state.sgParties.map((p, i) => ({
+        n: i + 1, kind:p.kind, who:p.who, email:p.email,
+        internal: p.kind === 'internal', external: p.kind === 'external',
+        canRemove: this.state.sgParties.length > 1,
+        onInternal: () => { const a = this.state.sgParties.slice(); a[i] = { kind:'internal', who:'', email:'' }; this.setState({ sgParties:a }); },
+        onExternal: () => { const a = this.state.sgParties.slice(); a[i] = { kind:'external', who:'', email:'' }; this.setState({ sgParties:a }); },
+        onWho: e => { const a = this.state.sgParties.slice(); a[i] = Object.assign({}, a[i], { who:e.target.value }); this.setState({ sgParties:a }); },
+        onEmail: e => { const a = this.state.sgParties.slice(); a[i] = Object.assign({}, a[i], { email:e.target.value }); this.setState({ sgParties:a }); },
+        onUp: () => { if (i === 0) return; const a = this.state.sgParties.slice(); const t = a[i - 1]; a[i - 1] = a[i]; a[i] = t; this.setState({ sgParties:a }); },
+        onRemove: () => this.setState({ sgParties: this.state.sgParties.filter((x, n2) => n2 !== i) }),
+        notFirst: i > 0, first: i === 0
+      })),
+      sgAdd: () => this.setState({ sgParties: this.state.sgParties.concat([{ kind:'internal', who:'', email:'' }]) }),
+      sgCount: this.state.sgParties.length + (this.state.sgParties.length === 1 ? ' signatory' : ' signatories'),
+      sgNoDoc: !String(this.state.sgDoc || '').trim(),
+      sgBadParty: this.state.sgParties.some(p => !String(p.who).trim() || (p.kind === 'external' && !/@/.test(String(p.email)))),
+      sgValid: !!String(this.state.sgDoc || '').trim() && !this.state.sgParties.some(p => !String(p.who).trim() || (p.kind === 'external' && !/@/.test(String(p.email)))),
+      sgAnyExternal: this.state.sgParties.some(p => p.kind === 'external'),
+      sgSend: () => {
+        const ok = this.hook('CreateSignatureRequest', {
+          documentId: this.state.sgDoc,
+          signatories: this.state.sgParties.map((p, i) => p.kind === 'internal'
+            ? { order: i + 1, kind:'internal', userId: p.who }
+            : { order: i + 1, kind:'external', name: p.who, email: p.email }),
+          expiresOn: this.state.sgExpiry,
+          message: String(this.state.sgMsg || '').trim() || undefined
+        }, 'Signature request sent.');
+        if (ok) this.setState({ dlg:null });
+      },
+      sigSettingsSave: () => { const ok = this.hook('SaveSignatureSettings', {
+        defaultExpiryDays: 30, remindAfterDays: 3, requireTwoFactor: true, watermarkExternal: true, allowTyped: true
+      }, 'Signature settings saved.'); if (ok) this.setState({ dlg:null }); },
+      cert: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
+        const d = ESIGN_DOCS[id];
+        if (!d) return { missing:true, found:false, name:id };
+        const done = d.signers.filter(x => x.done).length;
+        return { missing:false, found:true, name:id, kind:d.kind, pages:d.pages, size:d.size, hash:d.hash,
+          opened:d.opened, closed:d.closed, elapsed:d.elapsed,
+          complete: d.state === 'complete', open: d.state === 'open', declined: d.state === 'declined',
+          stateLabel: d.state === 'complete' ? 'Complete — ' + done + ' of ' + d.signers.length + ' signatures'
+            : d.state === 'declined' ? 'Declined — not executed'
+            : 'In progress — ' + done + ' of ' + d.signers.length + ' signed',
+          meta: d.kind + ' · ' + d.pages + ' pages · ' + d.size };
+      })(),
+      signers: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
+        const d = ESIGN_DOCS[id];
+        return (d ? d.signers : []).map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+          pending: !s.done, declinedRow: s.method === 'Declined' }));
+      })(),
+      docHash: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
+        return (ESIGN_DOCS[id] || {}).hash || '—';
+      })(),
       hashOk: this.state.hashOk, hashBad: !this.state.hashOk,
       toggleHash: () => this.setState({ hashOk: !this.state.hashOk }),
       certQr: (() => {
@@ -14478,7 +15014,6 @@ class Component extends DCLogic {
         this.setState({ tsA:a });
         this.toast('4 compliant timesheets approved in one action. Chinelo Obi’s is held at 90% effort.');
       },
-      signers: SIGNERS.map(s => ({ ...s, initials:this.initials(s.name), signed:s.state==='signed', pending:s.state==='pending' })),
       staff: stripe(STAFF.map(s => ({ ...s, initials:this.initials(s.name), probation:s.status==='Probation', active:s.status==='Active',
         onClick: () => this.go('/hr/staff') }))),
       leave: stripe(LEAVE.map(l => ({ ...l, pending:l.state==='pending', approved:l.state==='approved', hasNote: !!l.note }))),

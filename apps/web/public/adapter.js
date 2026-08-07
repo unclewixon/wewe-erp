@@ -1530,6 +1530,67 @@
     return 'Draft ' + res.ref + ' saved.';
   };
 
+  // ---- Documents & e-signature ----
+  window.__weweUploadDocuments = function (p) {
+    var name = String((p && p.name) || '').trim();
+    var data = String((p && p.dataBase64) || '');
+    if (!name || !data) return false;
+    var body = { name: name, mime: String((p && p.mime) || 'application/octet-stream'), dataBase64: data };
+    if (p.folderId) body.folderId = p.folderId;
+    if (p.confidential) body.confidential = true;
+    var res = post('/v1/dms/documents', body);
+    var doc = res && res.document;            // upload answers { document, warning }
+    if (!doc || !doc.id) return false;
+    // A duplicate is worth saying out loud: the same file already in the repository under
+    // another name is how a document set quietly grows two versions of the truth.
+    return res.warning
+      ? doc.name + ' uploaded — note: ' + res.warning
+      : doc.name + ' uploaded.';
+  };
+
+  window.__weweCreateSignatureRequest = function (p) {
+    // The design describes signatories with an order and a kind; the engine takes signers that
+    // are either internal ({userId}) or external ({name, email}) and nothing else — it refuses
+    // a signer carrying both. Translate rather than pass through.
+    var signers = ((p && p.signatories) || []).map(function (s) {
+      return s.kind === 'internal'
+        ? { userId: s.userId }
+        : { name: String(s.name || '').trim(), email: String(s.email || '').trim() };
+    }).filter(function (s) { return s.userId || (s.name && s.email); });
+    if (!p || !p.documentId || !signers.length) return false;
+    var body = { documentId: p.documentId, signers: signers };
+    if (p.message) body.message = String(p.message).trim();
+    if (p.expiresOn) body.deadline = p.expiresOn;
+    var res = post('/v1/esign/requests', body);
+    if (!res || !res.id) return false;
+    return 'Sent to ' + signers.length + (signers.length === 1 ? ' signatory.' : ' signatories.');
+  };
+
+  window.__weweSignDocument = function (p) {
+    var id = String((p && p.requestId) || '').trim();
+    var method = String((p && p.method) || 'saved');
+    if (!id) return false;
+    if (['drawn', 'typed', 'saved'].indexOf(method) === -1) method = 'saved';
+    var res = post('/v1/esign/requests/' + id + '/sign', { method: method });
+    if (!res) return false;                   // the engine refuses anyone who is not a signer
+    return res.status === 'COMPLETED'
+      ? 'Signed — every signatory has now signed and the certificate is available.'
+      : 'Signed. Waiting on the remaining signatories.';
+  };
+
+  // Refused rather than left undefined, so the design shows a failure instead of announcing
+  // work that never happened. Each needs engine work, recorded as gaps 37-39:
+  //   evidence packs bundle TRANSACTIONS by filter (from/to/donor/department), not a set of
+  //   chosen documents, so {documents:[...]} has nothing to post to;
+  //   the digitisation pipeline — batches, page indexing, flagging — has no endpoints at all;
+  //   signature settings and a saved personal signature have nowhere to persist.
+  window.__weweCreateEvidencePack = function () { return false; };
+  window.__weweCreateDigitisationBatch = function () { return false; };
+  window.__weweIndexPage = function () { return false; };
+  window.__weweFlagPage = function () { return false; };
+  window.__weweSaveSignatureSettings = function () { return false; };
+  window.__weweSaveSignature = function () { return false; };
+
   // ---- Budgets ----
   // The builder addresses lines by name and splits each into quarters; the engine allocates a
   // single kobo total against an existing budget line id. It has no endpoint for creating a
