@@ -1563,11 +1563,88 @@
     return 'Goods receipt recorded.';
   };
 
-  // Deliberately answered with a refusal rather than left undefined. An unwired hook falls
-  // back to the design's own success copy, which would announce a payment that never happened;
-  // returning false makes the design show its failure state instead. The payload carries only
-  // a contract reference — no amount — so there is nothing to post. Recorded as gap 30.
-  window.__weweRecordContractPayment = function () { return false; };
+  function resolveContractId(refOrId) {
+    var v = String(refOrId || '').trim();
+    if (!v) return null;
+    var all = get('/v1/contracts') || [];
+    var hit = all.find(function (x) { return x.id === v || x.ref === v; });
+    return hit ? hit.id : null;
+  }
+  // These amounts arrive already in kobo (the design multiplies its naira input by 100) but as
+  // a NUMBER; the engine takes a kobo string. Round defensively — a float that reached the wire
+  // would be a rejected write at best and a wrong figure at worst.
+  function koboNumberToString(n) {
+    var num = Number(n);
+    if (!isFinite(num) || num < 0) return null;
+    return String(Math.round(num));
+  }
+
+  window.__weweCreateContract = function (p) {
+    var vendorId = resolveVendorId(p && p.vendorId);       // the design passes the vendor name
+    var value = koboNumberToString(p && p.valueKobo);
+    var title = String((p && p.title) || '').trim();
+    if (!vendorId || !value || title.length < 2) return false;
+    var body = { vendorId: vendorId, title: title, valueKobo: value };
+    if (p.startsAt) body.startsAt = p.startsAt;
+    if (p.endsAt) body.endsAt = p.endsAt;
+    var res = post('/v1/contracts', body);
+    if (!res || !res.id) return false;
+    return 'Contract ' + (res.ref || res.title) + ' created.';
+  };
+
+  window.__weweRecordContractPayment = function (p) {
+    var id = resolveContractId(p && p.contractId);
+    var amount = koboNumberToString(p && p.amountKobo);
+    if (!id || !amount || amount === '0') return false;
+    var body = { amountKobo: amount };
+    if (p.note) body.note = String(p.note).trim();
+    var res = post('/v1/contracts/' + id + '/payments', body);
+    if (!res) return false;
+    return 'Payment recorded against the contract.';
+  };
+
+  window.__weweAmendContract = function (p) {
+    var id = resolveContractId(p && p.contractId);
+    var value = koboNumberToString(p && p.newValueKobo);
+    var reason = String((p && p.reason) || '').trim();
+    if (!id || !value) return false;
+    if (reason.length < 10) return false;  // the engine's floor — say so before the round trip
+    var res = post('/v1/contracts/' + id + '/amend', { newValueKobo: value, reason: reason });
+    if (!res) return false;
+    return 'Contract value amended.';
+  };
+
+  // Bank details are deliberately two-handed: the change is held pending, and the person who
+  // proposed it cannot be the one to confirm it. That separation is the control, so each leg
+  // is wired to its own endpoint rather than collapsed into one call.
+  window.__weweProposeBankDetails = function (p) {
+    var id = resolveVendorId(p && p.vendorId);
+    if (!id) return false;
+    var res = patch('/v1/vendors/' + id, {
+      bankDetails: {
+        bankName: String((p && p.bankName) || '').trim(),
+        accountName: String((p && p.accountName) || '').trim(),
+        accountNumber: String((p && p.accountNumber) || '').replace(/\D/g, ''),
+      },
+    });
+    if (!res) return false;
+    return 'Bank details submitted — they take effect once a second person confirms them.';
+  };
+  window.__weweConfirmBankDetails = function (p) {
+    var id = resolveVendorId(p && p.vendorId);
+    if (!id) return false;
+    var res = post('/v1/vendors/' + id + '/bank-details/confirm', {});
+    if (!res) return false;   // the engine refuses the proposer confirming their own change
+    return 'Bank details confirmed.';
+  };
+  window.__weweRejectBankDetails = function (p) {
+    var id = resolveVendorId(p && p.vendorId);
+    var reason = String((p && p.reason) || '').trim();
+    if (!id || reason.length < 5) return false;
+    var res = post('/v1/vendors/' + id + '/bank-details/reject', { reason: reason });
+    if (!res) return false;
+    return 'Bank details rejected.';
+  };
   // Same reasoning: the engine has no draft state for a purchase order (a PO is generated from
   // an awarded RFQ), so there is nothing to save. Recorded as gap 30.
   window.__weweSavePurchaseOrderDraft = function () { return false; };
