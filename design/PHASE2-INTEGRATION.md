@@ -1,96 +1,178 @@
 # WEWE ERP — Phase 2 integration manifest
 
-Additive to Phase 1. Every existing route and behaviour is intact; the only rewrite is the transaction detail page, which now binds to the route parameter instead of fixtures.
+Additive to Phase 1. Every Phase 1 route and behaviour is intact. Read alongside `README.md`.
 
 ---
 
 ## New routes
 
-| Route | Screen | Item |
-|---|---|---|
-| `/requisitions/:ref` | Transaction detail — binds ANY ref | **G20** |
-| `/auth/2fa` | Two-step verification enrolment (3 steps) | **G1** |
-| `/auth/reset` | Forgot / reset password (4 states) | **G2** |
-| `/auth/setup` | First-time account setup from invite (3 steps) | **G3** |
-| `/auth/locked` | Sign-in error states — 3 variants | **G4** |
-| `/account/profile` | My profile & security | **G6** |
-| `/account/signature` | Saved-signature setup (draw / type / upload) | **G7** |
-| `/account/notifications` | Notification preferences | **G8** |
-| `/account/delegation` | Delegation — "while I'm away" | **G9** |
-| `/admin/workflow/chain` | Approval chain editor | **G10** |
-| `/documents/certificate` | Signature certificate | **G15** |
-| `/sign/external` | External signer standalone view (no app shell) | **G16** |
-| `/print/travel-authority` | Travel Authority, print-ready A4 | **G17** |
-| `/print/purchase-order` | Purchase Order on letterhead | **G18** |
-| `/print/hr-letter` | HR employment/salary confirmation | **G19** |
+| Route | Screen |
+|---|---|
+| `/requisitions/:ref` | Transaction detail — binds ANY ref in `TXNS` |
+| `/documents/view?id=<name>` | Document viewer — binds the document named in `id` |
+| `/auth/2fa` | Two-step verification enrolment (3 steps) |
+| `/auth/reset` | Forgot / reset password (4 states) |
+| `/auth/setup` | First-time account setup from invite (3 steps) |
+| `/auth/locked` | Sign-in error states — 3 variants |
+| `/account/profile` | My profile & security |
+| `/account/signature` | Saved-signature setup (draw / type / upload) |
+| `/account/notifications` | Notification preferences |
+| `/account/delegation` | Delegation — "while I'm away" |
+| `/admin/workflow/chain` | Approval chain editor |
+| `/admin/forms` | Forms & data capture library |
+| `/admin/forms/build` | Form builder |
+| `/documents/certificate` | Signature certificate |
+| `/sign/external` | External signer standalone view (no app shell) |
+| `/print/travel-authority` | Travel Authority, print-ready A4 |
+| `/print/purchase-order` | Purchase Order on letterhead |
+| `/print/hr-letter` | HR employment/salary confirmation |
 
-`:ref` matches `/^(REQ|ADV|RET|PO)-\d{4}-\d{4}$/`. Any ref present in `TXNS` renders; unknown refs fall through to the normal not-found state.
+`:ref` matches `/^(REQ|ADV|RET|PO)-\d{4}-\d{4}$/`. Route matching **strips the query string**, so `?id=` and `?demo=1` are safe on any route.
 
-## New panels and modals (no route)
+## Panels and modals (no route)
 
-| Surface | Trigger | Item |
-|---|---|---|
-| Notification centre | Bell in the top bar | **G5** |
-| Decision drawer — approve / return / reject | Detail action panel, queue row actions | **G21** |
-| Bulk-approve modal | Queue → *Bulk approve* | **G11** |
-| Fulfilment / goods-received | Approved transaction → *Record what was received* | **G12** |
-| Signing ceremony | E-signature row → *Sign* | **G14** |
-| Chain sandbox test | Chain editor → *Test in sandbox* | **G10** |
-
-## Data-driven states (no new route)
-
-| State | Where | Item |
-|---|---|---|
-| Over-budget **warn** and **block** | `/requisitions/new` — budget-check table + banners | **G13** |
-
-Both variants are driven by `OB_LINES` plus an in-page switcher so reviewers can see each; in production the variant follows the data (warn when a line has partial headroom, block when the award has no uncommitted balance).
+| Surface | Trigger |
+|---|---|
+| Notification centre | Bell in the top bar |
+| Decision drawer — approve / return / reject | Detail action panel, queue row actions |
+| Bulk-approve modal | Queue → *Bulk approve* |
+| Fulfilment / goods received | Approved transaction → *Record what was received* |
+| Signing ceremony | E-signature row → *Sign* |
+| Document upload | Repository → *+ Upload documents* |
+| Chain sandbox test | Chain editor → *Test in sandbox* |
 
 ---
 
-## New consts to substitute at boot
+## Integration hooks
 
-| Const | Shape | Feeds |
-|---|---|---|
-| `TXN_DETAIL` | `{ [ref]: { budgetLine, allocated, committed, lines:[[desc, qty, unitKobo]], docs:[[name, size]], comments:[[who, body, when, tone]] } }` | Transaction detail. Any ref **absent** from this map is synthesised from its `TXNS` row, so partial coverage is safe. `tone` ∈ `green` \| `amber` \| `neutral`. |
-| `NOTIFICATIONS` | `{ id, kind:'action'\|'update', title, body, when, unread, to }` | Notification centre. `to` is a route. |
-| `SESSIONS_MINE` | `{ device, where, ip, last, current }` | Active sessions table |
-| `DELEGATIONS_MINE` | `{ to, title, from, until, scope, state, used }` | Past delegations |
-| `NOTIF_PREFS` | `{ cat, note, mode:'instant'\|'digest'\|'off', locked }` | Notification preferences. `locked:true` = always instant. |
-| `BACKUP_CODES` | `string[]` (10) | 2FA backup-code sheet |
-| `CHAIN_TYPES` | `{ [type]: [{ role, min, sla, note }] }` — `min` in naira, `sla` in hours | Chain editor. `min:0` = stage always applies. |
-| `CHAIN_VERSIONS` | `{ v, when, who, note, live }` | Chain version history |
-| `BULK_QUEUE` | `{ ref, title, amount, ok, reason }` | Bulk-approve eligibility. `ok:false` + `reason` renders as excluded. |
-| `FULFIL_LINES` | `{ desc, ordered, state:'full'\|'part'\|'none', got }` | Goods-received per line |
-| `OB_LINES` | `{ line, amount, avail, warn }` | Over-budget line check |
-| `CERT_SIGNERS` | `{ name, role, method, verified, when, ip, done }` | Certificate signatory table |
-| `DEPT_HEAD` | `{ [dept]: name }` | Stage-2 actor on the tracker |
-| `STAGE_ACTOR` | `string[5]`, `'DEPT_HEAD'` resolves via `DEPT_HEAD` | Tracker actors |
+Two mechanisms. Both fall back to a neutral toast when the handler is absent, so the bundle still demos standalone.
 
-Existing consts still read unchanged: `TXNS`, `VENDORS`, `ASSETS`, `LEAVE`, `USERS`, `FINDINGS`, `GRANTS`, `BUDGET_ROWS`, `AUDIT_LOG`, `INV_ITEMS`, `QB_EXCEPTIONS`, `DASH`, `PAGE_SPECS`.
-
----
-
-## Integration hook — `window.__weweAct`
+### 1. Approval actions — `window.__weweAct`
 
 ```js
 window.__weweAct = (ref, verb, note) => { /* verb: 'approve' | 'return' | 'reject' */ };
 ```
 
-Called by the decision drawer on confirm, and by queue row Approve / Return / Reject. When the function is absent the prototype falls back to its own toast, so the bundle still demos standalone.
-
+Called by the decision drawer and by queue row Approve / Return / Reject.
 - `approve` — note optional, may be `''`
-- `return` / `reject` — note guaranteed non-empty and ≥ 8 characters; the confirm button is disabled until then, matching the engine's mandatory-note rule.
+- `return` / `reject` — note guaranteed non-empty and ≥ 8 characters; confirm is disabled until then
 
-Confirm copy always restates the ref and the verb ("Return REQ-2026-0187", "Reject PO-2026-0064").
+### 2. Everything else — `window.__wewe<Action>(payload)`
+
+Each returns an optional string used as the toast; throwing surfaces "the server rejected it. Nothing was saved."
+
+| Handler | Payload | Fired by |
+|---|---|---|
+| `__weweCreateRequisition` | `{purpose, budgetLine, lines, totalKobo}` | New requisition → Submit |
+| `__weweSaveRequisitionDraft` | `{purpose, lines}` | New requisition → Save as draft |
+| `__weweSubmitPayroll` | `{period}` | Payroll → Send for approval |
+| `__weweSubmitTimesheet` | `{rows}` | Timesheet → Submit |
+| `__weweApplyLegalHold` | `{documents:[name]}` | Repository → Apply legal hold |
+| `__weweUploadDocuments` | `{name, mime, dataBase64, folderId, confidential, ocr}` — **one call per file** | Repository → Upload |
+| `__weweSettleRefund` | `{retirementId, refundSettledRef, method}` — method ∈ `CASH`\|`BANK_TRANSFER`\|`SALARY_DEDUCTION` | Retirement variance |
+| `__weweCreateStaff` | `{name, email, roles:[code]}` | HR → Add staff member |
+| `__weweStartOnboarding` | `{userId}` | Onboarding |
+| `__weweSendRfq` | `{title}` (min 3 chars) | Procurement → Create RFQ |
+| `__weweStartAssetVerification` | `{location}` | Assets |
+| `__weweCreateDonor` | `{code, donor, title, currency, valueMinor}` — code `^[A-Z0-9][A-Z0-9-]*$`, value in minor units | Grants → Add a donor |
+| `__weweSignDocument` | `{requestId, method}` — method ∈ `drawn`\|`typed`\|`saved` | Signing ceremony |
+| `__weweSaveWorkflowChain` | `{code, name, refPrefix, stages:[{role, minAmountKobo?, slaHours?}]}` — role is the enum code | Chain editor |
+| `__wewePublishRole` | `{roleCode, grants:[{module, action, scope}]}` | Roles → Publish changes |
+| `__weweSaveReport` | `{name, columns:[apiField]}` | Report builder → Save |
+| `__weweEnrol2fa` | `{code}` — the entered 6-digit TOTP | 2FA enrolment |
+| `__weweStartDelegation` | `{delegateId, startsAt, endsAt}` | Delegation |
+| `__weweCancelDelegation` | `{id}` | Delegation → Cancel now |
+| `__weweExport` | `{}` | Any export |
+
+**Awaiting a backend route — hooks fire, fallback toast stands:** `EmailPayslip`, `RaiseRemittancePayment`, `CreateObjective`, `CreateRole`, `SaveForm`, `PublishForm`, `SignOutOtherSessions`, `SaveSignature`, `CreateEvidencePack`.
+
+**Report column names** map to the API set `ref, title, typeCode, status, amountKobo, donorCode, submittedAt, createdAt` via the `api` key on `RB_FIELDS`.
+
+---|---|---|
+| `__weweCreateRequisition` | `{purpose, budgetLine, lines, totalKobo}` | New requisition → Submit |
+| `__weweSaveRequisitionDraft` | `{purpose, lines}` | New requisition → Save as draft |
+| `__weweSubmitPayroll` | `{period}` | Payroll → Send for approval |
+| `__weweSubmitTimesheet` | `{rows}` | Timesheet → Submit |
+| `__weweUploadDocuments` | `{folder, confidential, ocr}` | Repository → Upload |
+| `__weweCreateEvidencePack` | `{documents}` | Repository → Add to evidence pack |
+| `__weweApplyLegalHold` | `{documents}` | Repository → Apply legal hold |
+| `__weweSignDocument` | `{method}` | Signing ceremony |
+| `__weweCreateStaff` | `{}` | HR → Add staff member |
+| `__weweSendRfq` | `{vendors}` | Procurement → Send RFQ |
+| `__weweCreateDonor` | `{}` | Grants → Add a donor |
+| `__weweSaveForm` / `__wewePublishForm` | `{fields, mapTo}` | Form builder |
+| `__weweSaveWorkflowChain` | `{type}` | Chain editor → Save version |
+| `__weweCreateRole` / `__wewePublishRole` | `{}` | Roles |
+| `__weweStartDelegation` / `__weweCancelDelegation` | `{to}` | Delegation |
+| `__weweSettleRefund` | `{method}` | Retirement variance |
+| `__weweSaveReport` | `{groupBy}` | Report builder |
+| `__weweEmailPayslip` | `{staff}` | Payslip → Email |
+| `__weweRaiseRemittancePayment` | `{authority}` | Remittances |
+| `__weweStartAssetVerification` | `{}` | Assets |
+| `__weweStartOnboarding` | `{tasks}` | Onboarding |
+| `__weweCreateObjective` | `{weight}` | Appraisal |
+| `__weweEnrol2fa` / `__weweSignOutOtherSessions` / `__weweSaveSignature` | `{}` | Account |
+| `__weweExport` | `{}` | Any export |
 
 ---
 
+## Data consts
+
+Existing, read unchanged: `TXNS`, `VENDORS`, `ASSETS`, `LEAVE`, `USERS`, `FINDINGS`, `GRANTS`, `BUDGET_ROWS`, `AUDIT_LOG`, `INV_ITEMS`, `QB_EXCEPTIONS`, `DASH`, `PAGE_SPECS`, `PAYROLL`, `DOCS`.
+
+**New in Phase 2** — substitute these the same way:
+
+| Const | Shape | Feeds |
+|---|---|---|
+| `TXN_DETAIL` | `{ [ref]: { budgetLine, allocated, committed, lines:[[desc,qty,unitKobo]], docs:[[name,size]], comments:[[who,body,when,tone]] } }` | Transaction detail. A ref absent from this map is synthesised from its `TXNS` row, so partial coverage is safe. `tone` ∈ `green`\|`amber`\|`neutral`. |
+| `DMS_TREE` | `{label, count, depth}` | Repository folder tree |
+| `DMS_CLASSES` | `{label, n}` | Repository class facet |
+| `DMS_DOCS` | `{name, folder, cls, size, ver, when, conf, hold, ocr, linked, signed}` | Repository table **and the document viewer** |
+| `DMS_ACCESS` | `{who, act, when, ext}` | Recent access table |
+| `NOTIFICATIONS` | `{id, kind:'action'\|'update', title, body, when, unread, to}` | Notification centre |
+| `SESSIONS_MINE` | `{device, where, ip, last, current}` | Active sessions |
+| `DELEGATIONS_MINE` | `{to, title, from, until, scope, state, used}` | Past delegations |
+| `NOTIF_PREFS` | `{cat, note, mode:'instant'\|'digest'\|'off', locked}` | Notification preferences |
+| `BACKUP_CODES` | `string[]` (10) | 2FA backup-code sheet |
+| `CHAIN_TYPES` | `{ [type]: [{role, min, sla, note}] }` — `min` naira, `sla` hours | Chain editor. `min:0` = always applies. |
+| `CHAIN_VERSIONS` | `{v, when, who, note, live}` | Chain version history |
+| `BULK_QUEUE` | `{ref, title, amount, ok, reason}` | Bulk-approve eligibility |
+| `FULFIL_LINES` | `{desc, ordered, state:'full'\|'part'\|'none', got}` | Goods received |
+| `OB_LINES` | `{line, amount, avail, warn}` | Over-budget line check |
+| `CERT_SIGNERS` | `{name, role, method, verified, when, ip, done}` | Certificate signatory table |
+| `DEPT_HEAD` / `STAGE_ACTOR` | `{[dept]: name}` / `string[5]` | Tracker actors |
+| `FORM_LIST`, `FIELD_TYPES`, `START_FIELDS` | see source | Form builder |
+| `ONB_TASKS`, `RFQ_VENDORS`, `TEMPLATE_LINES`, `RB_FIELDS` | see source | Dialogs and report builder |
+
+---
+
+## Derived values — do not hardcode over these
+
+These now compute from the collections, so sparse live data reads correctly:
+
+- Register headline — `TXNS.length` and the summed amount
+- Reports headline — same source
+- Payroll "Showing *n* of *m*" — `PAYROLL.length`
+- Sidebar badges — pending `TXNS` at the signed-in role's stage
+- Dashboard activity feed refs — first pending `TXNS`
+- Repository counts — the filtered `DMS_DOCS` set
+- Requisition detail, budget bar, approval route — all from the record
+
+## Empty states
+
+Present on the requisitions register (wording varies by tab), the generic `PAGE_SPECS` tables, the repository, and the new-requisition line editor. They fire off `.length === 0`, so they appear automatically under sparse data.
+
+## Demo affordances
+
+- **Persona switcher** — chevron and panel render only when the URL carries `?demo=1`. Without it the avatar shows the signed-in user's real job title and is inert.
+- **2FA / external OTP** — real 6-digit numeric inputs; Confirm is disabled until all six digits are entered. Verification itself is server-side.
+- No toast asserts a specific outcome that did not happen; unwired actions say "Submitted." / "Saved."
+
 ## Notes for wiring
 
-1. **Detail page** — `TXNS` substitution alone is enough to make every ref render. Add `TXN_DETAIL` entries where the backend has real line items, documents and comments; anything missing is generated from the row so no ref 404s.
-2. **Tracker** — derived from `txn.stage` (0–4, ≥5 = complete) and `txn.status` (`pending` \| `returned` \| `approved` \| `rejected`). Action buttons render only for `pending`.
-3. **QR codes** — the 2FA and certificate/printable QR codes are deterministic **placeholder matrices** generated from a seed string, not real encoders. Swap in a QR library and pass `otpauthUri` / the verify URL.
-4. **Signature pads** — `<canvas>` with a pointer-event drawing handler. Replace with the codebase's signature component if one exists; the ceremony records which method was used and the certificate prints it.
-5. **External signer view** renders as a full-viewport layer above the shell, so it reads as a separate page. In production it should be a genuinely separate route outside the authenticated layout.
-6. **Printables** are fixed 794px sheets (A4 at 96dpi) with 64px margins. They print as-is; no separate print stylesheet is needed.
-7. New admin sub-nav entries were added under Administration (Approval chain editor) and Documents (Signature certificate, External signer view, Printable documents) so every new surface is reachable by clicking.
+1. **Detail page** — substituting `TXNS` alone makes every ref render. Add `TXN_DETAIL` entries where real line items exist.
+2. **Tracker** — derived from `txn.stage` (0–4, ≥5 complete) and `txn.status` (`pending`\|`returned`\|`approved`\|`rejected`). Action buttons render only for `pending`.
+3. **QR codes** are deterministic placeholder matrices, not real encoders. Swap in a QR library and pass `otpauthUri` / the verify URL.
+4. **Signature pads** are `<canvas>` with a pointer handler; the ceremony records which method was used and the certificate prints it.
+5. **External signer** renders as a full-viewport layer above the shell. In production it should be a separate route outside the authenticated layout.
+6. **Printables** are fixed 794px sheets (A4 at 96dpi); they print as-is with no separate stylesheet.
