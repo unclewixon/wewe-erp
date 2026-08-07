@@ -34,6 +34,14 @@ function localCdnResources(): Plugin {
   DATA_WRAPS.push(["','amber']] }\n};", "','amber']] }\n}, (window.__weweData && window.__weweData.TXN_DETAIL) || {});"]);
   DATA_WRAPS.push(['const CHAIN_TYPES = {', 'const CHAIN_TYPES = Object.assign({']);
   DATA_WRAPS.push(["'Second signature, always required' }\n  ]\n};", "'Second signature, always required' }\n  ]\n}, (window.__weweData && window.__weweData.CHAIN_TYPES) || {});"]);
+  // Phase 1.11 procurement: RFQ rounds (keyed by RFQ ref, carrying the quotes the award
+  // screen picks from) and PO records (keyed by PO ref, carrying the lines a goods receipt
+  // counts against). Both are objects, so they merge per-key like TXN_DETAIL — a live round
+  // overrides its fixture, and rounds we have no data for keep theirs.
+  DATA_WRAPS.push(['const RFQ_ROUNDS = {', 'const RFQ_ROUNDS = Object.assign({']);
+  DATA_WRAPS.push(["000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n};", "000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n}, (window.__weweData && window.__weweData.RFQ_ROUNDS) || {});"]);
+  DATA_WRAPS.push(['const PO_RECORDS = {', 'const PO_RECORDS = Object.assign({']);
+  DATA_WRAPS.push(["partial delivery accepted','04/08/2026 · 16:22','amber']] }\n};", "partial delivery accepted','04/08/2026 · 16:22','amber']] }\n}, (window.__weweData && window.__weweData.PO_RECORDS) || {});"]);
   // FIX (serve-time, design file stays byte-identical): the register rows hardcode the demo
   // detail ref REQ-2026-0187, which doesn't exist under live data → clicking a requisition
   // opened a blank detail. Open the row's OWN ref instead (the adapter wires real detail for

@@ -72,37 +72,13 @@
 
   // No session: hold the door. The design's screens still render, but its Continue /
   // Verify buttons are intercepted so they cannot advance on presentation alone.
-  // The design's sign-in card ships its email and password as fixed literals with no onChange
-  // (`value="n.okafor@wewe.org.ng"`), so React renders them read-only and nobody can type a
-  // credential into them. Replacing each node with a clone drops React's synthetic listeners and
-  // leaves the same input, in the same place, now accepting text. No UI is invented here — the
-  // proper fix is a design one (bound fields + a sign-in hook) and is recorded for Design.
-  function makeSignInFieldsUsable() {
-    var ins = textInputs(), emailEl = null, passEl = null;
-    for (var i = 0; i < ins.length; i++) {
-      var t = (ins[i].type || 'text').toLowerCase();
-      if (t === 'password' && !passEl) passEl = ins[i];
-      else if (!emailEl && t !== 'password') emailEl = ins[i];
-    }
-    if (!emailEl || !passEl || emailEl.dataset.weweLive === '1') return false;
-    [[emailEl, 'Your work email'], [passEl, 'Your password']].forEach(function (pair) {
-      var el = pair[0], clone = el.cloneNode(true);
-      clone.value = '';
-      clone.setAttribute('value', '');
-      clone.setAttribute('placeholder', pair[1]);
-      clone.dataset.weweLive = '1';
-      el.parentNode.replaceChild(clone, el);
-    });
-    return true;
-  }
-
+  // Phase 1.11 binds the sign-in fields (siEmail / siPass with onChange), so the clone
+  // surgery that used to live here — replacing both inputs to strip React's listeners
+  // because they were fixed literals — is no longer needed. Their values can simply be
+  // read at click time. The interception below stays: the design still has no SignIn
+  // hook, so its buttons would otherwise advance on presentation alone.
   function installSignInGate() {
     var pendingToken = null, passThrough = false;
-    var tries = 0;
-    var poll = setInterval(function () {
-      if (++tries > 60) return clearInterval(poll);
-      if (document.body && /Welcome back/i.test(document.body.innerText) && makeSignInFieldsUsable()) clearInterval(poll);
-    }, 120);
     document.addEventListener('click', function (ev) {
       var btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
       if (!btn) return;
@@ -179,7 +155,21 @@
         var v = findButton('Verify and sign in'); if (v) v.click();
         return;
       }
-      if (/Welcome back/i.test(body)) { var c = findButton('Continue'); if (c) c.click(); }
+      if (/Welcome back/i.test(body)) {
+        // 1.11 gates the button on both fields being filled — empty reads "Enter your email
+        // and password". The engine has already vouched for this person via the session
+        // cookie and the credential gate is NOT installed on this path, so filling the form
+        // to get past a presentational screen attempts no login and proves nothing.
+        var ins = textInputs(), em = null, pwd = null;
+        for (var k = 0; k < ins.length; k++) {
+          var ty = (ins[k].type || 'text').toLowerCase();
+          if (ty === 'password' && !pwd) pwd = ins[k];
+          else if (!em && ty !== 'password') em = ins[k];
+        }
+        if (em && !String(em.value || '').trim()) return setControlledValue(em, (window.__weweSignedInEmail || 'signed-in@wewe.org'));
+        if (pwd && !String(pwd.value || '').trim()) return setControlledValue(pwd, 'session-already-established');
+        var c = findButton('Continue'); if (c) c.click();
+      }
     }, 120);
   }
 
@@ -202,6 +192,7 @@
     return;
   }
   window.__weweUser = me.user && me.user.name;
+  window.__weweSignedInEmail = me.user && me.user.email;
   installSignOut();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', skipPresentationalSignIn);
   else skipPresentationalSignIn();
@@ -996,6 +987,70 @@
     });
   });
 
+  // ---- Phase 1.11: RFQ rounds, keyed by the reference the buyer sees ----
+  // The award screen reads RFQ_ROUNDS[ref] and picks a winner out of its quotes, so the quote
+  // ids here have to be the engine's real ones — they are what comes back on the award.
+  wire('RFQ_ROUNDS', function () {
+    var rfqs = xhr('GET', '/v1/rfqs');
+    if (!Array.isArray(rfqs) || !rfqs.length) return null;
+    var out = {};
+    rfqs.slice(0, 20).forEach(function (r) {
+      var d = xhr('GET', '/v1/rfqs/' + r.id);
+      if (!d) return;
+      var quotes = (d.quotes || []).map(function (q) {
+        return {
+          id: q.id,
+          vendor: (q.vendor && q.vendor.name) || '—',
+          total: naira(q.totalKobo),
+          days: q.deliveryDays || 0,
+          valid: q.validityDays || 0,
+          blacklisted: Boolean(q.vendor && q.vendor.blacklisted),
+          note: q.note || '',
+        };
+      });
+      out[r.ref] = {
+        title: d.title || r.title,
+        req: (d.requisition && d.requisition.ref) || '—',
+        band: '—',                       // the band label is engine policy, not an RFQ field
+        minQuotes: d.minQuotes || 3,     // the engine refuses below this without a sole-source case
+        closed: ddmmyyyy(d.deadline),
+        state: String(d.status || '').toLowerCase() === 'selected' ? 'awarded'
+          : quotes.length ? 'evaluating' : 'open',
+        quotes: quotes,
+      };
+    });
+    return Object.keys(out).length ? out : null;
+  });
+
+  // ---- Phase 1.11: purchase orders, keyed by reference, with the lines a receipt counts ----
+  wire('PO_RECORDS', function () {
+    var pos = xhr('GET', '/v1/purchase-orders');
+    if (!Array.isArray(pos) || !pos.length) return null;
+    var out = {};
+    pos.slice(0, 20).forEach(function (p) {
+      var d = xhr('GET', '/v1/purchase-orders/' + p.id);
+      if (!d) return;
+      out[p.ref] = {
+        vendor: (d.vendor && d.vendor.name) || '—',
+        vendorTin: (d.vendor && d.vendor.tin) || '—',
+        vendorAddr: (d.vendor && d.vendor.contact && d.vendor.contact.address) || '—',
+        req: (d.requisition && d.requisition.ref) || '—',
+        rfq: (d.rfq && d.rfq.ref) || '—',
+        donor: d.donorCode || 'Core',
+        budgetLine: (d.budgetLine && d.budgetLine.name) || '—',
+        raised: ddmmyyyy(d.issuedAt || d.createdAt),
+        promised: ddmmyyyy(d.promisedAt),
+        terms: d.paymentTerms || '—',
+        status: String(d.status || 'open').toLowerCase(),
+        // [description, ordered, unit naira, already received] — the receipt form counts against these
+        lines: (d.lines || []).map(function (l) {
+          return [l.description, l.qty, naira(l.unitKobo), Number(l.receivedQty || 0)];
+        }),
+      };
+    });
+    return Object.keys(out).length ? out : null;
+  });
+
   // ---- documents: library rows walked from the folder tree ----
   wire('DOCS', function () {
     function fmtBytes(n) {
@@ -1391,6 +1446,131 @@
     registerNewTxn(res);
     return 'Draft ' + res.ref + ' saved.';
   };
+
+  // ---- Procurement (Phase 1.11) ----
+  // The design addresses things the way a buyer does — a vendor by name, an RFQ or PO by its
+  // printed reference — while the engine keys on ids. These resolvers close that gap; without
+  // them every procurement write would 404 on an identifier that is perfectly correct on screen.
+  function resolveVendorId(nameOrId) {
+    var v = String(nameOrId || '').trim();
+    if (!v) return null;
+    var all = get('/v1/vendors') || [];
+    var hit = all.find(function (x) { return x.id === v; })
+      || all.find(function (x) { return String(x.name).toLowerCase() === v.toLowerCase(); })
+      || all.find(function (x) { return String(x.name).toLowerCase().indexOf(v.toLowerCase()) === 0; });
+    return hit ? hit.id : null;
+  }
+  function resolveRfqId(refOrId) {
+    var v = String(refOrId || '').trim();
+    if (!v) return null;
+    var all = get('/v1/rfqs') || [];
+    var hit = all.find(function (x) { return x.id === v || x.ref === v; });
+    return hit ? hit.id : null;
+  }
+  function resolvePoId(refOrId) {
+    var v = String(refOrId || '').trim();
+    if (!v) return null;
+    var all = get('/v1/purchase-orders') || [];
+    var hit = all.find(function (x) { return x.id === v || x.ref === v; });
+    return hit ? hit.id : null;
+  }
+  // Amounts arrive from the design in naira (its money fields are naira throughout); the
+  // engine takes kobo as a string. Never let a float reach the wire.
+  function nairaToKoboString(n) {
+    var num = Number(n);
+    if (!isFinite(num) || num < 0) return null;
+    return String(Math.round(num * 100));
+  }
+
+  window.__weweCreateVendor = function (p) {
+    var name = String((p && p.name) || '').trim();
+    if (name.length < 2) return false;
+    var body = { name: name };
+    if (p.contact) {
+      var c = {};
+      if (p.contact.email) c.email = String(p.contact.email).trim();
+      if (p.contact.phone) c.phone = String(p.contact.phone).trim();
+      if (p.contact.address) c.address = String(p.contact.address).trim();
+      if (Object.keys(c).length) body.contact = c;
+    }
+    if (p.tin) body.tin = String(p.tin).trim();
+    if (Array.isArray(p.categories) && p.categories.length) body.categories = p.categories;
+    var res = post('/v1/vendors', body);
+    if (!res || !res.id) return false;
+    return 'Vendor ' + res.name + ' registered.';
+  };
+
+  window.__weweRecordDueDiligence = function (p) {
+    // The design passes the vendor by name here (its form field is the name).
+    var id = resolveVendorId(p && p.vendorId);
+    if (!id) return false;
+    var res = patch('/v1/vendors/' + id, {
+      dueDiligence: {
+        cacDocId: String((p && p.cacDocId) || '').trim(),
+        taxClearanceDocId: String((p && p.taxClearanceDocId) || '').trim(),
+        expiresAt: (p && p.expiresAt) || undefined,
+      },
+    });
+    if (!res) return false;
+    return res.dueDiligenceStatus === 'COMPLETE'
+      ? 'Due diligence recorded — this vendor can now be invited to quote.'
+      : 'Due diligence saved, but it is still incomplete: both the CAC and tax clearance references are needed, with an expiry in the future.';
+  };
+
+  window.__weweAddQuote = function (p) {
+    var rfqId = resolveRfqId(p && p.rfqId);
+    var vendorId = resolveVendorId(p && p.vendorId);
+    if (!rfqId || !vendorId) return false;
+    var kobo = nairaToKoboString(p && p.totalKobo);   // named Kobo by the design, sent as naira
+    if (!kobo) return false;
+    var body = { vendorId: vendorId, totalKobo: kobo };
+    if (p.validityDays) body.validityDays = Number(p.validityDays);
+    var res = post('/v1/rfqs/' + rfqId + '/quotes', body);
+    if (!res) return false;
+    return 'Quote recorded.';
+  };
+
+  window.__weweAwardQuote = function (p) {
+    var rfqId = resolveRfqId(p && p.rfqId);
+    if (!rfqId) return false;
+    // The design's quote ids are the ones we supplied in RFQ_ROUNDS, so they are already real.
+    var body = { quoteId: String((p && p.quoteId) || ''), justification: String((p && p.justification) || '').trim() };
+    if (p.soleSource) body.soleSource = String(p.soleSource).trim();
+    if (p.committeeNote) body.committeeNote = String(p.committeeNote).trim();
+    var res = post('/v1/rfqs/' + rfqId + '/select', body);
+    if (!res) return false;
+    return 'Quote awarded. You can now raise the purchase order.';
+  };
+
+  window.__weweCreatePurchaseOrder = function (p) {
+    var rfqId = resolveRfqId(p && p.rfqId);
+    if (!rfqId) return false;
+    var res = post('/v1/purchase-orders', { rfqId: rfqId });
+    if (!res || !res.ref) return false;
+    return 'Purchase order ' + res.ref + ' raised.';
+  };
+
+  window.__weweRecordGoodsReceipt = function (p) {
+    var poId = resolvePoId(p && p.purchaseOrderId);
+    if (!poId) return false;
+    var lines = (p && p.lines || []).filter(function (l) { return Number(l.qty) > 0; })
+      .map(function (l) { return { lineIndex: Number(l.lineIndex), qty: Number(l.qty) }; });
+    if (!lines.length) return false;
+    var body = { lines: lines };
+    if (p.note) body.note = String(p.note).trim();
+    var res = post('/v1/purchase-orders/' + poId + '/receipts', body);
+    if (!res) return false;
+    return 'Goods receipt recorded.';
+  };
+
+  // Deliberately answered with a refusal rather than left undefined. An unwired hook falls
+  // back to the design's own success copy, which would announce a payment that never happened;
+  // returning false makes the design show its failure state instead. The payload carries only
+  // a contract reference — no amount — so there is nothing to post. Recorded as gap 30.
+  window.__weweRecordContractPayment = function () { return false; };
+  // Same reasoning: the engine has no draft state for a purchase order (a PO is generated from
+  // an awarded RFQ), so there is nothing to save. Recorded as gap 30.
+  window.__weweSavePurchaseOrderDraft = function () { return false; };
 
   // ---- Procurement: raise a request for quotation ----
   // The only procurement write the design currently emits. Everything else in the module —

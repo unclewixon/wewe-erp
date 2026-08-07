@@ -101,17 +101,22 @@
             <div style="display:flex; flex-direction:column; gap:16px; margin-top:32px;">
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Email address</label>
-                <input value="n.okafor@wewe.org.ng" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                <input value="{{ siEmail }}" onChange="{{ setSiEmail }}" placeholder="name@wewe.org.ng" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
               </div>
               <div style="display:flex; flex-direction:column; gap:7px;">
                 <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Password</label>
-                <input type="password" value="························" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" />
+                <input type="password" value="{{ siPass }}" onChange="{{ setSiPass }}" placeholder="Your password" style="height:44px; border-radius:10px; border:1px solid #DFD6C9; background:#EFEAE1; padding:0 14px; font-size:14px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
               </div>
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#6B7280; white-space:nowrap;"><input type="checkbox" style="accent-color:#E0572E; width:15px; height:15px; flex:none;" />Keep me signed in</label>
                 <a href="#/dashboard" style="font-size:13px; font-weight:500;">Forgot password?</a>
               </div>
-              <button onClick="{{ toSecondFactor }}" style="height:46px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600; box-shadow:0 1px 2px rgba(16,24,40,.08); transition:background 180ms ease-out;" style-hover="background:#C8481F">Continue</button>
+              <sc-if value="{{ siReady }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ doSignIn }}" style="height:46px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600; box-shadow:0 1px 2px rgba(16,24,40,.08); transition:background 180ms ease-out;" style-hover="background:#C8481F">Continue</button>
+              </sc-if>
+              <sc-if value="{{ siIncomplete }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ noop }}" style="height:46px; width:100%; border:none; border-radius:10px; background:#E4DCD1; color:#A99C8C; font-size:14px; font-weight:600;">Enter your email and password</button>
+              </sc-if>
             </div>
             <div style="margin-top:22px; padding-top:18px; border-top:1px solid #E4DCD1; font-size:12px; color:#8A8177; line-height:1.6;">Use your WEWE work email. A six-digit code follows for roles that touch money.</div>
           </div>
@@ -120,10 +125,15 @@
 <sc-if value="{{ is2fa }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="Two-factor">
             <div style="font-size:34px; font-weight:700; color:#1A1D21; letter-spacing:-.02em; line-height:1.12;">Two-step verification</div>
-            <div style="font-size:13px; color:#8A8177; margin-top:6px; line-height:1.6;">Enter the 6-digit code from your authenticator app for <span style="color:#3B3B3B; font-weight:500;">n.okafor@wewe.org.ng</span>.</div>
+            <div style="font-size:13px; color:#8A8177; margin-top:6px; line-height:1.6;">Enter the 6-digit code from your authenticator app for <span style="color:#3B3B3B; font-weight:500;">{{ siEmailShown }}</span>.</div>
             <input value="{{ otp }}" onChange="{{ onOtp }}" maxLength="6" style="margin-top:24px; width:100%; height:56px; border-radius:12px; border:1px solid #DFD6C9; background:#EFEAE1; text-align:center; font-size:26px; font-weight:600; letter-spacing:.34em; color:#1A1D21; outline:none; font-variant-numeric:tabular-nums;" />
             <div style="font-size:12px; color:#8A8177; margin-top:10px;">Code refreshes every 30 seconds.</div>
-            <button onClick="{{ signIn }}" style="margin-top:22px; width:100%; height:46px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600;" style-hover="background:#C8481F">Verify and sign in</button>
+            <sc-if value="{{ otpReady2 }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ doVerify2fa }}" style="margin-top:22px; width:100%; height:46px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:14px; font-weight:600;" style-hover="background:#C8481F">Verify and sign in</button>
+            </sc-if>
+            <sc-if value="{{ otpShort2 }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ noop }}" style="margin-top:22px; width:100%; height:46px; border:none; border-radius:10px; background:#E4DCD1; color:#A99C8C; font-size:14px; font-weight:600;">Enter all 6 digits</button>
+            </sc-if>
             <div style="display:flex; gap:18px; margin-top:18px; font-size:13px;">
               <a href="#/dashboard">Use a backup code</a>
               <a href="#/dashboard">Resend</a>
@@ -803,6 +813,189 @@
           </div>
         </sc-if>
 
+        <sc-if value="{{ isBB }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Build a budget" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/budgets">Budgets</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">Build a budget</span>
+            </div>
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
+              <div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Build a budget</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ bbLineCount }} · {{ bbTotalF }} of a {{ bbCeilingF }} envelope · quarterly phasing</div>
+              </div>
+              <div style="display:flex; gap:8px; flex:none;">
+                <a href="#/budgets/import" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21; display:inline-flex; align-items:center; text-decoration:none;">Import a spreadsheet instead</a>
+                <button onClick="{{ bbSaveDraft }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Save draft</button>
+                <sc-if value="{{ bbValid }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ bbSubmit }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Submit for approval</button>
+                </sc-if>
+                <sc-if value="{{ bbOver }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ noop }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Over the envelope</button>
+                </sc-if>
+                <sc-if value="{{ bbUnnamed }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ noop }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Name every line first</button>
+                </sc-if>
+                <sc-if value="{{ bbNothingYet }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ noop }}" title="{{ bbNothingHint }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">{{ bbNothingLabel }}</button>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:12px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:22px 24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="display:grid; grid-template-columns:170px minmax(0,1fr); gap:20px; align-items:start;">
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Fiscal year</label>
+                      <select value="{{ bbYear }}" onChange="{{ setBbYear }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;"><option>FY2027</option><option>FY2026</option></select>
+                    </div>
+                    <div>
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B;">How are you building it?</label>
+                      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:9px; margin-top:9px;">
+                        <sc-for list="{{ bbBasisModes }}" as="m" hint-placeholder-count="3">
+                          <sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ m.onClick }}" style="text-align:left; padding:13px 14px; border:none; border-radius:11px; background:#F5F6F8; box-shadow:inset 0 0 0 1.5px #E0572E;">
+                              <div style="font-size:13px; font-weight:600; color:#1A1D21;">{{ m.label }}</div>
+                              <div style="font-size:11px; color:#6B7280; margin-top:4px; line-height:1.45;">{{ m.note }}</div>
+                            </button>
+                          </sc-if>
+                          <sc-if value="{{ m.off }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ m.onClick }}" style="text-align:left; padding:13px 14px; border:1px solid #E3E5E8; border-radius:11px; background:#fff;" style-hover="border-color:#E0572E">
+                              <div style="font-size:13px; font-weight:500; color:#3B3B3B;">{{ m.label }}</div>
+                              <div style="font-size:11px; color:#9AA0A8; margin-top:4px; line-height:1.45;">{{ m.note }}</div>
+                            </button>
+                          </sc-if>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ bbShowUplift }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:14px; margin-top:16px; padding:14px 16px; border-radius:11px; background:#F7F8FA;">
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B; flex:none;">Uplift on FY2026</label>
+                      <input value="{{ bbUplift }}" onChange="{{ setBbUplift }}" style="width:80px; height:34px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; padding:0 10px; font-size:13px; text-align:right; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                      <span style="font-size:13px; color:#6B7280;">%</span>
+                      <span style="font-size:12px; color:#9AA0A8; line-height:1.5; flex:1;">Applied to every carried-forward line. Change it and the whole table re-costs.</span>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow-x:auto; overflow-y:hidden; scrollbar-width:thin;">
+                  <div style="display:flex; align-items:center; gap:12px; padding:20px 24px 14px 24px; min-width:756px;">
+                    <div style="flex:1;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">Budget lines</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Type into any quarter — the line total, group subtotals and the envelope update as you go</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <sc-for list="{{ bbGroupModes }}" as="g" hint-placeholder-count="3">
+                        <sc-if value="{{ g.on }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ g.onClick }}" style="height:30px; padding:0 12px; border:none; border-radius:8px; background:#1A1D21; color:#fff; font-size:11px; font-weight:600;">{{ g.label }}</button>
+                        </sc-if>
+                        <sc-if value="{{ g.off }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ g.onClick }}" style="height:30px; padding:0 12px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; color:#3B3B3B; font-size:11px; font-weight:500;" style-hover="border-color:#E0572E; color:#B23F1D">{{ g.label }}</button>
+                        </sc-if>
+                      </sc-for>
+                    </div>
+                    <button onClick="{{ bbSpread }}" style="height:30px; padding:0 12px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; font-size:11px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">Spread evenly</button>
+                    <button onClick="{{ bbAdd }}" style="height:30px; padding:0 12px; border:none; border-radius:8px; background:#E0572E; color:#fff; font-size:11px; font-weight:600; flex:none;" style-hover="background:#C8481F">+ Line</button>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:minmax(170px,1fr) 96px 96px 96px 96px 112px 26px; column-gap:6px; min-width:756px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>Line</div><div style="text-align:right;">Q1</div><div style="text-align:right;">Q2</div><div style="text-align:right;">Q3</div><div style="text-align:right;">Q4</div><div style="text-align:right;">Year</div><div></div>
+                  </div>
+
+                  <sc-if value="{{ bbEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:52px 24px; text-align:center;">
+                      <div style="font-size:15px; font-weight:600; color:#1A1D21;">No budget lines yet</div>
+                      <div style="font-size:13px; color:#9AA0A8; margin-top:7px; line-height:1.55;">Add a line for each thing the year has to pay for, then phase it across the quarters.</div>
+                      <button onClick="{{ bbAdd }}" style="height:36px; margin-top:14px; padding:0 16px; border:none; border-radius:9px; background:#E0572E; color:#fff; font-size:12px; font-weight:600;">+ Add the first line</button>
+                    </div>
+                  </sc-if>
+
+                  <sc-for list="{{ bbRowsView }}" as="g" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex; align-items:center; gap:10px; padding:11px 24px 8px 24px; background:#FAFBFC; border-bottom:1px solid #F1F3F5;">
+                        <span style="font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8A8F98; flex:1;">{{ g.name }}</span>
+                        <span style="font-size:11px; color:#9AA0A8;">{{ g.pct }}</span>
+                        <span style="font-size:12px; font-weight:700; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ g.sumF }}</span>
+                      </div>
+                      <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                        <div style="display:grid; grid-template-columns:minmax(170px,1fr) 96px 96px 96px 96px 112px 26px; column-gap:6px; min-width:756px; align-items:center; padding:9px 24px; background:{{ r.bg }};">
+                          <div style="min-width:0;">
+                            <input value="{{ r.line }}" onChange="{{ r.onLine }}" placeholder="What this pays for" style="width:100%; height:34px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; padding:0 10px; font-size:12px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
+                            <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+                              <select value="{{ r.cat }}" onChange="{{ r.onCat }}" style="flex:1 1 100%; min-width:0; height:26px; border:1px solid #E3E5E8; border-radius:6px; background:#fff; font-size:10px; color:#6B7280; outline:none;">
+                                <sc-for list="{{ bbCats }}" as="o" hint-placeholder-count="8"><option>{{ o }}</option></sc-for>
+                              </select>
+                              <select value="{{ r.donor }}" onChange="{{ r.onDonor }}" style="flex:1 1 92px; min-width:0; height:26px; border:1px solid #E3E5E8; border-radius:6px; background:#fff; font-size:10px; color:#6B7280; outline:none;">
+                                <sc-for list="{{ bbDonors }}" as="o" hint-placeholder-count="4"><option>{{ o }}</option></sc-for>
+                              </select>
+                              <select value="{{ r.dept }}" onChange="{{ r.onDept }}" style="flex:1 1 96px; min-width:0; height:26px; border:1px solid #E3E5E8; border-radius:6px; background:#fff; font-size:10px; color:#6B7280; outline:none;">
+                                <sc-for list="{{ bbDepts }}" as="o" hint-placeholder-count="5"><option>{{ o }}</option></sc-for>
+                              </select>
+                            </div>
+                          </div>
+                          <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
+                            <input value="{{ c.v }}" onChange="{{ c.onChange }}" style="width:100%; height:34px; border:1px solid #E3E5E8; border-radius:8px; background:#fff; padding:0 8px; font-size:12px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                          </sc-for>
+                          <div style="font-size:12px; font-weight:600; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ r.totalF }}</div>
+                          <div style="display:flex; justify-content:center;"><button onClick="{{ r.onRemove }}" style="width:26px; height:26px; border:none; border-radius:7px; background:transparent; color:#A8ADB5; font-size:12px;" style-hover="background:#FBEAE4; color:#C2410C">✕</button></div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+
+                  <div style="display:grid; grid-template-columns:minmax(170px,1fr) 96px 96px 96px 96px 112px 26px; column-gap:6px; min-width:756px; align-items:center; padding:14px 24px; background:#1A1D21;">
+                    <div style="font-size:12px; font-weight:600; color:#fff;">Total by quarter</div>
+                    <sc-for list="{{ bbQuarters }}" as="q" hint-placeholder-count="4">
+                      <div style="font-size:12px; text-align:right; color:rgba(255,255,255,.86); font-variant-numeric:tabular-nums;">{{ q.sumF }}</div>
+                    </sc-for>
+                    <div style="font-size:13px; font-weight:700; text-align:right; color:#fff; font-variant-numeric:tabular-nums;">{{ bbTotalF }}</div>
+                    <div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Against the envelope</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">{{ bbYear }} funding ceiling</div>
+                  <div style="position:relative; height:8px; border-radius:999px; background:#F0F1F3; margin-top:14px; overflow:hidden;">
+                    <sc-if value="{{ bbOver }}" hint-placeholder-val="{{ false }}"><div style="height:100%; border-radius:999px; background:#C2410C; width:100%;"></div></sc-if>
+                    <sc-if value="{{ bbUnder }}" hint-placeholder-val="{{ true }}"><div style="height:100%; border-radius:999px; background:#1E8E3E; width:{{ bbPct }}%;"></div></sc-if>
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:8px;">{{ bbPctLabel }}</div>
+                  <div style="display:flex; flex-direction:column; gap:9px; margin-top:14px; font-size:12px; font-variant-numeric:tabular-nums;">
+                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Envelope</span><span style="font-weight:600; color:#1A1D21;">{{ bbCeilingF }}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Budgeted</span><span style="font-weight:600; color:#1A1D21;">{{ bbTotalF }}</span></div>
+                    <sc-if value="{{ bbUnder }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; justify-content:space-between; padding-top:9px; border-top:1px solid #EEF0F3;"><span style="color:#6B7280;">Unallocated</span><span style="font-weight:700; color:#166F31;">{{ bbLeftF }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ bbOver }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; justify-content:space-between; padding-top:9px; border-top:1px solid #EEF0F3;"><span style="color:#6B7280;">Over by</span><span style="font-weight:700; color:#9C3309;">{{ bbLeftF }}</span></div>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ bbOver }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:14px; padding:12px 14px; border-radius:10px; background:#FBEAE4; border:1px solid #F3D6CB; font-size:12px; color:#9C3309; line-height:1.5;">This exceeds the funding available for {{ bbYear }}. Reduce a line or raise the envelope with Finance before submitting.</div>
+                  </sc-if>
+                  <sc-if value="{{ bbExact }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:14px; padding:12px 14px; border-radius:10px; background:#EAF4EC; border:1px solid #CFE6D6; font-size:12px; color:#166F31; line-height:1.5;">Fully allocated to the naira.</div>
+                  </sc-if>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">What happens next</div>
+                  <div style="display:flex; flex-direction:column; gap:13px; margin-top:13px;">
+                    <div style="display:flex; gap:10px;"><span style="width:20px; height:20px; flex:none; border-radius:999px; background:#E0572E; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span><div style="font-size:12px; color:#3B3B3B; line-height:1.5;">Finance checks each line against its award and the indirect rate</div></div>
+                    <div style="display:flex; gap:10px;"><span style="width:20px; height:20px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span><div style="font-size:12px; color:#6B7280; line-height:1.5;">The Managing Director approves the total</div></div>
+                    <div style="display:flex; gap:10px;"><span style="width:20px; height:20px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span><div style="font-size:12px; color:#6B7280; line-height:1.5;">It publishes as {{ bbYear }} v1 and becomes the baseline every requisition draws down</div></div>
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:14px; padding-top:12px; border-top:1px solid #EEF0F3; line-height:1.55;">Nothing can be charged against these lines until it is published. Later changes go through a virement, not an edit.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ isReqNew }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="New requisition" style="display:flex; flex-direction:column; gap:14px; max-width:1320px; padding-bottom:88px;">
             <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
@@ -1252,7 +1445,7 @@
               <div style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
                 <div>Reference</div><div>Staff / purpose</div><div style="text-align:right;">Amount</div><div style="text-align:right;">Age</div><div>Aging</div><div>Status</div>
               </div>
-              <div style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; background:#fff;">
+              <div onClick="{{ goRefADV20260042 }}" style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; cursor:pointer; background:#fff;">
                 <div style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">ADV-2026-0042</div>
                 <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Grace Uche — Aba community dialogue</div><div style="font-size:11px; color:#9AA0A8; margin-top:3px;">M&amp;E · FCDO-ACE-25</div></div>
                 <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">₦350,000.00</div>
@@ -1260,7 +1453,7 @@
                 <div><span style="height:22px; padding:0 9px; border-radius:6px; background:#F3F4F5; color:#6B7280; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">ON TIME</span></div>
                 <div><span style="display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px 0 8px; border-radius:999px; background:rgba(224,87,46,.1); color:#B23F1D; font-size:12px; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>In approval</span></div>
               </div>
-              <div style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; background:#F8F9FA;">
+              <div onClick="{{ goRefADV20260039 }}" style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; cursor:pointer; background:#F8F9FA;">
                 <div style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">ADV-2026-0039</div>
                 <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Amina Yusuf — Lagos donor meeting</div><div style="font-size:11px; color:#9AA0A8; margin-top:3px;">Finance &amp; Admin · EU-WISH-23</div></div>
                 <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">₦620,000.00</div>
@@ -1268,7 +1461,7 @@
                 <div><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">DUE SOON</span></div>
                 <div><span style="display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px 0 8px; border-radius:999px; background:rgba(224,87,46,.1); color:#B23F1D; font-size:12px; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>Disbursed</span></div>
               </div>
-              <div style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; background:#fff;">
+              <div onClick="{{ goRefADV20260027 }}" style="display:grid; grid-template-columns:118px minmax(160px,1fr) 132px 100px 116px 130px; column-gap:12px; align-items:center; padding:16px 24px; cursor:pointer; background:#fff;">
                 <div style="font-size:12px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">ADV-2026-0027</div>
                 <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Ibrahim Sani — Kano supervision trip</div><div style="font-size:11px; color:#9AA0A8; margin-top:3px;">Operations · USAID-LON-24 · partially retired</div></div>
                 <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">₦275,500.00</div>
@@ -3635,6 +3828,603 @@
               </div>
 
               <div style="font-size:11px; color:#9AA0A8; margin-top:20px; line-height:1.6;">This certificate is generated from the signature log and cannot be edited. It is admissible evidence of who signed, when, from where, and by what means their identity was checked.</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAward }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Award a quote" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/procurement">Procurement</a><span>/</span><a href="#/procurement/rfq">RFQs &amp; quotes</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">{{ aw.rfqId }}</span>
+            </div>
+            <sc-if value="{{ aw.missing }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff; border-radius:16px; padding:56px 40px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); text-align:center;">
+                <div style="width:52px; height:52px; margin:0 auto; border-radius:999px; background:#F3F4F5; color:#9AA0A8; font-size:22px; display:flex; align-items:center; justify-content:center;">?</div>
+                <div style="font-size:19px; font-weight:600; color:#1A1D21; margin-top:18px;">No quotation round with that reference</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:9px; line-height:1.6; max-width:460px; margin-left:auto; margin-right:auto;">{{ aw.rfqId }} is not on the register. It may have been cancelled, or the link may be wrong.</div>
+                <a href="#/procurement/rfq" style="display:inline-flex; align-items:center; height:42px; padding:0 20px; margin-top:20px; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600; text-decoration:none;">Back to the register</a>
+              </div>
+            </sc-if>
+            <sc-if value="{{ aw.found }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                  <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">{{ aw.title }}</div>
+                  <sc-if value="{{ aw.isAwardedRound }}" hint-placeholder-val="{{ false }}"><span style="height:26px; padding:0 10px; border-radius:999px; background:rgba(30,142,62,.1); color:#166F31; font-size:12px; font-weight:700; display:inline-flex; align-items:center;">AWARDED</span></sc-if>
+                  <sc-if value="{{ aw.isCancelled }}" hint-placeholder-val="{{ false }}"><span style="height:26px; padding:0 10px; border-radius:999px; background:rgba(194,65,12,.1); color:#9C3309; font-size:12px; font-weight:700; display:inline-flex; align-items:center;">CANCELLED</span></sc-if>
+                  <sc-if value="{{ aw.isOpen }}" hint-placeholder-val="{{ true }}"><span style="height:26px; padding:0 10px; border-radius:999px; background:rgba(110,158,201,.16); color:#2C5C86; font-size:12px; font-weight:700; display:inline-flex; align-items:center;">{{ aw.stateLabel }}</span></sc-if>
+                </div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ aw.rfqId }} · from {{ aw.req }} · closed {{ aw.closed }} · band {{ aw.band }}</div>
+              </div>
+              <sc-if value="{{ aw.isOpen }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ openAddQuote }}" style="height:40px; padding:0 16px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">+ Record a quote</button>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ aw.isClosed }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 18px; border-radius:14px; background:#F3F4F5;">
+                <span style="width:8px; height:8px; margin-top:6px; border-radius:999px; background:#8A8F98; flex:none;"></span>
+                <div style="flex:1;">
+                  <div style="font-size:13px; font-weight:600; color:#3B3B3B;">{{ aw.closedTitle }}</div>
+                  <div style="font-size:12px; color:#6B7280; margin-top:5px; line-height:1.55;">{{ aw.closedBody }}</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ aw.short }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 18px; border-radius:14px; background:#FFF7ED; border:1px solid #FDE3C4;">
+                <span style="width:8px; height:8px; margin-top:6px; border-radius:999px; background:#B45309; flex:none;"></span>
+                <div style="flex:1;">
+                  <div style="font-size:13px; font-weight:600; color:#8A4B0B;">Fewer quotes than the band requires</div>
+                  <div style="font-size:12px; color:#8A4B0B; margin-top:5px; line-height:1.55;">{{ aw.shortMsg }}</div>
+                </div>
+                <button onClick="{{ openAddQuote }}" style="height:32px; padding:0 12px; border:1px solid #E8D3B4; border-radius:8px; background:#fff; font-size:12px; font-weight:600; color:#8A4B0B; flex:none;">Record a quote</button>
+              </div>
+            </sc-if>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:12px; align-items:start;">
+              <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                <div style="padding:20px 24px 14px 24px;">
+                  <div style="font-size:15px; font-weight:600; color:#1A1D21;">Quotes received — {{ aw.count }} of {{ aw.minQuotes }} required</div>
+                  <sc-if value="{{ aw.isOpen }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Choose the winner. A blacklisted vendor cannot be awarded.</div>
+                  </sc-if>
+                  <sc-if value="{{ aw.isClosed }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Read-only. This round is closed, so no selection can be made.</div>
+                  </sc-if>
+                </div>
+                <div style="display:grid; grid-template-columns:26px minmax(110px,1fr) 128px 92px 86px 110px; column-gap:8px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                  <div></div><div>Vendor</div><div style="text-align:right;">Total</div><div style="text-align:right;">Lead time</div><div style="text-align:right;">Valid</div><div></div>
+                </div>
+                <sc-for list="{{ aw.quotes }}" as="q" hint-placeholder-count="3">
+                  <div style="display:grid; grid-template-columns:26px minmax(110px,1fr) 128px 92px 86px 110px; column-gap:8px; align-items:center; padding:14px 24px; background:{{ q.bg }};">
+                    <div>
+                      <sc-if value="{{ q.locked }}" hint-placeholder-val="{{ false }}">
+                        <span style="width:18px; height:18px; border-radius:999px; background:#F0F1F3; display:block;"></span>
+                      </sc-if>
+                      <sc-if value="{{ q.sel }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ q.onPick }}" style="width:18px; height:18px; border:none; border-radius:999px; background:#E0572E; box-shadow:inset 0 0 0 3px #fff; padding:0;"></button>
+                      </sc-if>
+                      <sc-if value="{{ q.pickable }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ q.onPick }}" style="width:18px; height:18px; border:1.5px solid #D3D6DB; border-radius:999px; background:#fff; padding:0;"></button>
+                      </sc-if>
+                    </div>
+                    <div style="min-width:0;">
+                      <div style="font-size:13px; font-weight:500; color:#1A1D21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ q.vendor }}</div>
+                      <div style="font-size:11px; color:#9AA0A8; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ q.id }} · {{ q.note }}</div>
+                    </div>
+                    <div style="font-size:13px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ q.totalF }}</div>
+                    <div style="font-size:12px; text-align:right; color:#6B7280;">{{ q.days }}</div>
+                    <div style="font-size:12px; text-align:right; color:#6B7280;">{{ q.valid }}</div>
+                    <div style="display:flex; gap:5px; justify-content:flex-end;">
+                      <sc-if value="{{ q.lowest }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 8px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">LOWEST</span></sc-if>
+                      <sc-if value="{{ q.blacklisted }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 8px; border-radius:6px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">BLOCKED</span></sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <sc-if value="{{ notAwarded }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                    <div style="font-size:14px; font-weight:600; color:#1A1D21;">Award</div>
+                    <sc-if value="{{ aw.picked }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:9px; margin-top:12px; padding:13px 15px; border-radius:10px; background:#F7F8FA; font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Winner</span><span style="color:#1A1D21; font-weight:600; text-align:right;">{{ aw.pickVendor }}</span></div>
+                        <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Value</span><span style="color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ aw.pickTotalF }}</span></div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ aw.noPick }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:10px; line-height:1.55;">Select a quote on the left to begin.</div>
+                    </sc-if>
+
+                    <sc-if value="{{ aw.notLowest }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; align-items:flex-start; gap:10px; margin-top:12px; padding:12px 14px; border-radius:10px; background:#FFF7ED; border:1px solid #FDE3C4;">
+                        <span style="width:8px; height:8px; margin-top:5px; border-radius:999px; background:#B45309; flex:none;"></span>
+                        <span style="font-size:11px; color:#8A4B0B; line-height:1.5;">Not the lowest quote — {{ aw.lowestVendor }} bid {{ aw.lowestF }}. Say why in the justification.</span>
+                      </div>
+                    </sc-if>
+
+                    <div style="display:flex; flex-direction:column; gap:7px; margin-top:14px;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-size:12px; font-weight:500; color:#3B3B3B;">Justification</label>
+                        <span style="height:19px; padding:0 7px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+                      </div>
+                      <textarea value="{{ awJust }}" onChange="{{ awSetJust }}" placeholder="Why this quote wins — at least a full sentence" style="min-height:76px; padding:11px 13px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:12px; outline:none; resize:vertical; line-height:1.5;" style-focus="border-color:#E0572E"></textarea>
+                    </div>
+
+                    <sc-if value="{{ aw.short }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:7px; margin-top:14px; padding-top:14px; border-top:1px solid #EEF0F3;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <label style="font-size:12px; font-weight:500; color:#8A4B0B;">Sole-source case</label>
+                          <span style="height:19px; padding:0 7px; border-radius:5px; background:rgba(180,83,9,.14); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">BELOW {{ aw.minQuotes }} QUOTES</span>
+                        </div>
+                        <textarea value="{{ awSole }}" onChange="{{ awSetSole }}" placeholder="Why the market could not supply the required number of quotes" style="min-height:76px; padding:11px 13px; border:1px solid #FDE3C4; border-radius:10px; background:#FFFBF5; font-size:12px; outline:none; resize:vertical; line-height:1.5;" style-focus="border-color:#B45309"></textarea>
+                        <span style="font-size:11px; color:#8A4B0B; line-height:1.45;">Internal Audit reads this. It is only asked for because the round is short of quotes.</span>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ aw.topBand }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:7px; margin-top:14px; padding-top:14px; border-top:1px solid #EEF0F3;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <label style="font-size:12px; font-weight:500; color:#3B3B3B;">Committee note</label>
+                          <span style="height:19px; padding:0 7px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">TOP BAND</span>
+                        </div>
+                        <textarea value="{{ awCommittee }}" onChange="{{ awSetCommittee }}" placeholder="Record of the procurement committee's decision" style="min-height:70px; padding:11px 13px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:12px; outline:none; resize:vertical; line-height:1.5;" style-focus="border-color:#E0572E"></textarea>
+                      </div>
+                    </sc-if>
+
+                    <div style="margin-top:16px;">
+                      <sc-if value="{{ aw.canAward }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ awDo }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Award the quote</button>
+                      </sc-if>
+                      <sc-if value="{{ aw.canAward }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+                      <sc-if value="{{ aw.blockMsg }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">{{ aw.blockMsg }}</button>
+                      </sc-if>
+                      <div style="font-size:11px; color:#9AA0A8; margin-top:11px; line-height:1.5;">Awarding locks the round. The purchase order is then generated from the award, not typed again.</div>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ awarded }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="width:26px; height:26px; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
+                      <div style="font-size:14px; font-weight:600; color:#1A1D21;">Awarded to {{ aw.pickVendor }}</div>
+                    </div>
+                    <div style="font-size:12px; color:#6B7280; margin-top:10px; line-height:1.55;">{{ aw.pickTotalF }}. The round is closed. Raise the purchase order from this award — the lines and value carry across.</div>
+                    <button onClick="{{ awMakePO }}" style="width:100%; height:44px; margin-top:14px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Raise the purchase order</button>
+                    <div style="font-size:11px; color:#9AA0A8; margin-top:11px; line-height:1.5;">The spend was approved at the requisition stage, so there is nothing further to approve — issuing the order is the action.</div>
+                  </div>
+                </sc-if>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">The rules on this round</div>
+                  <div style="display:flex; flex-direction:column; gap:11px; margin-top:13px; font-size:12px; color:#6B7280;">
+                    <div style="display:flex; gap:9px;"><span style="color:#C4C8CE;">·</span><span style="line-height:1.5;">Band {{ aw.band }} needs {{ aw.minQuotes }} quotes</span></div>
+                    <div style="display:flex; gap:9px;"><span style="color:#C4C8CE;">·</span><span style="line-height:1.5;">A written justification on every award</span></div>
+                    <div style="display:flex; gap:9px;"><span style="color:#C4C8CE;">·</span><span style="line-height:1.5;">Short of quotes — a sole-source case as well</span></div>
+                    <div style="display:flex; gap:9px;"><span style="color:#C4C8CE;">·</span><span style="line-height:1.5;">Top band — a committee note as well</span></div>
+                    <div style="display:flex; gap:9px;"><span style="color:#C4C8CE;">·</span><span style="line-height:1.5;">A blacklisted vendor can never win</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPONew }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="New purchase order" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/procurement">Procurement</a><span>/</span><a href="#/procurement/po">Purchase orders</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">New</span>
+            </div>
+            <div style="padding:0 4px;">
+              <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Raise a purchase order</div>
+              <div style="font-size:14px; color:#8A8F98; margin-top:5px;">A purchase order commits the budget. It can only be raised from an approved requisition or a completed quotation round.</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:16px; font-weight:600; color:#1A1D21;">Where it comes from</div>
+                  <div style="display:flex; flex-direction:column; gap:16px; margin-top:18px;">
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Approved requisition or quotation round</label>
+                      <select value="{{ pnSource }}" onChange="{{ pnSetSource }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E">
+                        <option>REQ-2026-0181 — Laptops (6) for the M&amp;E team · ₦4,380,000.00</option>
+                        <option>REQ-2026-0188 — Q3 stationery replenishment · ₦700,000.00</option>
+                        <option>RFQ-2026-0034 — Caregiver manuals reprint · 3 quotations in</option>
+                      </select>
+                      <span style="font-size:11px; color:#9AA0A8;">Line items, budget line and donor code carry across from the source</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Supplier</label>
+                        <select value="{{ pnVendor }}" onChange="{{ pnSetVendor }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E">
+                          <option value="">Choose the awarded supplier…</option>
+                          <option>Techtink Solutions Ltd — awarded, lowest compliant</option>
+                          <option>Brightline Printers Ltd — approved vendor</option>
+                          <option>CityTech Nigeria — approved vendor</option>
+                          <option>Sahel Logistics — approved vendor</option>
+                        </select>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Payment terms</label>
+                        <select value="{{ pnTerms }}" onChange="{{ pnSetTerms }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;">
+                          <option>30 days from goods received note</option>
+                          <option>14 days from goods received note</option>
+                          <option>50% on order, 50% on delivery</option>
+                          <option>On delivery</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Required by</label>
+                        <input value="21/08/2026" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Deliver to</label>
+                        <select style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>Abuja office — stores</option><option>Enugu field office</option></select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div>
+                      <div style="font-size:16px; font-weight:600; color:#1A1D21;">Order lines</div>
+                      <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Carried from the source and still editable — the total recalculates as you type</div>
+                    </div>
+                    <button onClick="{{ pnAdd }}" style="height:34px; padding:0 14px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21; flex:none;" style-hover="background:#F7F8FA">+ Add line</button>
+                  </div>
+                  <div style="display:grid; grid-template-columns:minmax(0,1fr) 76px 128px 132px 34px; column-gap:10px; margin-top:18px; padding-bottom:8px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>Description</div><div style="text-align:right;">Qty</div><div style="text-align:right;">Unit (₦)</div><div style="text-align:right;">Total</div><div></div>
+                  </div>
+                  <sc-for list="{{ pnRows }}" as="l" hint-placeholder-count="2">
+                    <div style="display:grid; grid-template-columns:minmax(0,1fr) 76px 128px 132px 34px; column-gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #F4F5F7;">
+                      <input value="{{ l.desc }}" onChange="{{ l.onDesc }}" placeholder="What is being bought" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 11px; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E" />
+                      <input value="{{ l.qty }}" onChange="{{ l.onQty }}" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 9px; font-size:13px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                      <input value="{{ l.unit }}" onChange="{{ l.onUnit }}" style="width:100%; height:38px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; padding:0 11px; font-size:13px; text-align:right; color:#1A1D21; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                      <div style="font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#1A1D21;">{{ l.totalF }}</div>
+                      <div style="display:flex; justify-content:center;"><button onClick="{{ l.onRemove }}" style="width:28px; height:28px; border:none; border-radius:8px; background:transparent; color:#A8ADB5;" style-hover="background:#FBEAE4; color:#C2410C">✕</button></div>
+                    </div>
+                  </sc-for>
+                  <div style="display:flex; justify-content:flex-end; padding-top:16px;">
+                    <div style="width:300px; display:flex; flex-direction:column; gap:9px; font-size:13px;">
+                      <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Subtotal</span><span style="font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ pnSubF }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">VAT at 7.5%</span><span style="font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ pnVatF }}</span></div>
+                      <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #EEF0F3;"><span style="font-weight:600; color:#1A1D21;">Total order value</span><span style="font-size:18px; font-weight:700; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ pnTotalF }}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Summary</div>
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Lines</span><span style="color:#1A1D21; font-weight:600;">{{ pnCount }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Total</span><span style="color:#1A1D21; font-weight:600; font-variant-numeric:tabular-nums;">{{ pnTotalF }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Terms</span><span style="color:#1A1D21; font-weight:500; text-align:right;">{{ pnTerms }}</span></div>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Approval route</div>
+                  <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+                    <div style="display:flex; gap:12px;">
+                      <span style="width:20px; height:20px; flex:none; border-radius:999px; background:#E0572E;"></span>
+                      <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Procurement Officer</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">You, raising it</div></div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                      <span style="width:20px; height:20px; flex:none; border-radius:999px; background:#E0572E;"></span>
+                      <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Operations Manager</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Musa Danjuma</div></div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                      <span style="width:20px; height:20px; flex:none; border-radius:999px; background:#E0572E;"></span>
+                      <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Finance</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Commits the budget line</div></div>
+                    </div>
+                    <sc-if value="{{ pnBigOrder }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; gap:12px;">
+                        <span style="width:20px; height:20px; flex:none; border-radius:999px; background:#E0572E;"></span>
+                        <div><div style="font-size:13px; font-weight:500; color:#1A1D21;">Managing Director</div><div style="font-size:11px; color:#9AA0A8; margin-top:2px;">Required above ₦1,000,000.00</div></div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ pnSmallOrder }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:12px;">
+                        <span style="width:20px; height:20px; flex:none; border-radius:999px; border:2px solid #D3D6DB;"></span>
+                        <div><div style="font-size:13px; font-weight:500; color:#9AA0A8;">Managing Director</div><div style="font-size:11px; color:#C4C8CE; margin-top:2px;">Skipped — below ₦1,000,000.00</div></div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <sc-if value="{{ pnValid }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ pnSubmit }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Raise the order</button>
+                  </sc-if>
+                  <sc-if value="{{ pnNoVendor }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a supplier first</button>
+                    <div style="font-size:11px; color:#9C3309; margin-top:9px; line-height:1.5;">An order cannot be raised without an awarded supplier on the record.</div>
+                  </sc-if>
+                  <sc-if value="{{ pnLinesBad }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ noop }}" style="width:100%; height:44px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Complete every line first</button>
+                    <div style="font-size:11px; color:#9C3309; margin-top:9px; line-height:1.5;">A line is missing a description, quantity or unit price. Nothing incomplete is sent to a supplier.</div>
+                  </sc-if>
+                  <button onClick="{{ pnDraft }}" style="width:100%; height:40px; margin-top:8px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Save as draft</button>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:12px; line-height:1.5;">The order is sent to the supplier only after the last approval.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPO }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Purchase order detail" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/procurement">Procurement</a><span>/</span><a href="#/procurement/po">Purchase orders</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">{{ po.ref }}</span>
+            </div>
+
+            <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+                <div style="min-width:0;">
+                  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div style="font-size:22px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">{{ po.ref }}</div>
+                    <sc-if value="{{ po.full }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px 0 8px; border-radius:999px; background:rgba(30,142,62,.1); color:#166F31; font-size:12px; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg>{{ po.stateLabel }}</span></sc-if>
+                    <sc-if value="{{ po.partial }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex; align-items:center; height:26px; padding:0 10px; border-radius:999px; background:rgba(180,83,9,.14); color:#8A4B0B; font-size:12px; font-weight:600;">{{ po.stateLabel }}</span></sc-if>
+                    <sc-if value="{{ po.none }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; height:26px; padding:0 10px; border-radius:999px; background:#F3F4F5; color:#6B7280; font-size:12px; font-weight:600;">{{ po.stateLabel }}</span></sc-if>
+                  </div>
+                  <div style="font-size:15px; color:#3B3B3B; margin-top:8px;">{{ po.vendor }}</div>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px 18px; font-size:13px; color:#8A8F98; margin-top:8px;">
+                    <span>Raised {{ po.raised }}</span>
+                    <span>Promised {{ po.promised }}</span>
+                    <span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(110,158,201,.16); color:#2C5C86; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">{{ po.donor }}</span>
+                  </div>
+                </div>
+                <div style="text-align:right; flex:none;">
+                  <div style="font-size:12px; color:#8A8F98;">Total order value</div>
+                  <div style="font-size:30px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; letter-spacing:-.02em; margin-top:3px;">{{ po.totalF }}</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:3px;">{{ po.pctLabel }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="padding:20px 24px 14px 24px;">
+                    <div style="font-size:15px; font-weight:600; color:#1A1D21;">Order lines</div>
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Delivery is tracked per line — the order stays open until every line is complete</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:26px minmax(104px,1fr) 52px 100px 112px 62px 108px; column-gap:8px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>#</div><div>Description</div><div style="text-align:right;">Qty</div><div style="text-align:right;">Unit</div><div style="text-align:right;">Amount</div><div style="text-align:right;">Got</div><div>Delivery</div>
+                  </div>
+                  <sc-for list="{{ po.lines }}" as="l" hint-placeholder-count="4">
+                    <div style="display:grid; grid-template-columns:26px minmax(104px,1fr) 52px 100px 112px 62px 108px; column-gap:8px; align-items:center; padding:14px 24px; background:{{ l.bg }};">
+                      <div style="font-size:12px; color:#C4C8CE; font-variant-numeric:tabular-nums;">{{ l.n }}</div>
+                      <div style="font-size:13px; color:#1A1D21; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ l.desc }}</div>
+                      <div style="font-size:13px; text-align:right; color:#6B7280; font-variant-numeric:tabular-nums;">{{ l.qty }}</div>
+                      <div style="font-size:13px; text-align:right; color:#6B7280; font-variant-numeric:tabular-nums;">{{ l.unitF }}</div>
+                      <div style="font-size:13px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ l.totalF }}</div>
+                      <div style="font-size:13px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ l.got }}</div>
+                      <div>
+                        <sc-if value="{{ l.done }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">COMPLETE</span></sc-if>
+                        <sc-if value="{{ l.part }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">{{ l.outstanding }} SHORT</span></sc-if>
+                        <sc-if value="{{ l.waiting }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:#F3F4F5; color:#6B7280; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">AWAITING</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <div style="display:flex; justify-content:flex-end; padding:14px 24px; border-top:1px solid #EEF0F3;">
+                    <div style="width:280px; display:flex; flex-direction:column; gap:9px; font-size:13px;">
+                      <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Subtotal</span><span style="font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ po.subF }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">VAT at 7.5%</span><span style="font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ po.vatF }}</span></div>
+                      <div style="display:flex; justify-content:space-between; padding-top:9px; border-top:1px solid #EEF0F3;"><span style="font-weight:600; color:#1A1D21;">Total</span><span style="font-weight:700; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ po.totalF }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Received to date</span><span style="font-weight:600; color:#166F31; font-variant-numeric:tabular-nums;">{{ po.recvF }}</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="padding:20px 24px 14px 24px;">
+                    <div style="font-size:15px; font-weight:600; color:#1A1D21;">History</div>
+                  </div>
+                  <sc-for list="{{ po.events }}" as="e" hint-placeholder-count="4">
+                    <div style="display:flex; align-items:flex-start; gap:12px; padding:14px 24px; background:{{ e.bg }};">
+                      <span style="width:30px; height:30px; flex:none; border-radius:999px; background:#EBEDF0; color:#5B6068; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center;">{{ e.initials }}</span>
+                      <div style="flex:1; min-width:0;">
+                        <div style="font-size:13px; font-weight:500; color:#1A1D21;">{{ e.who }}</div>
+                        <div style="font-size:13px; color:#6B7280; margin-top:3px; line-height:1.5; text-wrap:pretty;">{{ e.act }}</div>
+                      </div>
+                      <div style="font-size:12px; color:#9AA0A8; flex:none; font-variant-numeric:tabular-nums;">{{ e.when }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Actions</div>
+                  <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+                    <button onClick="{{ poReceive }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Record what was received</button>
+                    <button onClick="{{ poPrint }}" style="height:40px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Print the order</button>
+                    <button onClick="{{ poApprove }}" style="height:40px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Open approval record</button>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Three-way match</div>
+                  <div style="position:relative; height:8px; border-radius:999px; background:#F0F1F3; margin-top:14px; overflow:hidden;">
+                    <sc-if value="{{ po.full }}" hint-placeholder-val="{{ false }}"><div style="height:100%; border-radius:999px; background:#1E8E3E; width:{{ po.pct }}%;"></div></sc-if>
+                    <sc-if value="{{ po.full }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+                    <sc-if value="{{ po.partial }}" hint-placeholder-val="{{ true }}"><div style="height:100%; border-radius:999px; background:#B45309; width:{{ po.pct }}%;"></div></sc-if>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Order</span><span style="color:#166F31; font-weight:600;">Approved</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Goods received</span>
+                      <sc-if value="{{ po.full }}" hint-placeholder-val="{{ false }}"><span style="color:#166F31; font-weight:600;">Complete</span></sc-if>
+                      <sc-if value="{{ po.partial }}" hint-placeholder-val="{{ true }}"><span style="color:#8A4B0B; font-weight:600;">Partial</span></sc-if>
+                      <sc-if value="{{ po.none }}" hint-placeholder-val="{{ false }}"><span style="color:#9AA0A8; font-weight:600;">Not started</span></sc-if>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Invoice</span>
+                      <sc-if value="{{ po.full }}" hint-placeholder-val="{{ false }}"><span style="color:#166F31; font-weight:600;">Released</span></sc-if>
+                      <sc-if value="{{ po.notFull }}" hint-placeholder-val="{{ true }}"><span style="color:#8A4B0B; font-weight:600;">Held</span></sc-if>
+                    </div>
+                  </div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:12px; line-height:1.5;">{{ po.matchLabel }}</div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Supplier</div>
+                  <div style="font-size:13px; font-weight:600; color:#1A1D21; margin-top:12px;">{{ po.vendor }}</div>
+                  <div style="font-size:12px; color:#6B7280; margin-top:5px; line-height:1.6;">{{ po.vendorAddr }}<br />TIN {{ po.vendorTin }}</div>
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid #EEF0F3; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Payment terms</span><span style="color:#1A1D21; font-weight:500; text-align:right;">{{ po.terms }}</span></div>
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:#6B7280;">Budget line</span><span style="color:#1A1D21; font-weight:500; text-align:right;">{{ po.budgetLine }}</span></div>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Raised from</div>
+                  <div style="display:flex; flex-direction:column; gap:9px; margin-top:12px; font-size:12px; font-weight:600;">
+                    <a href="#/requisitions/{{ po.req }}">{{ po.req }} — source requisition</a>
+                    <a href="#/procurement/rfq">{{ po.rfq }} — quotation round</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCtr }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Contract detail" style="display:flex; flex-direction:column; gap:14px; max-width:1320px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:0 4px; font-size:13px; color:#8A8F98;">
+              <a href="#/procurement">Procurement</a><span>/</span><a href="#/procurement/contracts">Contracts</a><span>/</span><span style="color:#3B3B3B; font-weight:500;">{{ ctr.ref }}</span>
+            </div>
+
+            <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+                <div style="min-width:0;">
+                  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div style="font-size:22px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">{{ ctr.title }}</div>
+                    <sc-if value="{{ ctr.expiring }}" hint-placeholder-val="{{ false }}"><span style="height:26px; padding:0 10px; border-radius:999px; background:rgba(194,65,12,.1); color:#9C3309; font-size:12px; font-weight:600; display:inline-flex; align-items:center;">Expiring</span></sc-if>
+                    <sc-if value="{{ ctr.active }}" hint-placeholder-val="{{ true }}"><span style="height:26px; padding:0 10px; border-radius:999px; background:rgba(30,142,62,.1); color:#166F31; font-size:12px; font-weight:600; display:inline-flex; align-items:center;">Active</span></sc-if>
+                  </div>
+                  <div style="font-size:15px; color:#3B3B3B; margin-top:8px;">{{ ctr.vendor }} · {{ ctr.ref }}</div>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px 18px; font-size:13px; color:#8A8F98; margin-top:8px;">
+                    <span>{{ ctr.start }} → {{ ctr.end }}</span>
+                    <span>Owner {{ ctr.owner }}</span>
+                    <span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(110,158,201,.16); color:#2C5C86; font-size:11px; font-weight:600; display:inline-flex; align-items:center;">{{ ctr.donor }}</span>
+                  </div>
+                </div>
+                <div style="text-align:right; flex:none;">
+                  <div style="font-size:12px; color:#8A8F98;">Contract value</div>
+                  <div style="font-size:30px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; letter-spacing:-.02em; margin-top:3px;">{{ ctr.valueF }}</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:3px;">{{ ctr.pctLabel }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="padding:20px 24px 14px 24px;">
+                    <div style="font-size:15px; font-weight:600; color:#1A1D21;">Payment schedule</div>
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Drawdown against the contract value, period by period</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:150px 148px minmax(0,1fr) 118px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                    <div>Period</div><div style="text-align:right;">Amount</div><div>Note</div><div>State</div>
+                  </div>
+                  <sc-for list="{{ ctr.schedule }}" as="r" hint-placeholder-count="4">
+                    <div style="display:grid; grid-template-columns:150px 148px minmax(0,1fr) 118px; column-gap:10px; align-items:center; padding:14px 24px; background:{{ r.bg }};">
+                      <div style="font-size:13px; font-weight:500; color:#1A1D21;">{{ r.period }}</div>
+                      <div style="font-size:13px; text-align:right; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ r.amount }}</div>
+                      <div style="font-size:12px; color:#6B7280; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.note }}</div>
+                      <div>
+                        <sc-if value="{{ r.paid }}" hint-placeholder-val="{{ true }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(30,142,62,.1); color:#166F31; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">PAID</span></sc-if>
+                        <sc-if value="{{ r.part }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:rgba(180,83,9,.12); color:#8A4B0B; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">PART-PAID</span></sc-if>
+                        <sc-if value="{{ r.due }}" hint-placeholder-val="{{ false }}"><span style="height:22px; padding:0 9px; border-radius:6px; background:#F3F4F5; color:#6B7280; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">NOT DUE</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow:hidden;">
+                  <div style="padding:20px 24px 14px 24px;">
+                    <div style="font-size:15px; font-weight:600; color:#1A1D21;">Amendments</div>
+                    <div style="font-size:12px; color:#9AA0A8; margin-top:4px;">Every change to scope or value is a signed amendment, never an edit</div>
+                  </div>
+                  <sc-if value="{{ ctr.hasAmendments }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:grid; grid-template-columns:70px minmax(0,1fr) 118px 168px; column-gap:10px; padding:0 24px 8px 24px; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#9AA0A8; border-bottom:1px solid #EEF0F3;">
+                      <div>Ref</div><div>What changed</div><div>Date</div><div>Signed by</div>
+                    </div>
+                  </sc-if>
+                  <sc-for list="{{ ctr.amendments }}" as="a" hint-placeholder-count="2">
+                    <div style="display:grid; grid-template-columns:70px minmax(0,1fr) 118px 168px; column-gap:10px; align-items:center; padding:14px 24px; background:{{ a.bg }};">
+                      <div style="font-size:13px; font-weight:600; color:#1A1D21;">{{ a.code }}</div>
+                      <div style="font-size:13px; color:#3B3B3B; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.what }}</div>
+                      <div style="font-size:12px; color:#6B7280; font-variant-numeric:tabular-nums;">{{ a.when }}</div>
+                      <div style="font-size:12px; color:#6B7280; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.who }}</div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ ctr.noAmendments }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:22px 24px 26px 24px; text-align:center;">
+                      <div style="font-size:13px; color:#6B7280;">No amendments. The contract runs on its original terms.</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Drawdown</div>
+                  <div style="position:relative; height:8px; border-radius:999px; background:#F0F1F3; margin-top:14px; overflow:hidden;">
+                    <sc-if value="{{ ctr.tight }}" hint-placeholder-val="{{ false }}"><div style="height:100%; border-radius:999px; background:#C2410C; width:{{ ctr.pct }}%;"></div></sc-if>
+                    <sc-if value="{{ ctr.healthy }}" hint-placeholder-val="{{ true }}"><div style="height:100%; border-radius:999px; background:#6E9EC9; width:{{ ctr.pct }}%;"></div></sc-if>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; font-size:12px; font-variant-numeric:tabular-nums;">
+                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Contract value</span><span style="color:#1A1D21; font-weight:600;">{{ ctr.valueF }}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span style="color:#6B7280;">Drawn to date</span><span style="color:#1A1D21; font-weight:600;">{{ ctr.drawnF }}</span></div>
+                    <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #EEF0F3;"><span style="color:#6B7280;">Remaining</span><span style="color:#1A1D21; font-weight:700;">{{ ctr.leftF }}</span></div>
+                  </div>
+                  <sc-if value="{{ ctr.tight }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:14px; padding:12px 14px; border-radius:10px; background:#FBEAE4;">
+                      <span style="width:8px; height:8px; border-radius:999px; background:#C2410C; flex:none;"></span>
+                      <span style="font-size:11px; color:#9C3309; line-height:1.5;">Nearly fully drawn. Further call-offs need an amendment or a new contract.</span>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Actions</div>
+                  <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+                    <button onClick="{{ ctrPay }}" style="height:42px; width:100%; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Record a payment</button>
+                    <button onClick="{{ ctrAmend }}" style="height:40px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Raise an amendment</button>
+                    <button onClick="{{ openExport }}" style="height:40px; width:100%; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Export the contract</button>
+                  </div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Renewal</div>
+                  <div style="font-size:13px; color:#3B3B3B; margin-top:10px; line-height:1.55;">{{ ctr.renewal }}</div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:10px; line-height:1.5;">Contracts funded by a donor cannot run past the award they are charged to.</div>
+                </div>
+
+                <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
+                  <div style="font-size:14px; font-weight:600; color:#1A1D21;">Other contracts</div>
+                  <div style="display:flex; flex-direction:column; gap:3px; margin-top:12px;">
+                    <sc-for list="{{ ctrList }}" as="c" hint-placeholder-count="4">
+                      <button onClick="{{ c.onClick }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; width:100%; text-align:left; padding:10px 12px; border:none; border-radius:10px; background:transparent;" style-hover="background:#F7F8FA">
+                        <span style="font-size:12px; font-weight:600; color:#1A1D21;">{{ c.vendor }}</span>
+                        <span style="font-size:11px; color:#9AA0A8;">{{ c.ref }} · {{ c.title }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </sc-if>
@@ -7243,6 +8033,10 @@
               <input value="04/08/2026" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" />
             </div>
           </div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Note (optional)</label>
+            <textarea value="{{ grNote }}" onChange="{{ grSetNote }}" placeholder="Condition on arrival, short counts, anything the three-way match should know" style="min-height:62px; padding:11px 13px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none; resize:vertical; line-height:1.5;" style-focus="border-color:#E0572E"></textarea>
+          </div>
           <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border:1.5px dashed #D9DCE1; border-radius:11px; background:#FAFBFC;">
             <div style="flex:1;">
               <div style="font-size:12px; font-weight:500; color:#3B3B3B;">Proof of delivery</div>
@@ -7301,6 +8095,171 @@
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
           <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Close</button>
           <button onClick="{{ chainSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;">Looks right — save version 7</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgAddQuote }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:540px; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Record a quote</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">{{ aw.rfqId }} · {{ aw.title }}. Quotes usually arrive by email — type in what the vendor sent.</div>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:22px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Vendor</label>
+            <select value="{{ aqVendor }}" onChange="{{ aqSetVendor }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;" style-focus="border-color:#E0572E">
+              <option value="">Choose an invitable vendor…</option>
+              <option>Brightline Printers Ltd — due diligence valid to 2027</option>
+              <option>Techtink Solutions Ltd — due diligence valid to 2027</option>
+              <option>CityTech Nigeria — due diligence valid to 2026</option>
+              <option>Sahel Logistics — due diligence valid to 2027</option>
+            </select>
+            <span style="font-size:11px; color:#9AA0A8;">Vendors with lapsed due diligence are not listed</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 150px; gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Quoted total (₦)</label>
+              <input value="{{ aqTotal }}" onChange="{{ aqSetTotal }}" placeholder="0.00" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+              <span style="font-size:11px; color:#9AA0A8;">Inclusive of VAT and delivery, as quoted</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Valid for</label>
+              <select value="{{ aqValidity }}" onChange="{{ aqSetValidity }}" style="height:42px; padding:0 12px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; color:#1A1D21; outline:none;"><option>14</option><option>30</option><option>45</option><option>60</option></select>
+              <span style="font-size:11px; color:#9AA0A8;">days</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:13px 15px; border:1.5px dashed #D9DCE1; border-radius:11px; background:#FAFBFC;">
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:500; color:#3B3B3B;">The written quotation</div>
+              <div style="font-size:11px; color:#9AA0A8; margin-top:3px;">Attach what the vendor sent — Internal Audit checks it against this figure</div>
+            </div>
+            <button onClick="{{ noop }}" style="height:34px; padding:0 14px; border:1px solid #E3E5E8; border-radius:9px; background:#fff; font-size:12px; font-weight:600; color:#1A1D21; flex:none;">Choose a file</button>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ aqValid }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ aqSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Record the quote</button>
+          </sc-if>
+          <sc-if value="{{ aqNoVendor }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose a vendor first</button>
+          </sc-if>
+          <sc-if value="{{ aqNoTotal }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Enter the quoted total</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ dlgVendor }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%; max-width:620px; max-height:88vh; overflow-y:auto; background:#fff; border-radius:18px; padding:28px; box-shadow:0 32px 64px rgba(16,24,40,.24); animation:weweRise 180ms ease-out;">
+        <div style="font-size:20px; font-weight:600; color:#1A1D21;">Register a vendor</div>
+        <div style="font-size:13px; color:#8A8F98; margin-top:6px; line-height:1.55;">A vendor can only be invited to a quotation round once its due diligence is on file and unexpired.</div>
+
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:22px;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Registered name</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <input value="{{ nvName }}" onChange="{{ nvSetName }}" placeholder="As it appears on the CAC certificate" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Contact email</label>
+              <input value="{{ nvEmail }}" onChange="{{ nvSetEmail }}" placeholder="sales@vendor.ng" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+              <span style="font-size:11px; color:#9AA0A8;">Quotation invitations are sent here</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Telephone</label>
+              <input value="{{ nvPhone }}" onChange="{{ nvSetPhone }}" placeholder="+234 " style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Business address</label>
+            <textarea value="{{ nvAddress }}" onChange="{{ nvSetAddress }}" placeholder="Street, city and state" style="min-height:62px; padding:12px 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none; resize:vertical;" style-focus="border-color:#E0572E"></textarea>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Tax identification number</label>
+            <input value="{{ nvTin }}" onChange="{{ nvSetTin }}" placeholder="00000000-0001" style="width:240px; height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-size:13px; font-weight:500; color:#3B3B3B;">What they supply</label>
+              <span style="height:20px; padding:0 8px; border-radius:5px; background:rgba(194,65,12,.1); color:#9C3309; font-size:10px; font-weight:700; display:inline-flex; align-items:center;">REQUIRED</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+              <sc-for list="{{ nvCatList }}" as="c" hint-placeholder-count="7">
+                <sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ c.onClick }}" style="display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px; border:none; border-radius:999px; background:#E0572E; color:#fff; font-size:12px; font-weight:600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg>{{ c.label }}</button>
+                </sc-if>
+                <sc-if value="{{ c.off }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ c.onClick }}" style="height:34px; padding:0 13px; border:1px solid #E3E5E8; border-radius:999px; background:#fff; color:#3B3B3B; font-size:12px; font-weight:500;" style-hover="border-color:#E0572E; color:#B23F1D">{{ c.label }}</button>
+                </sc-if>
+              </sc-for>
+            </div>
+            <span style="display:block; font-size:11px; color:#9AA0A8; margin-top:9px;">Categories decide which quotation rounds this vendor appears in</span>
+          </div>
+
+          <div style="padding-top:18px; border-top:1px solid #EEF0F3;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:600; color:#1A1D21;">Due diligence</div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:5px; line-height:1.55;">Record it now, or register the vendor and add it later. Until it is on file the vendor cannot be invited to quote.</div>
+              </div>
+              <sc-if value="{{ nvDd }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ nvToggleDd }}" style="width:38px; height:22px; flex:none; margin-top:2px; border:none; border-radius:999px; background:#E0572E; position:relative; padding:0;"><span style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+              </sc-if>
+              <sc-if value="{{ nvNoDd }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ nvToggleDd }}" style="width:38px; height:22px; flex:none; margin-top:2px; border:none; border-radius:999px; background:#DCDEE2; position:relative; padding:0;"><span style="position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:999px; background:#fff;"></span></button>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ nvDd }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                  <div style="display:flex; flex-direction:column; gap:7px;">
+                    <label style="font-size:13px; font-weight:500; color:#3B3B3B;">CAC certificate reference</label>
+                    <input value="{{ nvCac }}" onChange="{{ nvSetCac }}" placeholder="RC number or document id" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:7px;">
+                    <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Tax clearance reference</label>
+                    <input value="{{ nvTax }}" onChange="{{ nvSetTax }}" placeholder="Certificate or document id" style="height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; outline:none;" style-focus="border-color:#E0572E" />
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:7px;">
+                  <label style="font-size:13px; font-weight:500; color:#3B3B3B;">Expires</label>
+                  <input value="{{ nvExpiry }}" onChange="{{ nvSetExpiry }}" style="width:200px; height:42px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#F7F8FA; font-size:13px; font-variant-numeric:tabular-nums; outline:none;" style-focus="border-color:#E0572E" />
+                  <span style="font-size:11px; color:#9AA0A8;">The vendor drops out of the invitable list on this date</span>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ nvNoDd }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; align-items:center; gap:11px; margin-top:14px; padding:13px 15px; border-radius:10px; background:#FFF7ED; border:1px solid #FDE3C4;">
+                <span style="width:8px; height:8px; border-radius:999px; background:#B45309; flex:none;"></span>
+                <span style="font-size:12px; color:#8A4B0B; line-height:1.5;">Registering without due diligence. The vendor is on the register but shows as blocked in every quotation picker until the papers are recorded.</span>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+          <button onClick="{{ closeDlg }}" style="height:42px; padding:0 18px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#3B3B3B;">Cancel</button>
+          <sc-if value="{{ nvValid }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ nvSave }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Register the vendor</button>
+          </sc-if>
+          <sc-if value="{{ nvNoName }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">A registered name is required</button>
+          </sc-if>
+          <sc-if value="{{ nvNoCats }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Choose at least one category</button>
+          </sc-if>
+          <sc-if value="{{ nvDdIncomplete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ noop }}" style="height:42px; padding:0 20px; border:none; border-radius:10px; background:#F3F4F5; color:#B9BDC4; font-size:13px; font-weight:600;">Both references are required</button>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -9007,9 +9966,9 @@ const MODULES = {
 const KIDS = {
   req: [['All requisitions','/requisitions'],['Awaiting me','/requisitions/queue'],['New requisition','/requisitions/new'],['Templates','/requisitions/templates']],
   adv: [['Outstanding register','/advances'],['New cash advance','/advances/new'],['Travel authorisation','/advances/travel'],['Retirement','/advances/retire']],
-  bud: [['Overview','/budgets'],['Import & validation','/budgets/import'],['Virement requests','/budgets/virements'],['Version history','/budgets/versions']],
+  bud: [['Overview','/budgets'],['Build a budget','/budgets/new'],['Import & validation','/budgets/import'],['Virement requests','/budgets/virements'],['Version history','/budgets/versions']],
   pay: [['August run','/payroll'],['Payslips','/payroll/payslips'],['Remittances','/payroll/remittances']],
-  prc: [['Vendor registry','/procurement'],['RFQs & quotes','/procurement/rfq'],['Purchase orders','/procurement/orders'],['Contracts','/procurement/contracts']],
+  prc: [['Vendor registry','/procurement'],['RFQs & quotes','/procurement/rfq'],['Purchase orders','/procurement/po'],['New purchase order','/procurement/po/new'],['Contracts','/procurement/contracts']],
   inv: [['Stock on hand','/inventory'],['Activity log','/inventory/log'],['Goods received','/inventory/grn'],['Issues to staff','/inventory/issues'],['Stock counts','/inventory/counts']],
   ast: [['Asset register','/assets'],['Verification campaign','/assets/verification'],['Transfers','/assets/transfers'],['Disposals','/assets/disposals']],
   dms: [['Repository','/documents'],['Signature certificate','/documents/certificate'],['External signer view','/sign/external'],['Printable documents','/print/travel-authority'],['E-signature','/documents/signatures'],['Digitisation','/documents/digitisation'],['Retention & holds','/documents/retention']],
@@ -9328,32 +10287,22 @@ const PAGE_SPECS = {
 
   '/procurement/rfq': { title:'RFQs & quotes', sub:'Purchases above ₦500,000.00 require three written quotes',
     actions:['New RFQ'],
-    stats:[['Open RFQs','2','Close 07/08/2026'],['Awaiting evaluation','1','3 quotes in'],['Average quotes','2.8','Policy minimum 3'],['Single-quote waivers','1','Justified in writing']],
-    table:{ title:'RFQ register', cols:[['Reference',null,'130px'],['Requirement',null,'minmax(180px,1fr)'],['From requisition',null,'150px'],['Quotes','r','90px'],['Closes',null,'120px'],['Status',null,'150px']],
-      rows:[['RFQ-2026-0019','Laptops (6) — M&E team','REQ-2026-0191','3','01/08/2026','a:EVALUATING'],
-            ['RFQ-2026-0021','Printing — 4,000 handbooks','REQ-2026-0193','2','07/08/2026','n:OPEN'],
-            ['RFQ-2026-0022','Solar inverter — Enugu office','REQ-2026-0192','1','07/08/2026','n:OPEN'],
-            ['RFQ-2026-0018','Office stationery Q3','REQ-2026-0180','3','21/07/2026','g:AWARDED'],
-            ['RFQ-2026-0017','Vehicle insurance renewal','REQ-2026-0174','3','12/07/2026','r:CANCELLED']] } },
-
-  '/procurement/orders': { title:'Purchase orders', sub:'₦9,240,000.00 committed across 5 open orders · partial deliveries tracked per line',
-    actions:['Export PO register'],
-    stats:[['Open orders','5','₦9,240,000.00'],['Delivered this month','4','₦3,180,000.00'],['Partial deliveries','2','Awaiting balance'],['Average lead time','9 days','Against 14 quoted']],
-    table:{ title:'Purchase orders', cols:[['PO number',null,'130px'],['Vendor',null,'minmax(160px,1fr)'],['Description',null,'minmax(160px,1fr)'],['Value','r','140px'],['Received','r','110px'],['Status',null,'140px']],
-      rows:[['PO-2026-0064','Techtink Solutions Ltd','Laptops (6) — M&E team','₦4,380,000.00','0%','a:AT MD'],
-            ['PO-2026-0066','Brightline Printers','Office stationery Q3','₦268,500.00','60%','a:PART DELIVERED'],
-            ['PO-2026-0063','Solar Hub Nigeria','Solar inverter — Enugu','₦1,840,000.00','100%','g:CLOSED'],
-            ['PO-2026-0061','Kaduna Motors Ltd','Vehicle servicing — 3 units','₦340,000.00','100%','g:CLOSED'],
-            ['PO-2026-0059','Brightline Printers','4,000 caregiver handbooks','₦1,180,000.00','100%','g:CLOSED']] } },
+    stats:[['Open RFQs','2','Close 07/08/2026'],['Awaiting evaluation','1','3 quotes in'],['Average quotes','2.4','Policy minimum 3'],['Single-quote waivers','1','Justified in writing']],
+    table:{ title:'RFQ register', cols:[['Reference',null,'130px'],['Requirement',null,'minmax(180px,1fr)'],['From requisition',null,'150px'],['Quotes','r','76px'],['Closes',null,'104px'],['Status',null,'128px'],['',null,'92px']],
+      rows:[['RFQ-2026-0019','Laptops (6) — M&E team','REQ-2026-0191','3','01/08/2026','a:EVALUATING','x:Award'],
+            ['RFQ-2026-0021','Printing — 4,000 handbooks','REQ-2026-0193','2','07/08/2026','n:OPEN','x:Award'],
+            ['RFQ-2026-0022','Solar inverter — Enugu office','REQ-2026-0192','1','07/08/2026','n:OPEN','x:Award'],
+            ['RFQ-2026-0018','Office stationery — Q3 replenishment','REQ-2026-0180','3','21/07/2026','g:AWARDED','x:Award'],
+            ['RFQ-2026-0017','Vehicle insurance renewal','REQ-2026-0174','3','12/07/2026','r:CANCELLED','x:Award']] } },
 
   '/procurement/contracts': { title:'Contracts', sub:'Payments are metered against contract value · expiry alerts fire 60 days out',
     actions:['New contract'],
-    stats:[['Active contracts','4','₦27,000,000.00 value'],['Expiring in 60 days','1','Security services'],['Drawn to date','₦15,720,000.00','58% of value'],['Over 90% drawn','1','IT support']],
-    table:{ title:'Contract register', cols:[['Reference',null,'130px'],['Vendor / scope',null,'minmax(180px,1fr)'],['Value','r','150px'],['Paid to date','r','150px'],['Drawn','r','90px'],['Expires',null,'130px']],
-      rows:[['HAL-2026-01','Halogen — security services','₦12,000,000.00','₦8,880,000.00','74%','a:30/09/2026'],
-            ['TTS-2025-04','Techtink — IT support retainer','₦6,000,000.00','₦5,700,000.00','95%','n:31/12/2026'],
-            ['KAD-2024-02','Kaduna Motors — vehicle maintenance','₦3,000,000.00','₦1,140,000.00','38%','n:31/03/2027'],
-            ['ZEN-2025-01','Zenith Travels — travel management','₦6,000,000.00','₦3,210,000.00','54%','n:30/06/2027']] } },
+    stats:[['Active contracts','4','₦27,000,000.00 value'],['Expiring in 60 days','1','Guardforce — 30/09/2026'],['Drawn to date','₦15,720,000.00','58% of value'],['Over 90% drawn','1','Techtink — 92%']],
+    table:{ title:'Contract register', cols:[['Reference',null,'126px'],['Vendor / scope',null,'minmax(150px,1fr)'],['Value','r','136px'],['Drawn to date','r','136px'],['Drawn',null,'84px'],['Expires',null,'118px'],['',null,'78px']],
+      rows:[['CTR-2026-0011','Sahel Logistics — vehicle hire and haulage','₦9,600,000.00','₦5,820,000.00','61%','n:31/12/2026','x:Open'],
+            ['CTR-2026-0008','Techtink — IT support and maintenance','₦7,200,000.00','₦6,624,000.00','a:92%','n:31/01/2027','x:Open'],
+            ['CTR-2026-0004','Guardforce — security services, Abuja','₦6,000,000.00','₦2,500,000.00','42%','a:30/09/2026','x:Open'],
+            ['CTR-2026-0002','Greenfield Caterers — event catering','₦4,200,000.00','₦776,000.00','18%','n:31/12/2026','x:Open']] } },
 
   '/assets/verification': { title:'Verification campaign — Q3 2026', sub:'217 of 218 assets scanned · one variance for Internal Audit',
     actions:['Variance report','Close campaign'],
@@ -9600,15 +10549,15 @@ const PAGE_SPECS = {
   '/advances/outstanding': { title:'Outstanding advances register', sub:'Every advance not yet retired, aged against the 14-day policy',
     actions:['Export register','Send reminders'],
     stats:[['Outstanding','₦3,847,000.00','11 staff, 14 advances'],['Overdue past 14 days','₦1,268,000.00','5 advances, 4 staff'],['Blocked from new advances','2','Aisha Mohammed, Chinelo Obi'],['Recovered from salary','₦340,000.00','August payroll']],
-    table:{ title:'Register, oldest first', cols:[['Reference',null,'104px'],['Staff',null,'minmax(110px,1fr)'],['Purpose',null,'minmax(120px,1fr)'],['Amount','r','112px'],['Issued',null,'96px'],['Age','r','74px'],['Status',null,'128px']],
-      rows:[['ADV-2026-0028','Aisha Mohammed','Kano cluster monitoring, 8 days','₦480,000.00','02/07/2026','33d','r:BLOCKED — 19D OVER'],
-            ['ADV-2026-0031','Chinelo Obi','Aba community dialogue','₦350,000.00','09/07/2026','26d','r:BLOCKED — 12D OVER'],
-            ['ADV-2026-0033','Emeka Nwosu','Vendor site inspections','₦196,000.00','14/07/2026','21d','r:OVERDUE 7D'],
-            ['ADV-2026-0035','Grace Uche','Baseline survey, Enugu','₦242,000.00','18/07/2026','17d','r:OVERDUE 3D'],
-            ['ADV-2026-0037','Ibrahim Sani','Generator servicing, 3 sites','₦168,000.00','22/07/2026','13d','a:DUE IN 1D'],
-            ['ADV-2026-0039','Ngozi Okafor','Lagos donor meeting','₦620,000.00','27/07/2026','8d','n:WITHIN POLICY'],
-            ['ADV-2026-0041','Ibrahim Sani','Port Harcourt monitoring','₦515,000.00','30/07/2026','5d','n:WITHIN POLICY'],
-            ['ADV-2026-0042','Chinelo Obi','Aba dialogue, second phase','₦350,000.00','01/08/2026','3d','n:WITHIN POLICY']] } },
+    table:{ title:'Register, oldest first', cols:[['Reference',null,'104px'],['Staff',null,'minmax(110px,1fr)'],['Purpose',null,'minmax(120px,1fr)'],['Amount','r','106px'],['Issued',null,'92px'],['Age','r','66px'],['Status',null,'118px'],['',null,'78px']],
+      rows:[['ADV-2026-0028','Aisha Mohammed','Kano cluster monitoring, 8 days','₦480,000.00','02/07/2026','33d','r:BLOCKED — 19D OVER','x:Open'],
+            ['ADV-2026-0031','Chinelo Obi','Aba community dialogue','₦350,000.00','09/07/2026','26d','r:BLOCKED — 12D OVER','x:Open'],
+            ['ADV-2026-0033','Emeka Nwosu','Vendor site inspections','₦196,000.00','14/07/2026','21d','r:OVERDUE 7D','x:Open'],
+            ['ADV-2026-0035','Grace Uche','Baseline survey, Enugu','₦242,000.00','18/07/2026','17d','r:OVERDUE 3D','x:Open'],
+            ['ADV-2026-0037','Ibrahim Sani','Generator servicing, 3 sites','₦168,000.00','22/07/2026','13d','a:DUE IN 1D','x:Open'],
+            ['ADV-2026-0039','Ngozi Okafor','Lagos donor meeting','₦620,000.00','27/07/2026','8d','n:WITHIN POLICY','x:Open'],
+            ['ADV-2026-0041','Ibrahim Sani','Port Harcourt monitoring','₦515,000.00','30/07/2026','5d','n:WITHIN POLICY','x:Open'],
+            ['ADV-2026-0042','Chinelo Obi','Aba dialogue, second phase','₦350,000.00','01/08/2026','3d','n:WITHIN POLICY','x:Open']] } },
 
   '/documents/esign': { title:'Electronic signature', sub:'Signature requests, their order, and what is holding each one up',
     actions:['Signature settings','New signature request'],
@@ -9645,14 +10594,14 @@ const PAGE_SPECS = {
   '/procurement/po': { title:'Purchase orders', sub:'Committed spend, delivery status and the three-way match to invoices',
     actions:['Export orders','New purchase order'],
     stats:[['Open orders','7','₦11,240,000.00 committed'],['Awaiting delivery','4','1 past its promised date'],['Fully matched','19','Invoice, GRN and order agree'],['Match exceptions','2','Held from payment']],
-    table:{ title:'Open and recent orders', cols:[['Order',null,'112px'],['Vendor',null,'minmax(110px,1fr)'],['Item',null,'minmax(120px,1fr)'],['Value','r','124px'],['Promised',null,'96px'],['Delivery',null,'118px'],['Match',null,'118px']],
-      rows:[['PO-2026-0059','Brightline Printers','Caregiver manuals (4,000)','₦5,800,000.00','08/08/2026','a:200 OF 4,000','a:PART MATCHED'],
-            ['PO-2026-0064','Techtink Solutions','Laptops (6) — M&E team','₦4,380,000.00','21/08/2026','n:NOT DUE','n:AWAITING GRN'],
-            ['PO-2026-0066','Brightline Printers','A4 paper (80 reams)','₦520,000.00','24/07/2026','g:DELIVERED','g:MATCHED'],
-            ['PO-2026-0061','Techtink Solutions','Printer toner (4)','₦192,000.00','30/07/2026','g:DELIVERED','g:MATCHED'],
-            ['PO-2026-0058','CityTech Nigeria','Tablet cases (20)','₦156,000.00','18/07/2026','g:DELIVERED','r:PRICE VARIANCE'],
-            ['PO-2026-0054','Brightline Printers','Branded T-shirts (100)','₦420,000.00','12/07/2026','r:REJECTED','r:HELD'],
-            ['PO-2026-0052','Sahel Logistics','Vehicle hire, Enugu round','₦680,000.00','05/08/2026','a:IN TRANSIT','n:AWAITING GRN']] } },
+    table:{ title:'Open and recent orders', cols:[['Order',null,'112px'],['Vendor',null,'minmax(110px,1fr)'],['Item',null,'minmax(120px,1fr)'],['Value','r','118px'],['Promised',null,'90px'],['Delivery',null,'110px'],['Match',null,'110px'],['',null,'78px']],
+      rows:[['PO-2026-0059','Brightline Printers','Caregiver manuals (4,000)','₦5,800,000.00','08/08/2026','a:200 OF 4,000','a:PART MATCHED','x:Open'],
+            ['PO-2026-0064','Techtink Solutions','Laptops (6) — M&E team','₦4,380,000.00','21/08/2026','n:NOT DUE','n:AWAITING GRN','x:Open'],
+            ['PO-2026-0066','Brightline Printers','A4 paper (80 reams)','₦520,000.00','24/07/2026','g:DELIVERED','g:MATCHED','x:Open'],
+            ['PO-2026-0061','Techtink Solutions','Printer toner (4)','₦192,000.00','30/07/2026','g:DELIVERED','g:MATCHED','x:Open'],
+            ['PO-2026-0058','CityTech Nigeria','Tablet cases (20)','₦156,000.00','18/07/2026','g:DELIVERED','r:PRICE VARIANCE','x:Open'],
+            ['PO-2026-0054','Brightline Printers','Branded T-shirts (100)','₦420,000.00','12/07/2026','r:REJECTED','r:HELD','x:Open'],
+            ['PO-2026-0052','Sahel Logistics','Vehicle hire, Enugu round','₦680,000.00','05/08/2026','a:IN TRANSIT','n:AWAITING GRN','x:Open']] } },
 
   '/assets/depreciation': { title:'Depreciation schedule', sub:'Straight-line by class, posted monthly to QuickBooks',
     actions:['Export schedule','Run depreciation'],
@@ -10001,6 +10950,103 @@ const QB_EXCEPTIONS = [
   { ref:'ADV-2026-0039', posted:'Today · 09:05', err:'Account mapping missing — “Per diem — international”', amount:620000 },
   { ref:'REQ-2026-0176', posted:'02/08/2026 · 17:12', err:'Class “M&E” inactive in QuickBooks', amount:88000 },
   { ref:'PO-2026-0061', posted:'01/08/2026 · 08:44', err:'Vendor “Kaduna Motors Ltd” not found', amount:340000 }
+];
+
+const BB_CATEGORIES = ['Programme activities', 'Staff costs', 'Travel & per diem', 'Equipment & assets', 'Office & running costs', 'Consultancy', 'Monitoring & evaluation', 'Indirect cost recovery'];
+
+
+const BB_LAST_YEAR = [
+  { cat:'Programme activities', line:'Field monitoring & supervision', donor:'USAID-LON-24', dept:'Programmes', q:[708000, 708000, 708000, 708000] },
+  { cat:'Programme activities', line:'Caregiver training', donor:'USAID-LON-24', dept:'Programmes', q:[1132000, 0, 1132000, 0] },
+  { cat:'Programme activities', line:'Community dialogues', donor:'EU-WISH-23', dept:'Programmes', q:[260000, 260000, 260000, 260000] },
+  { cat:'Staff costs', line:'Programme officer salaries', donor:'USAID-LON-24', dept:'Programmes', q:[3510000, 3510000, 3510000, 3510000] },
+  { cat:'Staff costs', line:'M&E officer salaries', donor:'EU-WISH-23', dept:'M&E', q:[1180000, 1180000, 1180000, 1180000] },
+  { cat:'Travel & per diem', line:'Cluster travel', donor:'EU-WISH-23', dept:'M&E', q:[396000, 396000, 396000, 396000] },
+  { cat:'Office & running costs', line:'Abuja office running costs', donor:'Core', dept:'Operations', q:[412000, 412000, 412000, 412000] },
+  { cat:'Indirect cost recovery', line:'Indirect at 12%', donor:'USAID-LON-24', dept:'Finance & Admin', q:[668000, 553000, 668000, 553000] }
+];
+
+const BB_AWARD_LINES = [
+  { cat:'Programme activities', line:'Field monitoring & supervision', donor:'USAID-LON-24', dept:'Programmes', q:[750000, 750000, 750000, 750000] },
+  { cat:'Programme activities', line:'Caregiver training', donor:'USAID-LON-24', dept:'Programmes', q:[1200000, 0, 1200000, 0] },
+  { cat:'Staff costs', line:'Programme officer salaries', donor:'USAID-LON-24', dept:'Programmes', q:[3720000, 3720000, 3720000, 3720000] },
+  { cat:'Monitoring & evaluation', line:'Baseline and endline surveys', donor:'EU-WISH-23', dept:'M&E', q:[0, 1400000, 0, 1400000] },
+  { cat:'Travel & per diem', line:'Cluster travel', donor:'EU-WISH-23', dept:'M&E', q:[420000, 420000, 420000, 420000] },
+  { cat:'Programme activities', line:'Safe homes running costs', donor:'EU-WISH-23', dept:'Programmes', q:[880000, 880000, 880000, 880000] },
+  { cat:'Programme activities', line:'Care systems strengthening', donor:'FCDO-ACE-25', dept:'Programmes', q:[640000, 640000, 640000, 640000] },
+  { cat:'Indirect cost recovery', line:'Indirect at 12%', donor:'USAID-LON-24', dept:'Finance & Admin', q:[708000, 586800, 708000, 586800] }
+];
+
+const RFQ_ROUNDS = {
+  'RFQ-2026-0019': { title:'Laptops (6) — M&E team', req:'REQ-2026-0191', band:'₦500,000.00 and above', minQuotes:3, closed:'01/08/2026', state:'evaluating',
+    quotes:[
+      { id:'Q-0071', vendor:'Techtink Solutions Ltd', total:5180000, days:7, valid:30, blacklisted:false, note:'Three-year on-site warranty included' },
+      { id:'Q-0072', vendor:'CityTech Nigeria', total:4988000, days:21, valid:30, blacklisted:false, note:'One-year warranty, return to base' },
+      { id:'Q-0073', vendor:'Kanem Supplies', total:4760000, days:28, valid:14, blacklisted:true, note:'Due diligence lapsed 14/11/2024' }
+    ] },
+  'RFQ-2026-0021': { title:'Printing — 4,000 handbooks', req:'REQ-2026-0193', band:'₦500,000.00 and above', minQuotes:3, closed:'07/08/2026', state:'open',
+    quotes:[
+      { id:'Q-0081', vendor:'Brightline Printers Ltd', total:5800000, days:14, valid:30, blacklisted:false, note:'Includes delivery to Abuja and Enugu' },
+      { id:'Q-0082', vendor:'CityTech Nigeria', total:6120000, days:21, valid:30, blacklisted:false, note:'Delivery to Abuja only' }
+    ] },
+  'RFQ-2026-0022': { title:'Solar inverter — Enugu office', req:'REQ-2026-0192', band:'₦500,000.00 and above', minQuotes:3, closed:'07/08/2026', state:'open',
+    quotes:[
+      { id:'Q-0086', vendor:'Sahel Logistics', total:1240000, days:18, valid:30, blacklisted:false, note:'Supply and install, 5kVA' }
+    ] },
+  'RFQ-2026-0018': { title:'Office stationery — Q3 replenishment', req:'REQ-2026-0180', band:'₦250,000.00 to ₦500,000.00', minQuotes:3, closed:'21/07/2026', state:'awarded',
+    quotes:[
+      { id:'Q-0064', vendor:'Brightline Printers Ltd', total:268500, days:5, valid:30, blacklisted:false, note:'Awarded 22/07/2026' },
+      { id:'Q-0065', vendor:'CityTech Nigeria', total:291000, days:9, valid:30, blacklisted:false, note:'' },
+      { id:'Q-0066', vendor:'Greenfield Caterers', total:305400, days:12, valid:21, blacklisted:false, note:'Outside their usual category' }
+    ] },
+  'RFQ-2026-0017': { title:'Vehicle insurance renewal', req:'REQ-2026-0174', band:'₦500,000.00 and above', minQuotes:3, closed:'12/07/2026', state:'cancelled',
+    quotes:[
+      { id:'Q-0058', vendor:'Sahel Logistics', total:1820000, days:3, valid:14, blacklisted:false, note:'Round cancelled — cover extended instead' },
+      { id:'Q-0059', vendor:'CityTech Nigeria', total:1940000, days:3, valid:14, blacklisted:false, note:'' },
+      { id:'Q-0060', vendor:'Techtink Solutions Ltd', total:2010000, days:5, valid:14, blacklisted:false, note:'' }
+    ] }
+};
+
+const PO_RECORDS = {
+  'PO-2026-0064': { vendor:'Techtink Solutions Ltd', vendorTin:'22940188-0001', vendorAddr:'18 Herbert Macaulay Way, Wuse Zone 4, Abuja',
+    req:'REQ-2026-0181', rfq:'RFQ-2026-0031', donor:'EU-WISH-23', budgetLine:'IT equipment — capital',
+    raised:'28/07/2026', promised:'21/08/2026', terms:'30 days from goods received note', status:'open',
+    lines:[['Laptop — 14" business class, 16GB RAM, 512GB SSD', 6, 680000, 4], ['Extended warranty — 3 years on site', 6, 48000, 6], ['Carry case — padded, branded', 6, 12000, 6], ['Delivery to Abuja office', 1, 24000, 0]],
+    events:[['Emeka Nwosu','Raised from REQ-2026-0181 after three quotations','28/07/2026 · 10:05','neutral'],
+      ['Musa Danjuma','Specification agreed with the M&E team','28/07/2026 · 16:22','green'],
+      ['Chiamaka Eze','Lowest compliant quotation selected. Cleared.','30/07/2026 · 11:15','green'],
+      ['Musa Danjuma','Partial delivery — 4 of 6 laptops received, balance promised 08/08','04/08/2026 · 14:40','amber']] },
+  'PO-2026-0066': { vendor:'Brightline Printers Ltd', vendorTin:'19004422-0001', vendorAddr:'7 Zaria Street, Garki II, Abuja',
+    req:'REQ-2026-0188', rfq:'RFQ-2026-0033', donor:'Core', budgetLine:'Office & running costs',
+    raised:'02/08/2026', promised:'24/08/2026', terms:'30 days from goods received note', status:'open',
+    lines:[['A4 photocopy paper (ream)', 80, 6500, 80], ['Branded folders', 200, 900, 0]],
+    events:[['Emeka Nwosu','Raised for Q3 stationery replenishment','02/08/2026 · 09:14','neutral'],
+      ['Musa Danjuma','Paper received in full; folders still outstanding','04/08/2026 · 11:02','amber']] },
+  'PO-2026-0059': { vendor:'Brightline Printers Ltd', vendorTin:'19004422-0001', vendorAddr:'7 Zaria Street, Garki II, Abuja',
+    req:'REQ-2026-0159', rfq:'RFQ-2026-0028', donor:'USAID-LON-24', budgetLine:'Programme activities',
+    raised:'12/06/2026', promised:'08/08/2026', terms:'30 days from goods received note', status:'part',
+    lines:[['Caregiver training manual', 4000, 1450, 200]],
+    events:[['Emeka Nwosu','Raised from REQ-2026-0159','12/06/2026 · 08:30','neutral'],
+      ['Musa Danjuma','200 of 4,000 received — partial delivery accepted','04/08/2026 · 16:22','amber']] }
+};
+
+const CONTRACTS = [
+  { ref:'CTR-2026-0011', vendor:'Sahel Logistics', title:'Vehicle hire and haulage', value:9600000, drawn:5820000,
+    start:'01/01/2026', end:'31/12/2026', owner:'Musa Danjuma', donor:'Core', state:'Active', renewal:'Review by 01/11/2026',
+    schedule:[['Q1 2026','₦2,400,000.00','Paid 04/04/2026','paid'],['Q2 2026','₦2,400,000.00','Paid 06/07/2026','paid'],['Q3 2026','₦1,020,000.00','Part-paid 04/08/2026','part'],['Q4 2026','₦2,400,000.00','Not yet due','due']],
+    amendments:[['A1','Rate uplift of 4% on long-haul','12/04/2026','Dr. Amina Yusuf']] },
+  { ref:'CTR-2026-0008', vendor:'Techtink Solutions Ltd', title:'IT support and maintenance', value:7200000, drawn:6624000,
+    start:'01/02/2026', end:'31/01/2027', owner:'Segun Ola', donor:'Core', state:'Active', renewal:'92% drawn — review now',
+    schedule:[['Feb–Apr','₦1,800,000.00','Paid 05/05/2026','paid'],['May–Jul','₦1,800,000.00','Paid 04/08/2026','paid'],['Aug–Oct','₦3,024,000.00','Additional scope, paid','paid'],['Nov–Jan','₦576,000.00','Remaining','due']],
+    amendments:[['A1','Added out-of-hours cover','18/06/2026','Dr. Amina Yusuf'],['A2','Extended to two field offices','22/07/2026','Dr. Amina Yusuf']] },
+  { ref:'CTR-2026-0004', vendor:'Guardforce Nigeria', title:'Security services — Abuja office', value:6000000, drawn:2500000,
+    start:'01/10/2025', end:'30/09/2026', owner:'Musa Danjuma', donor:'Core', state:'Expiring', renewal:'Expires in 55 days',
+    schedule:[['Oct–Dec','₦1,500,000.00','Paid 08/01/2026','paid'],['Jan–Mar','₦1,000,000.00','Paid 06/04/2026','paid'],['Apr–Jun','₦1,500,000.00','Not yet invoiced','due'],['Jul–Sep','₦2,000,000.00','Not yet due','due']],
+    amendments:[] },
+  { ref:'CTR-2026-0002', vendor:'Greenfield Caterers', title:'Event catering framework', value:4200000, drawn:776000,
+    start:'01/01/2026', end:'31/12/2026', owner:'Blessing Adeyemi', donor:'EU-WISH-23', state:'Active', renewal:'Called off per event',
+    schedule:[['Call-off basis','₦4,200,000.00','₦776,000.00 drawn to date','part']],
+    amendments:[] }
 ];
 
 const DELEGATE_OPTIONS = [
@@ -10367,8 +11413,43 @@ class Component extends DCLogic {
     obMode: 'warn',
     nrPurpose: '',
     nrJustify: '',
+    bbYear: 'FY2027',
+    bbBasis: 'zero',
+    bbCeiling: 48000000,
+    bbRows: [],
+    bbGroup: 'cat',
+    bbUplift: 6,
     nrBudget: 'Field monitoring & supervision',
     nrLines: [{ desc:'', qty:1, unit:0 }],
+    rfqId: 'RFQ-2026-0034',
+    awQuote: '',
+    awJust: '',
+    awSole: '',
+    awCommittee: '',
+    aqVendor: '',
+    aqTotal: '',
+    aqValidity: '30',
+    grLines: {},
+    grNote: '',
+    grPo: 'PO-2026-0064',
+    awarded: '',
+    nvName: '',
+    nvEmail: '',
+    nvPhone: '',
+    nvAddress: '',
+    nvTin: '',
+    nvCats: {},
+    nvDd: false,
+    nvCac: '',
+    nvTax: '',
+    nvExpiry: '31/12/2027',
+    pnSource: 'REQ-2026-0181 — Laptops (6) for the M&E team · ₦4,380,000.00',
+    pnVendor: '',
+    pnTerms: '30 days from goods received note',
+    pnLines: [
+      { desc:'Laptop — 14" business class, 16GB RAM, 512GB SSD', qty:6, unit:680000 },
+      { desc:'Extended warranty — 3 years on site', qty:6, unit:48000 }
+    ],
     dmsFolder: 'All documents',
     dmsClass: 'All classes',
     dmsQ: '',
@@ -10378,6 +11459,8 @@ class Component extends DCLogic {
     upFiles: [],
     otp: '',
     extOtp: '',
+    siEmail: '',
+    siPass: '',
     avLocation: 'Abuja head office',
     onbUserId: 'usr_blessing_nwafor',
     delFrom: '2026-08-08',
@@ -10545,6 +11628,36 @@ class Component extends DCLogic {
       .filter(d => c === 'All classes' || d.cls === c)
       .filter(d => !q || (d.name + ' ' + d.folder + ' ' + d.linked).toLowerCase().indexOf(q) > -1);
   }
+  bbSeed(basis) {
+    const pct = this.state.bbUplift;
+    const rows = basis === 'zero' ? []
+      : basis === 'last' ? BB_LAST_YEAR.map((r, i) => Object.assign({ id:i + 1 }, r, { q: r.q.map(v => Math.round(v * (1 + pct / 100))) }))
+      : BB_AWARD_LINES.map((r, i) => Object.assign({ id:i + 1 }, r, { q: r.q.slice() }));
+    this.setState({ bbBasis:basis, bbRows:rows });
+    this.toast(basis === 'zero' ? 'Cleared — build each line from nothing.'
+      : basis === 'last' ? BB_LAST_YEAR.length + ' lines carried forward from FY2026 at +' + pct + '%.'
+      : BB_AWARD_LINES.length + ' lines pulled from the approved donor award budgets.');
+  }
+  bbSet(id, key, v, qi) {
+    this.setState({ bbRows: this.state.bbRows.map(r => {
+      if (r.id !== id) return r;
+      if (key === 'q') { const q = r.q.slice(); q[qi] = Math.max(0, parseFloat(String(v).replace(/[^0-9.]/g, '')) || 0); return Object.assign({}, r, { q }); }
+      return Object.assign({}, r, { [key]: v });
+    }) });
+  }
+  bbTotal() {
+    return this.state.bbRows.reduce((a, r) => a + r.q.reduce((x, y) => x + y, 0), 0);
+  }
+  pnSet(i, key, v) {
+    this.setState({ pnLines: this.state.pnLines.map((l, n) => n === i ? Object.assign({}, l, { [key]: key === 'desc' ? v : Math.max(0, parseFloat(String(v).replace(/[^0-9.]/g, '')) || 0) }) : l) });
+  }
+  pnSum() {
+    return this.state.pnLines.reduce((a, l) => a + l.qty * l.unit, 0);
+  }
+  pnGross() {
+    const sub = this.pnSum();
+    return sub + Math.round(sub * 0.075);
+  }
   nrSum() {
     return this.state.nrLines.reduce((a, l) => a + l.qty * l.unit, 0);
   }
@@ -10575,6 +11688,9 @@ class Component extends DCLogic {
     if (/bulk approve/i.test(l)) { this.setState({ dlg:{ kind:'bulk' }, bulkDone:false }); return; }
     if (/^sign$/i.test(l)) { this.setState({ dlg:{ kind:'ceremony', requestId:this.state.esignSelected || '' }, ceremonyStep:1 }); return; }
     if (/certificate/i.test(l)) { this.go('/documents/certificate'); return; }
+    if (/^new rfq$/i.test(l)) { this.setState({ dlg:{ kind:'rfq' } }); return; }
+    if (/add a vendor|new vendor|register.*vendor/i.test(l)) { this.setState({ dlg:{ kind:'vendor' }, nvName:'', nvEmail:'', nvPhone:'', nvAddress:'', nvTin:'', nvCats:{}, nvDd:false, nvCac:'', nvTax:'' }); return; }
+    if (/new purchase order/i.test(l)) { this.go('/procurement/po/new'); return; }
     if (/re-upload|upload budget|import budget/i.test(l)) { this.setState({ dlg:{ kind:'upload', label:l } }); return; }
     if (/Build a report|Custom builder/i.test(l)) { this.go('/reports/builder'); return; }
     if (/^Export|^Print|^Download/i.test(l)) { this.setState({ dlg:{ kind:'export' } }); return; }
@@ -10773,6 +11889,41 @@ class Component extends DCLogic {
       showAuth: auth !== 'in', isSignin: auth === 'signin', is2fa: auth === '2fa', showApp: auth === 'in',
       otp: this.state.otp,
       onOtp: e => this.setState({ otp: e.target.value.replace(/\D/g,'').slice(0,6) }),
+      siEmail: this.state.siEmail,
+      setSiEmail: e => this.setState({ siEmail: e.target.value }),
+      siPass: this.state.siPass,
+      setSiPass: e => this.setState({ siPass: e.target.value }),
+      siReady: String(this.state.siEmail || '').indexOf('@') > 0 && String(this.state.siPass || '').length > 0,
+      siIncomplete: !(String(this.state.siEmail || '').indexOf('@') > 0 && String(this.state.siPass || '').length > 0),
+      siEmailShown: this.state.siEmail || 'your work email',
+      otpReady2: String(this.state.otp || '').length === 6,
+      otpShort2: String(this.state.otp || '').length !== 6,
+      doSignIn: () => {
+        const fn = typeof window !== 'undefined' && window.__weweSignIn;
+        if (typeof fn === 'function') {
+          let res;
+          try { res = fn({ email:this.state.siEmail, password:this.state.siPass }); }
+          catch (e) { this.fail((e && e.message) || 'Could not sign you in. Check your details and try again.'); return; }
+          if (res === false || res === null || res === undefined) { this.fail('Those details were not accepted.'); return; }
+          if (res && res.ok === false) { this.fail(res.reason || res.message || 'Those details were not accepted.'); return; }
+          this.setState({ toastError:false, auth: (res && res.requires2fa) ? '2fa' : 'in' });
+          return;
+        }
+        this.setState({ auth:'2fa' });
+      },
+      doVerify2fa: () => {
+        const fn = typeof window !== 'undefined' && window.__weweVerify2fa;
+        if (typeof fn === 'function') {
+          let res;
+          try { res = fn({ code:this.state.otp }); }
+          catch (e) { this.fail((e && e.message) || 'That code was not accepted.'); return; }
+          if (res === false || res === null || res === undefined) { this.fail('That code was not accepted.'); return; }
+          if (res && res.ok === false) { this.fail(res.reason || res.message || 'That code was not accepted.'); return; }
+          this.setState({ toastError:false, auth:'in' });
+          return;
+        }
+        this.setState({ auth:'in' });
+      },
       toSecondFactor: () => this.setState({ auth:'2fa' }),
       signIn: () => this.setState({ auth:'in' }),
 
@@ -11185,6 +12336,9 @@ class Component extends DCLogic {
       onApproveDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'approve' }, actNote:'' }); },
       onReturnDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'return' }, actNote:'' }); },
       onRejectDet: () => { if (detBundle) this.setState({ dlg:{ kind:'decide', ref:detBundle.txn.ref, verb:'reject' }, actNote:'' }); },
+      goRefADV20260042: () => this.go('/requisitions/ADV-2026-0042'),
+      goRefADV20260039: () => this.go('/requisitions/ADV-2026-0039'),
+      goRefADV20260027: () => this.go('/requisitions/ADV-2026-0027'),
       isAdv: base('/advances'),
       isRet: base('/advances/retire'),
       isBud: base('/budgets'),
@@ -11296,6 +12450,7 @@ class Component extends DCLogic {
                 if (/^issue$/i.test(b)) { this.setState({ dlg:{ kind:'issue' }, stkItem:0, stkQty:12 }); return; }
                 if (/^view$/i.test(b) && /Email/.test(text)) { this.setState({ dlg:{ kind:'payslip', row:r } }); return; }
                 if (/^(view|prepare)$/i.test(b) && /Export|Prepare/.test(text)) { this.setState({ dlg:{ kind:'remit', row:r } }); return; }
+                if (/^(award|quotes)$/i.test(b) && /^RFQ-\d{4}-\d{4}$/.test(String(r[0]))) { this.go('/procurement/award?id=' + r[0]); return; }
                 if (/^sign$/i.test(b)) { this.setState({ dlg:{ kind:'ceremony', requestId:String(r[0] || '') }, ceremonyStep:1, esignSelected:String(r[0] || '') }); return; }
                 if (/^certificate$/i.test(b)) { this.go('/documents/certificate'); return; }
                 if (/^(use|edit|copy)$/i.test(b)) { this.setState({ dlg:{ kind:'tpl', row:r, mode:b } }); return; }
@@ -11307,7 +12462,12 @@ class Component extends DCLogic {
                 if (/^approve$/i.test(b)) { this.setState({ dlg:{ kind:'approve', row:r } }); return; }
                 if (/^reverse$/i.test(b)) { this.setState({ dlg:{ kind:'reverse', row:r } }); return; }
                 if (/^chase$/i.test(b)) { this.setState({ dlg:{ kind:'chase', row:r } }); return; }
-                if (/^open$/i.test(b)) { this.go(/^(REQ|ADV|RET|PO)-\d{4}-\d{4}$/.test(String(r[0])) ? '/requisitions/' + r[0] : '/requisitions'); return; }
+                if (/^open$/i.test(b)) {
+                  const ref = String(r[0]);
+                  if (/^PO-\d{4}-\d{4}$/.test(ref)) { this.go('/procurement/po/view?id=' + ref); return; }
+                  if (/^CTR-\d{4}-\d{4}$/.test(ref)) { this.go('/procurement/contract?id=' + ref); return; }
+                  this.go(/^(REQ|ADV|RET)-\d{4}-\d{4}$/.test(ref) ? '/requisitions/' + ref : '/requisitions'); return;
+                }
                 const kind = /download|pdf|print|export/i.test(b) ? 'export' : 'action';
                 this.setState({ dlg:{ kind, label:b + ' — ' + (r[1] || r[0]) } });
               } })) };
@@ -11320,7 +12480,8 @@ class Component extends DCLogic {
       })) : [],
       isStub: !detBundle && KNOWN.indexOf(path) === -1 && !spec && ['/admin/activity','/hr/staff','/documents/view','/timesheets/approvals','/admin/workflow','/hr/appraisals','/inventory','/inventory/log','/reports/builder','/admin/forms','/admin/forms/build',
         '/auth/2fa','/auth/reset','/auth/setup','/auth/locked','/account/profile','/account/signature','/account/notifications','/account/delegation','/admin/workflow/chain','/documents/certificate','/sign/external',
-        '/print/travel-authority','/print/purchase-order','/print/hr-letter'].indexOf(path) === -1,
+        '/print/travel-authority','/print/purchase-order','/print/hr-letter','/budgets/new',
+        '/procurement/po/view','/procurement/po/new','/procurement/contract','/procurement/award'].indexOf(path) === -1,
       goFb: () => this.go('/admin/forms/build'),
       formResp: [
         ['Today · 11:20','Ngozi Okafor','Enugu','38','₦248,000.00','RET-2026-0022',false],
@@ -11454,6 +12615,251 @@ class Component extends DCLogic {
       extBack: () => this.setState({ extStep: Math.max(1, this.state.extStep - 1) }),
       extRestart: () => this.setState({ extStep:1 }),
 
+      isAward: base('/procurement/award'),
+      aw: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const r = RFQ_ROUNDS[id];
+        if (!r) return { rfqId:id, missing:true, found:false, quotes:[], title:'', band:'', minQuotes:0, count:0 };
+        const n = r.quotes.length;
+        const short = n < r.minQuotes;
+        const pick = r.quotes.find(q => q.id === this.state.awQuote);
+        const low = r.quotes.filter(q => !q.blacklisted).reduce((a, q) => a && a.total <= q.total ? a : q, null);
+        const just = String(this.state.awJust).trim();
+        const sole = String(this.state.awSole).trim();
+        const cmte = String(this.state.awCommittee).trim();
+        const topBand = pick ? pick.total >= 5000000 : false;
+        const isOpen = r.state === 'open' || r.state === 'evaluating';
+        const won = r.state === 'awarded' ? r.quotes.reduce((a, q) => a && a.total <= q.total ? a : q, null) : null;
+        return {
+          missing:false, found:true,
+          isOpen, isClosed: !isOpen,
+          isAwardedRound: r.state === 'awarded', isCancelled: r.state === 'cancelled',
+          stateLabel: r.state === 'open' ? 'Open' : r.state === 'evaluating' ? 'Evaluating' : r.state === 'awarded' ? 'Awarded' : 'Cancelled',
+          closedTitle: r.state === 'awarded' ? 'Awarded to ' + (won ? won.vendor : '—') : 'Round cancelled',
+          closedBody: r.state === 'awarded'
+            ? (won ? money(won.total) : '') + ' on 22/07/2026. The round is closed and cannot be awarded again.'
+            : 'This round was cancelled on ' + r.closed + ' and cannot be awarded. Raise a fresh quotation round if the requirement still stands.',
+          rfqId:id, title:r.title, req:r.req, band:r.band, closed:r.closed,
+          count:n, minQuotes:r.minQuotes, short, enough: !short,
+          shortMsg: 'This amount band requires at least ' + r.minQuotes + ' quotes — you have ' + n + '. Add more quotes, or write a sole-source justification.',
+          quotes: r.quotes.map((q, i) => ({
+            id:q.id, vendor:q.vendor, totalF: money(q.total), days: q.days + ' days', valid: q.valid + ' days',
+            note:q.note, blacklisted:q.blacklisted, ok: !q.blacklisted,
+            lowest: low && q.id === low.id,
+            sel: isOpen && this.state.awQuote === q.id,
+            unsel: this.state.awQuote !== q.id,
+            pickable: isOpen && this.state.awQuote !== q.id,
+            bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+            locked: !isOpen,
+            onPick: () => {
+              if (!isOpen) { this.toast('This round is ' + (r.state === 'awarded' ? 'already awarded' : 'cancelled') + ' — no further award can be made.'); return; }
+              if (q.blacklisted) { this.toast(q.vendor + ' is blacklisted and cannot be awarded.'); return; }
+              this.setState({ awQuote:q.id });
+            }
+          })),
+          picked: !!pick, noPick: !pick,
+          pickVendor: pick ? pick.vendor : '', pickTotalF: pick ? money(pick.total) : '',
+          notLowest: !!(pick && low && pick.id !== low.id),
+          lowestVendor: low ? low.vendor : '', lowestF: low ? money(low.total) : '',
+          topBand, notTopBand: !topBand,
+          justShort: just.length < 10,
+          soleMissing: short && sole.length < 10,
+          cmteMissing: topBand && cmte.length < 10,
+          canAward: !!pick && just.length >= 10 && !(short && sole.length < 10) && !(topBand && cmte.length < 10),
+          blockMsg: !pick ? 'Select a winning quote' : just.length < 10 ? 'Justification is too short'
+            : (short && sole.length < 10) ? 'A sole-source case is required'
+            : (topBand && cmte.length < 10) ? 'A committee note is required' : ''
+        };
+      })(),
+      awJust: this.state.awJust, awSetJust: e => this.setState({ awJust: e.target.value }),
+      awSole: this.state.awSole, awSetSole: e => this.setState({ awSole: e.target.value }),
+      awCommittee: this.state.awCommittee, awSetCommittee: e => this.setState({ awCommittee: e.target.value }),
+      awDo: () => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const r = RFQ_ROUNDS[id];
+        if (!r) return;
+        if (r.state !== 'open' && r.state !== 'evaluating') { this.toast('Only an open round can be awarded.'); return; }
+        const short = r.quotes.length < r.minQuotes;
+        const pick = r.quotes.find(q => q.id === this.state.awQuote);
+        const payload = { rfqId:id, quoteId:this.state.awQuote, justification: String(this.state.awJust).trim() };
+        if (short) payload.soleSource = String(this.state.awSole).trim();
+        if (pick && pick.total >= 5000000) payload.committeeNote = String(this.state.awCommittee).trim();
+        const ok = this.hook('AwardQuote', payload, 'Quote awarded. You can now raise the purchase order.');
+        if (ok !== false) this.setState({ awarded: id });
+      },
+      awarded: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const r = RFQ_ROUNDS[id];
+        return !!r && (r.state === 'open' || r.state === 'evaluating') && this.state.awarded === id;
+      })(),
+      notAwarded: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const r = RFQ_ROUNDS[id];
+        return !!r && (r.state === 'open' || r.state === 'evaluating') && this.state.awarded !== id;
+      })(),
+      awMakePO: () => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const ok = this.hook('CreatePurchaseOrder', { rfqId:id }, 'Purchase order raised from the award.');
+        if (ok !== false) this.go('/procurement/po');
+      },
+      openAddQuote: () => this.setState({ dlg:{ kind:'addquote' }, aqVendor:'', aqTotal:'', aqValidity:'30' }),
+      dlgAddQuote: !!this.state.dlg && this.state.dlg.kind === 'addquote',
+      aqVendor: this.state.aqVendor, aqSetVendor: e => this.setState({ aqVendor: e.target.value }),
+      aqTotal: this.state.aqTotal, aqSetTotal: e => this.setState({ aqTotal: e.target.value }),
+      aqValidity: this.state.aqValidity, aqSetValidity: e => this.setState({ aqValidity: e.target.value }),
+      aqNoVendor: !this.state.aqVendor,
+      aqNoTotal: !!this.state.aqVendor && !(parseFloat(String(this.state.aqTotal).replace(/[^0-9.]/g, '')) > 0),
+      aqValid: !!this.state.aqVendor && parseFloat(String(this.state.aqTotal).replace(/[^0-9.]/g, '')) > 0,
+      aqSave: () => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : this.state.rfqId;
+        const ok = this.hook('AddQuote', {
+          rfqId:id,
+          vendorId: String(this.state.aqVendor).split(' — ')[0],
+          totalKobo: Math.round((parseFloat(String(this.state.aqTotal).replace(/[^0-9.]/g, '')) || 0) * 100),
+          validityDays: parseInt(this.state.aqValidity, 10) || 30
+        }, 'Quote recorded against the round.');
+        if (ok !== false || typeof window === 'undefined' || typeof window.__weweAddQuote !== 'function') this.setState({ dlg:null });
+      },
+      dlgVendor: !!this.state.dlg && this.state.dlg.kind === 'vendor',
+      openVendor: () => this.setState({ dlg:{ kind:'vendor' }, nvName:'', nvEmail:'', nvPhone:'', nvAddress:'', nvTin:'', nvCats:{}, nvDd:false, nvCac:'', nvTax:'' }),
+      nvName: this.state.nvName, nvSetName: e => this.setState({ nvName: e.target.value }),
+      nvEmail: this.state.nvEmail, nvSetEmail: e => this.setState({ nvEmail: e.target.value }),
+      nvPhone: this.state.nvPhone, nvSetPhone: e => this.setState({ nvPhone: e.target.value }),
+      nvAddress: this.state.nvAddress, nvSetAddress: e => this.setState({ nvAddress: e.target.value }),
+      nvTin: this.state.nvTin, nvSetTin: e => this.setState({ nvTin: e.target.value }),
+      nvCac: this.state.nvCac, nvSetCac: e => this.setState({ nvCac: e.target.value }),
+      nvTax: this.state.nvTax, nvSetTax: e => this.setState({ nvTax: e.target.value }),
+      nvExpiry: this.state.nvExpiry, nvSetExpiry: e => this.setState({ nvExpiry: e.target.value }),
+      nvDd: this.state.nvDd, nvNoDd: !this.state.nvDd,
+      nvToggleDd: () => this.setState({ nvDd: !this.state.nvDd }),
+      nvCatList: ['Printing & publications','IT equipment','Office supplies','Transport & logistics','Catering','Professional services','Construction & works']
+        .map(c => ({ label:c, on: !!this.state.nvCats[c], off: !this.state.nvCats[c],
+          onClick: () => { const v = Object.assign({}, this.state.nvCats); if (v[c]) delete v[c]; else v[c] = 1; this.setState({ nvCats:v }); } })),
+      nvCatCount: Object.keys(this.state.nvCats).length,
+      nvNoName: !String(this.state.nvName).trim(),
+      nvNoCats: Object.keys(this.state.nvCats).length === 0,
+      nvDdIncomplete: this.state.nvDd && (!String(this.state.nvCac).trim() || !String(this.state.nvTax).trim()),
+      nvValid: !!String(this.state.nvName).trim() && Object.keys(this.state.nvCats).length > 0
+        && !(this.state.nvDd && (!String(this.state.nvCac).trim() || !String(this.state.nvTax).trim())),
+      nvSave: () => {
+        const cats = Object.keys(this.state.nvCats);
+        const dd = this.state.nvDd;
+        const ok = this.hook('CreateVendor', {
+          name: String(this.state.nvName).trim(),
+          contact: { email: String(this.state.nvEmail).trim(), phone: String(this.state.nvPhone).trim(), address: String(this.state.nvAddress).trim() },
+          tin: String(this.state.nvTin).trim(),
+          categories: cats
+        }, dd ? 'Vendor registered with due diligence on file.' : 'Vendor registered. Due diligence is still outstanding.');
+        if (ok !== false && dd) {
+          this.hook('RecordDueDiligence', {
+            vendorId: String(this.state.nvName).trim(),
+            cacDocId: String(this.state.nvCac).trim(),
+            taxClearanceDocId: String(this.state.nvTax).trim(),
+            expiresAt: this.state.nvExpiry
+          }, '');
+        }
+        if (ok !== false || typeof window === 'undefined' || typeof window.__weweCreateVendor !== 'function') this.setState({ dlg:null });
+      },
+      pnSource: this.state.pnSource,
+      pnSetSource: e => this.setState({ pnSource: e.target.value }),
+      pnVendor: this.state.pnVendor,
+      pnSetVendor: e => this.setState({ pnVendor: e.target.value }),
+      pnTerms: this.state.pnTerms,
+      pnSetTerms: e => this.setState({ pnTerms: e.target.value }),
+      pnRows: this.state.pnLines.map((l, i) => ({
+        desc:l.desc, qty:l.qty, unit:l.unit, totalF: money(l.qty * l.unit),
+        onDesc: e => this.pnSet(i, 'desc', e.target.value),
+        onQty: e => this.pnSet(i, 'qty', e.target.value),
+        onUnit: e => this.pnSet(i, 'unit', e.target.value),
+        onRemove: () => this.setState({ pnLines: this.state.pnLines.filter((x, n) => n !== i) })
+      })),
+      pnAdd: () => this.setState({ pnLines: this.state.pnLines.concat([{ desc:'', qty:1, unit:0 }]) }),
+      pnSubF: money(this.pnSum()),
+      pnVatF: money(Math.round(this.pnSum() * 0.075)),
+      pnTotalF: money(this.pnSum() + Math.round(this.pnSum() * 0.075)),
+      pnCount: this.state.pnLines.length + (this.state.pnLines.length === 1 ? ' line' : ' lines'),
+      pnNoVendor: !this.state.pnVendor,
+      pnLinesBad: !!this.state.pnVendor && (this.state.pnLines.length === 0 || this.state.pnLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0)),
+      pnBlank: this.state.pnLines.length === 0 || this.state.pnLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
+      pnValid: !!this.state.pnVendor && this.state.pnLines.length > 0 && !this.state.pnLines.some(l => !String(l.desc).trim() || l.qty <= 0 || l.unit <= 0),
+      pnBigOrder: this.pnGross() >= 1000000,
+      pnSmallOrder: this.pnGross() < 1000000,
+      pnSubmit: () => {
+        const total = this.pnSum() + Math.round(this.pnSum() * 0.075);
+        this.hook('CreatePurchaseOrder', {
+          sourceRef: String(this.state.pnSource).split(' — ')[0],
+          vendor: String(this.state.pnVendor).split(' — ')[0],
+          paymentTerms: this.state.pnTerms,
+          lines: this.state.pnLines.map(l => ({ description:l.desc, quantity:l.qty, unitPriceKobo: Math.round(l.unit * 100) })),
+          totalKobo: Math.round(total * 100)
+        }, 'Purchase order raised and sent for approval.');
+        this.go('/procurement/po');
+      },
+      pnDraft: () => this.hook('SavePurchaseOrderDraft', { vendor: String(this.state.pnVendor).split(' — ')[0] }, 'Saved as a draft.'),
+      isPO: base('/procurement/po/view'),
+      isPONew: base('/procurement/po/new'),
+      isCtr: base('/procurement/contract'),
+      po: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : 'PO-2026-0064';
+        const d = PO_RECORDS[id] || PO_RECORDS['PO-2026-0064'];
+        const sub = d.lines.reduce((a, l) => a + l[1] * l[2], 0);
+        const vat = Math.round(sub * 0.075);
+        const recv = d.lines.reduce((a, l) => a + l[3] * l[2], 0);
+        const full = d.lines.every(l => l[3] >= l[1]);
+        const none = d.lines.every(l => l[3] === 0);
+        return {
+          ref:id, vendor:d.vendor, vendorTin:d.vendorTin, vendorAddr:d.vendorAddr,
+          req:d.req, rfq:d.rfq, donor:d.donor, budgetLine:d.budgetLine,
+          raised:d.raised, promised:d.promised, terms:d.terms,
+          subF: money(sub), vatF: money(vat), totalF: money(sub + vat), recvF: money(recv),
+          pct: sub ? Math.round(recv / sub * 100) : 0, pctLabel: (sub ? Math.round(recv / sub * 100) : 0) + '% received by value',
+          full, notFull: !full, partial: !full && !none, none,
+          stateLabel: full ? 'Fully received' : none ? 'Awaiting delivery' : 'Partially received',
+          matchLabel: full ? 'Three-way match complete — invoice released' : 'Invoice held until delivery completes',
+          lines: d.lines.map((l, i) => ({
+            desc:l[0], qty:l[1], unitF: money(l[2]), totalF: money(l[1] * l[2]),
+            got:l[3], outstanding: l[1] - l[3],
+            done: l[3] >= l[1], part: l[3] > 0 && l[3] < l[1], waiting: l[3] === 0,
+            bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF', n: i + 1
+          })),
+          events: d.events.map((e, i) => ({ who:e[0], act:e[1], when:e[2], initials:this.initials(e[0]),
+            green: e[3] === 'green', amber: e[3] === 'amber', neutral: e[3] === 'neutral', bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' }))
+        };
+      })(),
+      poReceive: () => { const m = /[?&]id=([^&]+)/.exec(route); this.setState({ dlg:{ kind:'fulfil' }, grPo: m ? decodeURIComponent(m[1]) : 'PO-2026-0064', grNote:'' }); },
+      poPrint: () => this.go('/print/purchase-order'),
+      poApprove: () => { const m = /[?&]id=([^&]+)/.exec(route); this.go('/requisitions/' + (m ? decodeURIComponent(m[1]) : 'PO-2026-0064')); },
+      ctr: (() => {
+        const m = /[?&]id=([^&]+)/.exec(route);
+        const id = m ? decodeURIComponent(m[1]) : CONTRACTS[0].ref;
+        const c = CONTRACTS.find(x => x.ref === id) || CONTRACTS[0];
+        const pct = Math.round(c.drawn / c.value * 100);
+        return {
+          ref:c.ref, vendor:c.vendor, title:c.title, owner:c.owner, donor:c.donor, state:c.state, renewal:c.renewal,
+          start:c.start, end:c.end,
+          valueF: money(c.value), drawnF: money(c.drawn), leftF: money(c.value - c.drawn),
+          pct, pctLabel: pct + '% drawn',
+          tight: pct >= 90, healthy: pct < 90,
+          expiring: c.state === 'Expiring', active: c.state === 'Active',
+          schedule: c.schedule.map((r, i) => ({ period:r[0], amount:r[1], note:r[2],
+            paid: r[3] === 'paid', part: r[3] === 'part', due: r[3] === 'due',
+            bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
+          amendments: c.amendments.map((a, i) => ({ code:a[0], what:a[1], when:a[2], who:a[3], bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
+          hasAmendments: c.amendments.length > 0, noAmendments: c.amendments.length === 0
+        };
+      })(),
+      ctrList: CONTRACTS.map((c, i) => ({ ref:c.ref, vendor:c.vendor, title:c.title,
+        sel: false, onClick: () => this.go('/procurement/contract?id=' + c.ref),
+        bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF' })),
+      ctrAmend: () => this.setState({ dlg:{ kind:'create', label:'Amend contract' } }),
+      ctrPay: () => this.hook('RecordContractPayment', { contractRef:(/[?&]id=([^&]+)/.exec(route) || [])[1] || CONTRACTS[0].ref }, 'Payment recorded against the contract.'),
       isChain: base('/admin/workflow/chain'),
       chainTypeName: this.state.chainType,
       chainTypes: Object.keys(CHAIN_TYPES).map(k => ({ label:k, on: this.state.chainType === k, off: this.state.chainType !== k,
@@ -11535,12 +12941,20 @@ class Component extends DCLogic {
           done: FULFIL_LINES.filter((l, i) => all[i] === 'full').length + ' of ' + FULFIL_LINES.length + ' lines complete' };
       })(),
       openFulfil: () => this.setState({ dlg:{ kind:'fulfil' } }),
+      grNote: this.state.grNote,
+      grSetNote: e => this.setState({ grNote: e.target.value }),
       fulfilSave: () => {
         const all = FULFIL_LINES.map((l, i) => this.state.fulfil[i] === undefined ? l.state : this.state.fulfil[i]);
         const full = all.every(x => x === 'full');
-        this.setState({ dlg:null });
-        this.toast(full ? 'PO-2026-0064 fully received. The order closes and the invoice is released for three-way match.'
-          : 'Receipt recorded. PO-2026-0064 stays open for the outstanding lines and the register shows it as partially received.');
+        const lines = FULFIL_LINES.map((l, i) => ({ lineIndex:i, qty: all[i] === 'full' ? l.ordered : all[i] === 'none' ? 0 : l.got }))
+          .filter(l => l.qty > 0);
+        const payload = { purchaseOrderId: this.state.grPo || 'PO-2026-0064', lines };
+        const note = String(this.state.grNote).trim();
+        if (note) payload.note = note;
+        const ok = this.hook('RecordGoodsReceipt', payload,
+          full ? 'Receipt recorded in full. The order closes and the invoice is released for three-way match.'
+            : 'Receipt recorded. The order stays open for the outstanding lines.');
+        if (ok !== false || typeof window === 'undefined' || typeof window.__weweRecordGoodsReceipt !== 'function') this.setState({ dlg:null, grNote:'' });
       },
 
       payShowing: 'Showing ' + Math.min(5, PAYROLL.length) + ' of ' + PAYROLL.length + (PAYROLL.length === 1 ? ' staff member' : ' staff'),
@@ -11567,6 +12981,77 @@ class Component extends DCLogic {
       })(),
       nrEmpty: this.state.nrLines.length === 0,
       nrHasLines: this.state.nrLines.length > 0,
+      isBB: base('/budgets/new'),
+      bbYear: this.state.bbYear,
+      setBbYear: e => this.setState({ bbYear: e.target.value }),
+      bbBasisModes: [['zero','Zero-based','Start empty and justify every line'],['last','Last year + uplift','Carry FY2026 forward at +6%'],['award','From award budgets','Pull the donor-approved lines in']]
+        .map(([k, label, note]) => ({ label, note, on: this.state.bbBasis === k, off: this.state.bbBasis !== k, onClick: () => this.bbSeed(k) })),
+      bbSeeded: this.state.bbBasis,
+      bbUplift: this.state.bbUplift,
+      setBbUplift: e => {
+        const pct = Math.max(0, Math.min(100, parseFloat(String(e.target.value).replace(/[^0-9.]/g, '')) || 0));
+        this.setState({ bbUplift: pct, bbRows: BB_LAST_YEAR.map((r, i) => Object.assign({ id:i + 1 }, r, { q: r.q.map(v => Math.round(v * (1 + pct / 100))) })) });
+      },
+      bbShowUplift: this.state.bbBasis === 'last',
+      bbRowsView: (() => {
+        const groups = [];
+        const key = this.state.bbGroup === 'cat' ? 'cat' : this.state.bbGroup === 'donor' ? 'donor' : 'dept';
+        this.state.bbRows.forEach(r => {
+          let g = groups.find(x => x.name === r[key]);
+          if (!g) { g = { name:r[key], rows:[], sum:0 }; groups.push(g); }
+          const tot = r.q.reduce((a, b) => a + b, 0);
+          g.sum += tot;
+          g.rows.push({
+            id:r.id, line:r.line, donor:r.donor, dept:r.dept, cat:r.cat,
+            totalF: money(tot),
+            bg: g.rows.length % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
+            cells: r.q.map((v, qi) => ({ v, onChange: e => this.bbSet(r.id, 'q', e.target.value, qi) })),
+            onLine: e => this.bbSet(r.id, 'line', e.target.value),
+            onCat: e => this.bbSet(r.id, 'cat', e.target.value),
+            onDonor: e => this.bbSet(r.id, 'donor', e.target.value),
+            onDept: e => this.bbSet(r.id, 'dept', e.target.value),
+            onRemove: () => this.setState({ bbRows: this.state.bbRows.filter(x => x.id !== r.id) })
+          });
+        });
+        return groups.map(g => ({ name:g.name, rows:g.rows, sumF: money(g.sum), pct: this.bbTotal() ? Math.round(g.sum / this.bbTotal() * 100) + '%' : '0%' }));
+      })(),
+      bbGroupModes: [['cat','Category'],['donor','Donor'],['dept','Department']]
+        .map(([k, label]) => ({ label, on: this.state.bbGroup === k, off: this.state.bbGroup !== k, onClick: () => this.setState({ bbGroup:k }) })),
+      bbQuarters: ['Q1', 'Q2', 'Q3', 'Q4'].map((q, i) => ({
+        label:q, sumF: money(this.state.bbRows.reduce((a, r) => a + r.q[i], 0))
+      })),
+      bbTotalF: money(this.bbTotal()),
+      bbCeilingF: money(this.state.bbCeiling),
+      bbLeftF: money(Math.abs(this.state.bbCeiling - this.bbTotal())),
+      bbUnder: this.bbTotal() < this.state.bbCeiling,
+      bbOver: this.bbTotal() > this.state.bbCeiling,
+      bbExact: this.bbTotal() === this.state.bbCeiling,
+      bbPct: this.state.bbCeiling ? Math.min(100, Math.round(this.bbTotal() / this.state.bbCeiling * 100)) : 0,
+      bbPctLabel: (this.state.bbCeiling ? Math.round(this.bbTotal() / this.state.bbCeiling * 100) : 0) + '% of the envelope',
+      bbLineCount: this.state.bbRows.length + (this.state.bbRows.length === 1 ? ' line' : ' lines'),
+      bbEmpty: this.state.bbRows.length === 0,
+      bbAdd: () => {
+        const id = Math.max(0, ...this.state.bbRows.map(r => r.id)) + 1;
+        this.setState({ bbRows: this.state.bbRows.concat([{ id, cat:'Programme activities', line:'', donor:'Core', dept:'Programmes', q:[0,0,0,0] }]) });
+      },
+      bbCats: BB_CATEGORIES,
+      bbDonors: ['USAID-LON-24', 'EU-WISH-23', 'FCDO-ACE-25', 'Core'],
+      bbDepts: ['Programmes', 'Finance & Admin', 'M&E', 'Grants & Compliance', 'Operations'],
+      bbSpread: () => {
+        this.setState({ bbRows: this.state.bbRows.map(r => { const t = r.q.reduce((a, b) => a + b, 0); const e = Math.round(t / 4); return Object.assign({}, r, { q:[e, e, e, t - e * 3] }); }) });
+        this.toast('Every line spread evenly across the four quarters.');
+      },
+      bbUnnamed: this.state.bbRows.some(r => !String(r.line).trim()),
+      bbNothingYet: !(this.state.bbRows.length > 0 && !this.state.bbRows.some(r => !String(r.line).trim()) && this.bbTotal() > 0 && this.bbTotal() <= this.state.bbCeiling)
+        && !(this.bbTotal() > this.state.bbCeiling)
+        && !this.state.bbRows.some(r => !String(r.line).trim()),
+      bbNothingLabel: this.state.bbRows.length === 0 ? 'Add a line to submit' : 'Enter an amount to submit',
+      bbNothingHint: this.state.bbRows.length === 0
+        ? 'A budget needs at least one line before it can go to Finance.'
+        : 'Every line is named, but nothing is costed yet. Put an amount in at least one quarter.',
+      bbValid: this.state.bbRows.length > 0 && !this.state.bbRows.some(r => !String(r.line).trim()) && this.bbTotal() > 0 && this.bbTotal() <= this.state.bbCeiling,
+      bbSaveDraft: () => this.hook('SaveBudgetDraft', { fiscalYear:this.state.bbYear, basis:this.state.bbBasis, lines:this.state.bbRows.map(r => ({ category:r.cat, name:r.line, donorCode:r.donor, department:r.dept, quartersKobo:r.q.map(v => v * 100) })) }, 'Budget draft saved.'),
+      bbSubmit: () => this.hook('SubmitBudget', { fiscalYear:this.state.bbYear, basis:this.state.bbBasis, totalKobo:this.bbTotal() * 100, lines:this.state.bbRows.map(r => ({ category:r.cat, name:r.line, donorCode:r.donor, department:r.dept, quartersKobo:r.q.map(v => v * 100) })) }, 'Budget submitted to Finance, then the Managing Director.'),
       nrPurpose: this.state.nrPurpose,
       nrSetPurpose: e => this.setState({ nrPurpose: e.target.value }),
       nrBudget: this.state.nrBudget,
