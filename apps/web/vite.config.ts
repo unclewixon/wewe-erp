@@ -78,6 +78,32 @@ function localCdnResources(): Plugin {
     "ROLES[this.state.role] ? this.state.role : 'finance'",
     "ROLES[this.state.role] ? this.state.role : (window.__weweRoleKey || 'finance')",
   ]);
+  // Phase 1.19 replaced the repository's hardcoded header numbers (4,182 / 1,940 / 286 / 38)
+  // with bindings — dmsHeld, dmsOcrPages, dmsFolderCount, dmsConfidential, dmsOnHold,
+  // dmsHoldMatters, and the digitisation card's dgBatch/dgDone/dgTotal/dgPct/dgConfidence —
+  // but nothing computes them, and an unresolved binding renders as EMPTY. So the cards went
+  // from wrong to blank. These are per-session values derived from live data, so they cannot
+  // come from a const; inject them as sibling keys in renderVals, next to dmsRows (the only
+  // occurrence in the file, and already inside that method).
+  //
+  // Values come from window.__weweDmsStats, computed in the adapter. Each falls back to '—'
+  // rather than 0: a repository that says "0 documents held" when the count simply is not
+  // known yet is a statement, and a wrong one.
+  DATA_WRAPS.push([
+    'dmsRows: this.dmsFiltered()',
+    'dmsHeld: (window.__weweDmsStats || {}).held ?? "—",\n' +
+    '      dmsOcrPages: (window.__weweDmsStats || {}).ocrPages ?? "—",\n' +
+    '      dmsFolderCount: (window.__weweDmsStats || {}).folderCount ?? "—",\n' +
+    '      dmsConfidential: (window.__weweDmsStats || {}).confidential ?? "—",\n' +
+    '      dmsOnHold: (window.__weweDmsStats || {}).onHold ?? "—",\n' +
+    '      dmsHoldMatters: (window.__weweDmsStats || {}).holdMatters ?? "",\n' +
+    '      dgBatch: (window.__weweDmsStats || {}).dgBatch ?? "No open batch",\n' +
+    '      dgDone: (window.__weweDmsStats || {}).dgDone ?? 0,\n' +
+    '      dgTotal: (window.__weweDmsStats || {}).dgTotal ?? 0,\n' +
+    '      dgPct: (window.__weweDmsStats || {}).dgPct ?? 0,\n' +
+    '      dgConfidence: (window.__weweDmsStats || {}).dgConfidence ?? "not measured",\n' +
+    '      dmsRows: this.dmsFiltered()',
+  ]);
   DATA_WRAPS.push(['const RFQ_ROUNDS = {', 'const RFQ_ROUNDS = Object.assign({']);
   DATA_WRAPS.push(["000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n};", "000, days:5, valid:14, blacklisted:false, note:'' }\n    ] }\n}, (window.__weweData && window.__weweData.RFQ_ROUNDS) || {});"]);
   DATA_WRAPS.push(['const PO_RECORDS = {', 'const PO_RECORDS = Object.assign({']);

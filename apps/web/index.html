@@ -1992,7 +1992,7 @@
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:0 4px;">
               <div>
                 <div style="font-size:24px; font-weight:600; color:#1A1D21; letter-spacing:-.01em;">Document repository</div>
-                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">4,182 documents · 1,940 pages digitised and searchable · versions kept, nothing overwritten</div>
+                <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ dmsHeld }} documents · {{ dmsOcrPages }} pages digitised and searchable · versions kept, nothing overwritten</div>
               </div>
               <div style="display:flex; gap:8px; flex:none;">
                 <button onClick="{{ openExport }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Export index</button>
@@ -2004,22 +2004,22 @@
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px;">
               <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                 <div style="font-size:13px; font-weight:500; color:#8A8F98;">Documents held</div>
-                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">4,182</div>
-                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Across 7 top-level folders</div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">{{ dmsHeld }}</div>
+                <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Across {{ dmsFolderCount }} top-level folders</div>
               </div>
               <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                 <div style="font-size:13px; font-weight:500; color:#8A8F98;">Searchable by content</div>
-                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">1,940</div><div style="font-size:13px; font-weight:600; color:#166F31;">pages OCR’d</div></div>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ dmsOcrPages }}</div><div style="font-size:13px; font-weight:600; color:#166F31;">pages OCR’d</div></div>
                 <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Scans and photographed receipts included</div>
               </div>
               <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                 <div style="font-size:13px; font-weight:500; color:#8A8F98;">Confidential</div>
-                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">286</div>
+                <div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums; margin-top:12px;">{{ dmsConfidential }}</div>
                 <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Access-controlled and logged on open</div>
               </div>
               <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                 <div style="font-size:13px; font-weight:500; color:#8A8F98;">Under legal hold</div>
-                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">38</div><div style="font-size:13px; font-weight:600; color:#8A4B0B;">2 matters</div></div>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;"><div style="font-size:24px; font-weight:600; color:#1A1D21; font-variant-numeric:tabular-nums;">{{ dmsOnHold }}</div><div style="font-size:13px; font-weight:600; color:#8A4B0B;">{{ dmsHoldMatters }}</div></div>
                 <div style="font-size:12px; color:#9AA0A8; margin-top:8px;">Exempt from the retention run</div>
               </div>
             </div>
@@ -2068,11 +2068,11 @@
 
                 <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
                   <div style="font-size:13px; font-weight:600; color:#1A1D21;">Digitisation</div>
-                  <div style="font-size:12px; color:#9AA0A8; margin-top:5px; line-height:1.5;">Batch 24 · 1,940 of 2,100 pages processed</div>
+                  <div style="font-size:12px; color:#9AA0A8; margin-top:5px; line-height:1.5;">{{ dgBatch }} · {{ dgDone }} of {{ dgTotal }} pages processed</div>
                   <div style="height:7px; border-radius:999px; background:#F0F1F3; overflow:hidden; margin-top:12px;">
-                    <div style="height:100%; width:92%; border-radius:999px; background:#1E8E3E;"></div>
+                    <div style="height:100%; width:{{ dgPct }}%; border-radius:999px; background:#1E8E3E;"></div>
                   </div>
-                  <div style="font-size:11px; color:#9AA0A8; margin-top:8px;">Median OCR confidence 96.1%</div>
+                  <div style="font-size:11px; color:#9AA0A8; margin-top:8px;">Median OCR confidence {{ dgConfidence }}</div>
                 </div>
 
                 <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05);">
@@ -12210,6 +12210,11 @@ const DMS_DOCS = [
   { name:'Safeguarding policy 2026.pdf', folder:'Governance & policy', cls:'Policies', size:'286 KB', ver:'v3', when:'01/03/2026', conf:false, hold:false, ocr:99.4, linked:'—', signed:true },
   { name:'FY2025 audited financial statements.pdf', folder:'Audit & evidence', cls:'Financial records', size:'3.1 MB', ver:'v1', when:'28/04/2026', conf:false, hold:true, ocr:97.1, linked:'Core', signed:true }
 ];
+
+const DMS_TOTALS = {
+  held: 4182, ocrPages: 1940, confidential: 286, onHold: 38, holdMatters: 2,
+  batchRef: 'Batch 24', pagesProcessed: 1940, pagesTotal: 2100, ocrConfidence: 96.1
+};
 
 const DMS_ACCESS = [
   { who:'K. Adeleke', act:'Opened the award agreement, watermarked', when:'Yesterday · 11:20', ext:true },

@@ -1207,6 +1207,42 @@
     return rows;
   });
 
+  /**
+   * The repository header's figures. 1.19 turned them into bindings; nothing computes
+   * them, and an unresolved binding renders blank, so these are ours to supply.
+   *
+   * `ocrPages` counts documents we hold extracted text for, and `dgConfidence` stays
+   * "not measured" — we run OCR but record no per-page confidence, and a median we
+   * invented would be read as a quality signal by whoever is deciding whether a scan
+   * batch can be trusted.
+   */
+  (function () {
+    try {
+      var docs = xhr('GET', '/v1/dms/documents');
+      if (!Array.isArray(docs)) return;
+      var tree = xhr('GET', '/v1/dms/folders');
+      var batches = xhr('GET', '/v1/dms/digitisation/batches');
+      var open = (Array.isArray(batches) ? batches : []).filter(function (b) {
+        return b && String(b.status || 'OPEN').toUpperCase() !== 'CLOSED';
+      }).sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); })[0];
+      var done = open ? (open.indexedPages || (open.counts && open.counts.indexed) || 0) : 0;
+      var total = open ? (open.estimatedPages || (open.counts && open.counts.total) || 0) : 0;
+      window.__weweDmsStats = {
+        held: docs.length,
+        ocrPages: docs.filter(function (d) { return d.textContent || d.ocr; }).length,
+        folderCount: Array.isArray(tree) ? tree.length : 0,
+        confidential: docs.filter(function (d) { return d.confidential; }).length,
+        onHold: docs.filter(function (d) { return d.legalHold; }).length,
+        holdMatters: '',
+        dgBatch: open ? ('Batch ' + (open.ref || open.id)) : 'No open batch',
+        dgDone: done,
+        dgTotal: total,
+        dgPct: total ? Math.round((done / total) * 100) : 0,
+        dgConfidence: 'not measured',
+      };
+    } catch (e) { /* the header is informational — never let it stop the app booting */ }
+  })();
+
   /** Document classes, counted from what is actually filed under each. */
   wire('DMS_CLASSES', function () {
     var docs = xhr('GET', '/v1/dms/documents');
