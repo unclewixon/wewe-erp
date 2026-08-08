@@ -1606,6 +1606,23 @@
     return hits.length === 1 ? hits[0].id : null;   // ambiguous is not a match
   }
 
+  /**
+   * A UUID, or a repository document name, onto a real document id. Ambiguity is not a
+   * match: creating a signature ceremony against the wrong file, or verifying one file
+   * while reporting another, is worse than refusing and saying why.
+   */
+  function resolveDocumentId(raw) {
+    var want = String(raw || '').trim();
+    if (!want) return null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(want)) return want;
+    var all = get('/v1/dms/documents') || [];
+    var exact = (Array.isArray(all) ? all : []).filter(function (d) { return d.name === want; });
+    if (exact.length === 1) return exact[0].id;
+    var found = get('/v1/dms/search?q=' + encodeURIComponent(want));
+    var hits = ((found && found.results) || []).filter(function (d) { return d.name === want; });
+    return hits.length === 1 ? hits[0].id : null;
+  }
+
   window.__weweCreateSignatureRequest = function (p) {
     // The design describes signatories with an order and a kind; the engine takes signers that
     // are either internal ({userId}) or external ({name, email}) and nothing else — it refuses
@@ -1616,7 +1633,13 @@
         : { name: String(s.name || '').trim(), email: String(s.email || '').trim() };
     }).filter(function (s) { return s.userId || (s.name && s.email); });
     if (!p || !p.documentId || !signers.length) return false;
-    var body = { documentId: p.documentId, signers: signers };
+    // The document picker offers repository names ('USAID-LON-24 — Award agreement.pdf'),
+    // not ids — the same fixture-vs-real mismatch that made every upload 404 and every
+    // indexed page vanish. Resolve it, and refuse plainly rather than sending a name the
+    // engine will reject with something less useful.
+    var docId = resolveDocumentId(p.documentId);
+    if (!docId) throw new Error('No document on this server matches "' + p.documentId + '", so no request was created.');
+    var body = { documentId: docId, signers: signers };
     if (p.message) body.message = String(p.message).trim();
     if (p.expiresOn) body.deadline = p.expiresOn;
     var res = post('/v1/esign/requests', body);
