@@ -577,7 +577,12 @@
   function ageDays(iso) { return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000); }
   function ddmmyyyy(iso) { if (!iso) return '—'; var d = new Date(iso); return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
 
-  var persona = new URLSearchParams(location.search).get('as') || 'admin';
+  // The persona these cards are built for. This read `?as=` with an 'admin' fallback, and
+  // the ?as= switch was removed when sign-in became real — so the fallback was ALWAYS
+  // taken and only the admin dashboard was ever built. Every other role signed in and got
+  // the design's fixtures: an initiator saw "Good morning, Ngozi" and someone else's
+  // ₦1,433,000.00. Derive it from the session instead.
+  var persona = window.__weweRoleKey || 'admin';
 
   var queue = xhr('GET', '/v1/requisitions?scope=queue') || [];
   var dash = xhr('GET', '/v1/dashboard') || { pipeline: {}, myOpen: 0, queueCount: 0 };
@@ -730,7 +735,12 @@
       return r.status >= 200 && r.status < 300 ? JSON.parse(r.responseText) : null;
     } catch (e) { return null; }
   }
-  var persona = new URLSearchParams(location.search).get('as') || 'admin';
+  // The persona these cards are built for. This read `?as=` with an 'admin' fallback, and
+  // the ?as= switch was removed when sign-in became real — so the fallback was ALWAYS
+  // taken and only the admin dashboard was ever built. Every other role signed in and got
+  // the design's fixtures: an initiator saw "Good morning, Ngozi" and someone else's
+  // ₦1,433,000.00. Derive it from the session instead.
+  var persona = window.__weweRoleKey || 'admin';
   if (['hr', 'procurement', 'admin', 'extaudit'].indexOf(persona) === -1) return;
   var base = (window.__weweDash && window.__weweDash[persona]) || {};
   var card = function (label, value, context) { return { label: label, value: String(value), delta: '', context: context }; };
