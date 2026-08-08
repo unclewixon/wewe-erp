@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import { createHash } from 'crypto';
 import {
   allSigned, base64DecodedBytes, buildCertificate, canReadDocument, canSignerAct,
-  canWriteFolder, certificateHashMatches, escapeLike, makeSnippet, nextRequiredSigner,
+  canWriteFolder, certificateHashMatches, escapeLike, hashVerdict, makeSnippet, nextRequiredSigner,
   type DmsUserCtx, type SignerCtx,
 } from './dms.logic';
 
@@ -90,6 +91,63 @@ describe('completion certificate', () => {
     expect(certificateHashMatches(cert, 'abc123')).toBe(true);
     expect(certificateHashMatches(cert, 'tampered')).toBe(false);
     expect(certificateHashMatches(cert, null)).toBe(false); // file gone (e.g. disposed)
+  });
+});
+
+// ---------- DMS-10: hash verification verdicts ----------
+//
+// These run against real SHA-256 digests of real buffers rather than stand-in strings,
+// because the property under test is that a changed FILE is detected — not that two
+// unequal strings are unequal. A single flipped byte is the case that matters: it is
+// what a quiet edit to a signed document actually looks like.
+
+const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
+
+describe('hash verification (DMS-10)', () => {
+  const original = Buffer.from('Signed award amendment — payment schedule B.\n', 'utf8');
+  const recorded = sha(original);
+
+  it('verifies bytes that are unchanged', () => {
+    expect(hashVerdict(recorded, sha(Buffer.from(original)))).toBe('verified');
+  });
+
+  it('detects a single flipped byte', () => {
+    const tampered = Buffer.from(original);
+    tampered[0] = tampered[0] ^ 0x01;
+    expect(sha(tampered)).not.toBe(recorded);
+    expect(hashVerdict(recorded, sha(tampered))).toBe('altered');
+  });
+
+  it('detects an appended byte, which leaves the original content intact', () => {
+    const appended = Buffer.concat([original, Buffer.from('x')]);
+    expect(hashVerdict(recorded, sha(appended))).toBe('altered');
+  });
+
+  it('detects truncation', () => {
+    expect(hashVerdict(recorded, sha(original.subarray(0, original.length - 1)))).toBe('altered');
+  });
+
+  it('reports a missing file as missing, never as altered or verified', () => {
+    expect(hashVerdict(recorded, null)).toBe('missing');
+  });
+
+  it('never reports verified when nothing was recorded to compare against', () => {
+    // The trap: '' === '' is true, so a naive equality check calls this verified.
+    expect(hashVerdict('', '')).toBe('unverifiable');
+    expect(hashVerdict(null, sha(original))).toBe('unverifiable');
+    expect(hashVerdict(undefined, sha(original))).toBe('unverifiable');
+    expect(hashVerdict(recorded, '')).toBe('unverifiable');
+  });
+
+  it('treats digest casing and surrounding whitespace as equal, not as tampering', () => {
+    expect(hashVerdict(recorded.toUpperCase(), sha(original))).toBe('verified');
+    expect(hashVerdict(`  ${recorded}  `, sha(original))).toBe('verified');
+  });
+
+  it('does not confuse two different documents of the same length', () => {
+    const other = Buffer.from('Signed award amendment — payment schedule C.\n', 'utf8');
+    expect(other.length).toBe(original.length);
+    expect(hashVerdict(recorded, sha(other))).toBe('altered');
   });
 });
 

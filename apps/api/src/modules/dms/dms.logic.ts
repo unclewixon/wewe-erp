@@ -198,3 +198,36 @@ export function certificateHashMatches(
 ): boolean {
   return currentSha256 !== null && currentSha256 === cert.sha256;
 }
+
+/**
+ * DMS-10: the outcome of checking a stored document against the hash recorded when it
+ * was signed.
+ *
+ * Four states, not two, because the ways this can fail are not interchangeable:
+ *
+ *   verified     the bytes are exactly what was signed
+ *   altered      the bytes changed — the one state that means someone should be told now
+ *   missing      the file is gone from storage; a different problem from tampering, and
+ *                sending someone to look for an editor when the disk lost the file wastes
+ *                the hours that matter
+ *   unverifiable nothing was recorded to compare against, so no claim can be made
+ *
+ * `unverifiable` exists because of a specific trap: a document with an empty recorded
+ * hash, compared against an empty computed hash, is equal — and a naive equality check
+ * would call that verified. A tamper check whose failure mode is a clean bill of health
+ * is worse than none, so absence of a recorded hash is never a pass.
+ */
+export type HashVerdict = 'verified' | 'altered' | 'missing' | 'unverifiable';
+
+export function hashVerdict(
+  recorded: string | null | undefined,
+  actual: string | null,
+): HashVerdict {
+  const want = (recorded ?? '').trim();
+  if (!want) return 'unverifiable';
+  if (actual === null) return 'missing';
+  const got = actual.trim();
+  if (!got) return 'unverifiable';
+  // Hex digests are case-insensitive; a difference in casing is not tampering.
+  return got.toLowerCase() === want.toLowerCase() ? 'verified' : 'altered';
+}

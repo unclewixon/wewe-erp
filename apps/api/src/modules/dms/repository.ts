@@ -18,7 +18,7 @@ import { NullOcrService } from './ocr';
 import { TesseractOcrService } from './ocr.tesseract';
 import {
   base64DecodedBytes, canReadDocument, canReadFolder, canWriteFolder, escapeLike,
-  isConfidentialReader, makeSnippet, MAX_UPLOAD_BYTES, type DmsUserCtx,
+  hashVerdict, isConfidentialReader, makeSnippet, MAX_UPLOAD_BYTES, type DmsUserCtx,
 } from './dms.logic';
 
 export const DISPOSED_NAME = '[DISPOSED]';
@@ -407,7 +407,14 @@ export class DocumentsController {
     await this.svc.assertReadable(user, doc);
     const buf = await this.svc.storageSvc.read(doc.storageKey);
     const checkedAt = new Date().toISOString();
-    if (!buf) {
+    const actual = buf ? this.svc.storageSvc.sha256(buf) : null;
+    // The comparison lives in dms.logic (hashVerdict) and is unit-tested against real
+    // digests of real buffers — flipped byte, appended byte, truncation, same-length
+    // substitution, missing file, and nothing-recorded. Keeping the decision there rather
+    // than inline here is what makes those tests statements about this endpoint.
+    const verdict = hashVerdict(doc.sha256, actual);
+
+    if (verdict === 'missing') {
       await this.svc.auditSvc.log({
         actorId: user.id, actorEmail: user.email, action: 'DOC_HASH_VERIFY_FAILED',
         entityType: 'document', entityId: doc.id,
@@ -415,15 +422,23 @@ export class DocumentsController {
       });
       throw new NotFoundException('The stored file is missing, so its hash cannot be checked. This document is unverified.');
     }
-    const actual = this.svc.storageSvc.sha256(buf);
-    const matches = actual === doc.sha256;
+    if (verdict === 'unverifiable') {
+      await this.svc.auditSvc.log({
+        actorId: user.id, actorEmail: user.email, action: 'DOC_HASH_VERIFY_FAILED',
+        entityType: 'document', entityId: doc.id,
+        data: { reason: 'no hash was recorded for this document' }, ip: req.ip,
+      });
+      throw new NotFoundException('No hash was recorded for this document, so there is nothing to check it against. It is unverified.');
+    }
+
+    const matches = verdict === 'verified';
     await this.svc.auditSvc.log({
       actorId: user.id, actorEmail: user.email,
       action: matches ? 'DOC_HASH_VERIFIED' : 'DOC_HASH_MISMATCH',
       entityType: 'document', entityId: doc.id,
       data: { name: doc.name, recorded: doc.sha256, actual, matches }, ip: req.ip,
     });
-    return { documentId: doc.id, name: doc.name, matches, recorded: doc.sha256, actual, checkedAt };
+    return { documentId: doc.id, name: doc.name, matches, verdict, recorded: doc.sha256, actual, checkedAt };
   }
 
   /** DMS-07: every open is audit-logged as DOC_VIEWED. */
