@@ -4052,15 +4052,33 @@
                 <div style="font-size:14px; color:#8A8F98; margin-top:5px;">{{ cert.name }} · {{ cert.stateLabel }}</div>
               </div>
               <div style="display:flex; gap:8px; flex:none;">
-                <button onClick="{{ toggleHash }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Re-verify hash</button>
+                <button onClick="{{ verifyHash }}" style="height:40px; padding:0 14px; border:1px solid #E3E5E8; border-radius:10px; background:#fff; font-size:13px; font-weight:600; color:#1A1D21;" style-hover="background:#F7F8FA">Verify hash now</button>
                 <button onClick="{{ openExport }}" style="height:40px; padding:0 16px; border:none; border-radius:10px; background:#E0572E; color:#fff; font-size:13px; font-weight:600;" style-hover="background:#C8481F">Download certificate</button>
               </div>
             </div>
 
-            <sc-if value="{{ hashOk }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ hashUnknown }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:14px; background:#F7F8FA; border:1px solid #E3E5E8;">
+                <span style="width:24px; height:24px; flex:none; border-radius:999px; background:#EBEDF0; color:#6B7280; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">?</span>
+                <div style="flex:1;">
+                  <div style="font-size:13px; font-weight:600; color:#3B3B3B;">Not verified in this session</div>
+                  <div style="font-size:12px; color:#6B7280; margin-top:4px; line-height:1.5;">The hash below is the value recorded at signing. Nothing has been checked against the stored file — run the check before relying on this certificate.</div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hashChecking }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:14px; background:#F7F8FA; border:1px solid #E3E5E8;">
+                <span style="width:24px; height:24px; flex:none; border-radius:999px; background:#EBEDF0;"></span>
+                <span style="font-size:13px; font-weight:600; color:#3B3B3B; flex:1;">Recomputing the hash of the stored file…</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hashOk }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:14px; background:#EAF4EC; border:1px solid #CFE6D6;">
                 <span style="width:24px; height:24px; flex:none; border-radius:999px; background:#1E8E3E; color:#fff; display:flex; align-items:center; justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 12.5l4 4 8-9"></path></svg></span>
-                <span style="font-size:13px; font-weight:600; color:#166F31; flex:1;">Hash matches — the document has not been altered since the last signature was applied.</span>
+                <div style="flex:1;">
+                  <div style="font-size:13px; font-weight:600; color:#166F31;">Hash matches — the document has not been altered since the last signature was applied.</div>
+                  <div style="font-size:12px; color:#2F6B41; margin-top:4px;">Checked {{ hashCheckedAt }}</div>
+                </div>
               </div>
             </sc-if>
             <sc-if value="{{ hashBad }}" hint-placeholder-val="{{ false }}">
@@ -10741,6 +10759,7 @@ const DIGI_PAGES = [
 
 const ESIGN_DOCS = {
   'Amendment 3 — USAID-LON-24': {
+    id:'ESR-2026-0031', title:'Amendment 3 — USAID-LON-24',
     kind:'Award amendment', pages:6, size:'812 KB', hash:'9f2c4a7b1e8d63f05a9c2b47de81f36a0c5e7924b8d1a36f47c092e5b6a83d1c',
     opened:'29/07/2026', closed:'30/07/2026', elapsed:'19h 19m', state:'complete',
     signers:[
@@ -10749,6 +10768,7 @@ const ESIGN_DOCS = {
       { name:'Karen Adeleke', role:'Agreement Officer, USAID Nigeria', method:'Typed', verified:'Email one-time code', when:'30/07/2026 · 09:41', ip:'41.58.112.201', done:true }
     ] },
   'MOU — Enugu State Ministry': {
+    id:'ESR-2026-0032', title:'MOU — Enugu State Ministry',
     kind:'Memorandum', pages:9, size:'1.1 MB', hash:'c41e77a0b98d2f634185ac07e5b3d29f6084c1ba7de35902f8146bc3ad07e912',
     opened:'15/07/2026', closed:'—', elapsed:'20 days open', state:'open',
     signers:[
@@ -10756,6 +10776,7 @@ const ESIGN_DOCS = {
       { name:'Hon. Comm. for Women Affairs', role:'Enugu State Ministry', method:'—', verified:'Email one-time code', when:'Awaiting since 15/07/2026', ip:'—', done:false }
     ] },
   'Consultancy — M. Okonkwo': {
+    id:'ESR-2026-0033', title:'Consultancy — M. Okonkwo',
     kind:'Consultant contract', pages:11, size:'642 KB', hash:'7ba0e419cc82d5f13068ae72b94f0c85da6317e920fb4c8d05a7e236194bc0af',
     opened:'01/08/2026', closed:'—', elapsed:'3 days open', state:'open',
     signers:[
@@ -10763,6 +10784,7 @@ const ESIGN_DOCS = {
       { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'—', verified:'Password + authenticator', when:'Not yet reached', ip:'—', done:false }
     ] },
   'Vendor agreement — Sahel Logistics': {
+    id:'ESR-2026-0034', title:'Vendor agreement — Sahel Logistics',
     kind:'Vendor contract', pages:8, size:'488 KB', hash:'2df6910c74be8a05c1237fd9e04b6a82530917cef4a8bd216730e59c8ab41f07',
     opened:'03/08/2026', closed:'—', elapsed:'1 day open', state:'open',
     signers:[
@@ -10770,6 +10792,7 @@ const ESIGN_DOCS = {
       { name:'Dr. Amina Yusuf', role:'Managing Director, WEWE', method:'—', verified:'Password + authenticator', when:'Awaiting since 03/08/2026', ip:'—', done:false }
     ] },
   'Lease renewal — Abuja office': {
+    id:'ESR-2026-0035', title:'Lease renewal — Abuja office',
     kind:'Property', pages:14, size:'1.4 MB', hash:'e508b3c1927fa46d0b28e7315cd9046ba7f2318e04c95dba6127e3f80a94c5d6',
     opened:'24/07/2026', closed:'—', elapsed:'Declined 26/07/2026', state:'declined',
     signers:[
@@ -12583,7 +12606,7 @@ class Component extends DCLogic {
     ceremonyStep: 1,
     ceremonyMethod: 'saved',
     extStep: 1,
-    hashOk: true,
+    hashResults: {},
     fbTab: 'build',
     fbFields: START_FIELDS.map((f, i) => Object.assign({ id:i + 1 }, f)),
     fbSel: 1,
@@ -12906,6 +12929,20 @@ class Component extends DCLogic {
     const route = this.state.route || '/dashboard';
     const qi = route.indexOf('?');
     const path = qi === -1 ? route : route.slice(0, qi);
+    const certPick = (() => {
+      const cm = /[?&]id=([^&]+)/.exec(route);
+      const raw = cm ? decodeURIComponent(cm[1]) : '';
+      const keys = Object.keys(ESIGN_DOCS);
+      let title = '';
+      if (raw) {
+        if (ESIGN_DOCS[raw]) title = raw;
+        else { const k = keys.filter(x => ESIGN_DOCS[x].id === raw)[0]; if (k) title = k; }
+      } else title = keys[0] || '';
+      const d = title ? ESIGN_DOCS[title] : null;
+      return { title, doc:d, id: d ? d.id : '' };
+    })();
+    const certDocId = certPick.id;
+    const certVerdict = (this.state.hashResults || {})[certDocId] || { state:'unknown' };
     const detMatch = /^\/requisitions\/((?:REQ|ADV|RET|PO)-\d{4}-\d{4})$/.exec(path);
     const detBundle = detMatch ? this.detailFor(detMatch[1]) : null;
 
@@ -13858,9 +13895,8 @@ class Component extends DCLogic {
         allowTyped: this.state.ssTyped
       }, 'Signature settings saved.'); if (ok) this.setState({ dlg:null }); },
       cert: (() => {
-        const m = /[?&]id=([^&]+)/.exec(route);
-        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
-        const d = ESIGN_DOCS[id];
+        const id = certPick.title;
+        const d = certPick.doc;
         if (!d) return { missing:true, found:false, name:id };
         const done = d.signers.filter(x => x.done).length;
         return { missing:false, found:true, name:id, kind:d.kind, pages:d.pages, size:d.size, hash:d.hash,
@@ -13872,19 +13908,43 @@ class Component extends DCLogic {
           meta: d.kind + ' · ' + d.pages + ' pages · ' + d.size };
       })(),
       signers: (() => {
-        const m = /[?&]id=([^&]+)/.exec(route);
-        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
-        const d = ESIGN_DOCS[id];
+        const d = certPick.doc;
         return (d ? d.signers : []).map((s, i) => ({ ...s, bg: i % 2 === 1 ? '#F8F9FA' : '#FFFFFF',
           pending: !s.done, declinedRow: s.method === 'Declined' }));
       })(),
       docHash: (() => {
-        const m = /[?&]id=([^&]+)/.exec(route);
-        const id = m ? decodeURIComponent(m[1]) : 'Amendment 3 — USAID-LON-24';
-        return (ESIGN_DOCS[id] || {}).hash || '—';
+        return (certPick.doc || {}).hash || '—';
       })(),
-      hashOk: this.state.hashOk, hashBad: !this.state.hashOk,
-      toggleHash: () => this.setState({ hashOk: !this.state.hashOk }),
+      hashOk: certVerdict.state === 'ok',
+      hashBad: certVerdict.state === 'bad',
+      hashUnknown: certVerdict.state === 'unknown',
+      hashChecking: certVerdict.state === 'checking',
+      hashCheckedAt: certVerdict.checkedAt || '',
+      verifyHash: () => {
+        const key = certDocId;
+        if (!key) { this.fail('This certificate is not tied to a document, so there is nothing to verify.'); return; }
+        const put = v => this.setState({ hashResults: Object.assign({}, this.state.hashResults, { [key]: v }) });
+        const fn = typeof window !== 'undefined' && window.__weweVerifyHash;
+        if (typeof fn !== 'function') {
+          put({ state:'unknown' });
+          this.fail('Hash verification is not connected yet. Nothing has been checked — do not treat this document as verified.');
+          return;
+        }
+        put({ state:'checking' });
+        let res;
+        try { res = fn({ documentId:key }); }
+        catch (e) { put({ state:'unknown' }); this.fail((e && e.message) || 'The check could not be completed. This document is unverified.'); return; }
+        if (res === false || res === null || res === undefined) {
+          put({ state:'unknown' });
+          this.fail('The check could not be completed. This document is unverified.');
+          return;
+        }
+        const ok = res === true || res.matches === true || res.ok === true;
+        const when = (res && res.checkedAt) || new Date().toLocaleString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }).replace(',', ' ·');
+        put({ state: ok ? 'ok' : 'bad', checkedAt: when });
+        if (ok) { this.setState({ toastError:false }); this.toast('Hash matches the recorded value. The file is unaltered.'); }
+        else this.fail((res && (res.reason || res.message)) || 'The stored file does not match the recorded hash.');
+      },
       certQr: (() => {
         const N = 21;
         let h = 5381;

@@ -388,6 +388,44 @@ export class DocumentsController {
     return out;
   }
 
+  /**
+   * DMS-10: recompute the stored file's SHA-256 and compare it with the hash recorded at
+   * upload. This is the only honest answer to "has this document been altered since it was
+   * signed" — the certificate screen previously toggled a local boolean and displayed a
+   * tamper warning computed from nothing, which is worse than no check at all.
+   *
+   * A missing file is reported as its own state, not as a match and not as tampering: the
+   * bytes being gone is a real and different problem from the bytes being changed, and
+   * collapsing the two would send someone looking for the wrong thing.
+   *
+   * The check is audit-logged either way. A verification that found tampering and left no
+   * trace would be the single most valuable event in this system to lose.
+   */
+  @Get(':id/verify-hash')
+  async verifyHash(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {
+    const doc = await this.svc.doc(id);
+    await this.svc.assertReadable(user, doc);
+    const buf = await this.svc.storageSvc.read(doc.storageKey);
+    const checkedAt = new Date().toISOString();
+    if (!buf) {
+      await this.svc.auditSvc.log({
+        actorId: user.id, actorEmail: user.email, action: 'DOC_HASH_VERIFY_FAILED',
+        entityType: 'document', entityId: doc.id,
+        data: { reason: 'file missing from storage', storageKey: doc.storageKey }, ip: req.ip,
+      });
+      throw new NotFoundException('The stored file is missing, so its hash cannot be checked. This document is unverified.');
+    }
+    const actual = this.svc.storageSvc.sha256(buf);
+    const matches = actual === doc.sha256;
+    await this.svc.auditSvc.log({
+      actorId: user.id, actorEmail: user.email,
+      action: matches ? 'DOC_HASH_VERIFIED' : 'DOC_HASH_MISMATCH',
+      entityType: 'document', entityId: doc.id,
+      data: { name: doc.name, recorded: doc.sha256, actual, matches }, ip: req.ip,
+    });
+    return { documentId: doc.id, name: doc.name, matches, recorded: doc.sha256, actual, checkedAt };
+  }
+
   /** DMS-07: every open is audit-logged as DOC_VIEWED. */
   @Get(':id')
   async view(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Req() req: any) {

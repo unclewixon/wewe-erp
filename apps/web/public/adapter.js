@@ -2149,6 +2149,49 @@
     return 'Timesheet for ' + period + ' submitted for approval.';
   };
 
+  /**
+   * DMS-10: does this document still hash to what was recorded when it was signed?
+   *
+   * Phase 1.17 replaced the certificate's `toggleHash` — a local boolean that displayed
+   * "The file no longer matches what was signed" with nothing behind it — with a real call
+   * to this function, keyed per document. The design treats a throw, or anything falsy, as
+   * UNVERIFIED rather than as a pass, which is the right way round: the failure mode of a
+   * tamper check must never be a clean bill of health.
+   *
+   * The certificate screen is still fixture-driven (ESIGN_DOCS is not wired to live e-sign
+   * requests), so `documentId` arrives as a design id like 'ESR-2026-0031'. Resolve it
+   * properly and, when nothing matches, say so plainly instead of returning a verdict
+   * about a document we never found.
+   */
+  window.__weweVerifyHash = function (p) {
+    var raw = String((p && p.documentId) || '').trim();
+    if (!raw) throw new Error('This certificate is not tied to a document, so there is nothing to verify.');
+
+    var id = null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)) {
+      id = raw;
+    } else if (/^ESR-/i.test(raw)) {
+      // A signature-request ref: the document is whatever that request is about.
+      var reqs = get('/v1/esign/requests') || [];
+      var hit = (Array.isArray(reqs) ? reqs : []).filter(function (r) {
+        return String(r.ref || '').toUpperCase() === raw.toUpperCase();
+      })[0];
+      if (hit) id = hit.documentId || (hit.document && hit.document.id) || null;
+    }
+    if (!id) {
+      // Fall back to an exact, unique name match — ambiguity is not a match, because
+      // verifying the wrong file and reporting it as this one is the worst outcome here.
+      var found = get('/v1/dms/search?q=' + encodeURIComponent(raw));
+      var exact = ((found && found.results) || []).filter(function (d) { return d.name === raw; });
+      if (exact.length === 1) id = exact[0].id;
+    }
+    if (!id) throw new Error('No document on this server matches "' + raw + '", so nothing was checked. Treat it as unverified.');
+
+    var res = get('/v1/dms/documents/' + id + '/verify-hash');
+    if (!res) return false;                       // unknown, never a pass
+    return { matches: res.matches === true, checkedAt: res.checkedAt };
+  };
+
   // ---- Documents: apply a legal hold (resolve doc names → ids first, exact-match guarded) ----
   window.__weweApplyLegalHold = function (p) {
     var names = (p && p.documents) || [];
