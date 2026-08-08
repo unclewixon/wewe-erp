@@ -18,7 +18,11 @@ function localCdnResources(): Plugin {
   // Serve-time only — the design file on disk stays byte-identical (cmp-guarded).
   const WIRED = ['TXNS', 'BUDGET_ROWS', 'QB_EXCEPTIONS', 'AUDIT_LOG', 'GRANTS', 'STAFF', 'VENDORS', 'ASSETS', 'INV_ITEMS', 'FINDINGS', 'LEAVE', 'USERS', 'NOTIFICATIONS', 'SESSIONS_MINE', 'DELEGATIONS_MINE', 'BULK_QUEUE',
     // Phase G — extended live reads (payroll, timesheets, procurement, documents/e-sign, admin permissions, retirements)
-    'PAYROLL', 'TIMESHEET', 'RFQ_VENDORS', 'QUOTES', 'DOCS', 'SIGNERS', 'CERT_SIGNERS', 'RESOLVED', 'PERM_CHANGES', 'RET_LINES'];
+    'PAYROLL', 'TIMESHEET', 'RFQ_VENDORS', 'QUOTES', 'DOCS', 'SIGNERS', 'CERT_SIGNERS', 'RESOLVED', 'PERM_CHANGES', 'RET_LINES',
+    // The repository table renders from DMS_DOCS; DOCS feeds a smaller panel elsewhere.
+    // Wiring only DOCS left the repository showing fixtures — and a legal hold ticked
+    // against a fixture row names a document that exists on no server.
+    'DMS_DOCS'];
   const DATA_WRAPS: [string, string][] = WIRED.map((k) => [
     `const ${k} = [`,
     `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,

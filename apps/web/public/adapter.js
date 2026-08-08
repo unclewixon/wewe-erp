@@ -1159,10 +1159,82 @@
     return out;
   });
 
+  /**
+   * Every signature request this person has anything to do with.
+   *
+   * GET /v1/esign/requests with no scope returns only the ones you RAISED; the ones
+   * waiting on your signature are behind ?scope=to-sign. Asking for the default alone
+   * meant a signer opened the e-sign screen and saw nothing to sign — the single thing
+   * they came for. Merge both views and de-duplicate, because a request you raised can
+   * also be one you must sign.
+   */
+  function esignRequests(fetcher) {
+    var seen = {}, out = [];
+    ['/v1/esign/requests', '/v1/esign/requests?scope=to-sign'].forEach(function (url) {
+      var rows = fetcher(url);
+      if (!Array.isArray(rows)) return;
+      rows.forEach(function (r) { if (r && r.id && !seen[r.id]) { seen[r.id] = 1; out.push(r); } });
+    });
+    return out;
+  }
+
+  /**
+   * The repository table renders from DMS_DOCS, not from DOCS — two different consts for
+   * two different tables, and we had only been feeding the smaller one. So every live
+   * document went into a panel nobody looks at while the repository itself showed
+   * fixtures, which is also why applying a legal hold never reached the server: the rows
+   * being ticked were demo names that exist on no server.
+   *
+   * `ocr` and `linked` are left null rather than filled with plausible numbers. We do not
+   * compute an OCR confidence, and inventing one on a screen an auditor reads is exactly
+   * the habit this integration keeps having to undo.
+   */
+  wire('DMS_DOCS', function () {
+    function fmtBytes(n) {
+      n = Number(n) || 0;
+      if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+      if (n >= 1024) return Math.round(n / 1024) + ' KB';
+      return n + ' B';
+    }
+    var docs = xhr('GET', '/v1/dms/documents');
+    if (!Array.isArray(docs)) return null;
+    var pathById = {};
+    (function walk(nodes, prefix) {
+      (nodes || []).forEach(function (n) {
+        var path = prefix ? prefix + ' / ' + n.name : n.name;
+        pathById[n.id] = path;
+        if (Array.isArray(n.children)) walk(n.children, path);
+      });
+    })(xhr('GET', '/v1/dms/folders') || [], '');
+    // Which documents have a completed signature — one call, not one per row.
+    var signed = {};
+    ['/v1/esign/requests', '/v1/esign/requests?scope=to-sign'].forEach(function (u) {
+      var rows = xhr('GET', u);
+      if (Array.isArray(rows)) rows.forEach(function (r) {
+        if (r && r.documentId && r.status === 'COMPLETED') signed[r.documentId] = true;
+      });
+    });
+    return docs.map(function (d) {
+      return {
+        name: d.name,
+        folder: d.folderId ? (pathById[d.folderId] || 'Unknown folder') : 'Unfiled',
+        cls: d.docType || 'Unclassified',
+        size: fmtBytes(d.sizeBytes),
+        ver: 'v' + d.currentVersion,
+        when: ddmmyyyy(d.createdAt),
+        conf: !!d.confidential,
+        hold: !!d.legalHold,
+        ocr: null,
+        linked: '',
+        signed: !!signed[d.id],
+      };
+    });
+  });
+
   // ---- e-sign: in-progress ceremony signer panel ----
   wire('SIGNERS', function () {
-    var reqs = xhr('GET', '/v1/esign/requests');
-    if (!Array.isArray(reqs) || !reqs.length) return null;
+    var reqs = esignRequests(function (u) { return xhr('GET', u); });
+    if (!reqs.length) return null;
     var r = reqs.filter(function (x) { return x.status === 'OPEN'; })[0] || reqs[0];
     if (!r || !Array.isArray(r.signers)) return null;
     var titleByName = {};
@@ -1181,8 +1253,8 @@
 
   // ---- e-sign: completed certificate signers ----
   wire('CERT_SIGNERS', function () {
-    var reqs = xhr('GET', '/v1/esign/requests');
-    if (!Array.isArray(reqs)) return null;
+    var reqs = esignRequests(function (u) { return xhr('GET', u); });
+    if (!reqs.length) return null;
     var done = reqs.filter(function (x) { return x.status === 'COMPLETED' && x.certificate; });
     if (!done.length) return null;
     var cert = done[0].certificate;
@@ -1647,11 +1719,48 @@
     return 'Sent to ' + signers.length + (signers.length === 1 ? ' signatory.' : ' signatories.');
   };
 
+  /**
+   * A request id, an ESR ref, or the title of the document being signed, onto exactly one
+   * signature request. Prefers requests that are OPEN and awaiting this person: if the
+   * same document has been sent for signature more than once, the one you are being asked
+   * to sign is the one still open on you.
+   */
+  function resolveSignatureRequestId(raw) {
+    var want = String(raw || '').trim();
+    if (!want) return null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(want)) return want;
+    var all = [], seen = {};
+    ['/v1/esign/requests?scope=to-sign', '/v1/esign/requests'].forEach(function (u) {
+      var rows = get(u);
+      if (Array.isArray(rows)) rows.forEach(function (r) {
+        if (r && r.id && !seen[r.id]) { seen[r.id] = 1; all.push(r); }
+      });
+    });
+    var norm = function (s) { return String(s || '').toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, ''); };
+    var target = norm(want);
+    var match = function (r) {
+      return String(r.ref || '').toUpperCase() === want.toUpperCase()
+        || norm(r.documentName || (r.document && r.document.name)) === target
+        || norm(r.title) === target;
+    };
+    var open = all.filter(function (r) { return r.status === 'OPEN' && match(r); });
+    if (open.length === 1) return open[0].id;
+    if (open.length > 1) return open[0].id;      // still open on me — the oldest is the one being worked
+    var any = all.filter(match);
+    return any.length === 1 ? any[0].id : null;
+  }
+
   window.__weweSignDocument = function (p) {
-    var id = String((p && p.requestId) || '').trim();
+    var raw = String((p && p.requestId) || '').trim();
     var method = String((p && p.method) || 'saved');
-    if (!id) return false;
+    if (!raw) return false;
     if (['drawn', 'typed', 'saved'].indexOf(method) === -1) method = 'saved';
+    // The ceremony identifies the request by the DOCUMENT TITLE it is about
+    // ('Amendment 3 — USAID-LON-24'), not by a request id — the fourth place in this
+    // bundle where a screen hands us a label instead of an identifier. Signing the wrong
+    // document is not a recoverable mistake, so resolve to exactly one request or refuse.
+    var id = resolveSignatureRequestId(raw);
+    if (!id) throw new Error('No open signature request on this server matches "' + raw + '", so nothing was signed.');
     var res = post('/v1/esign/requests/' + id + '/sign', { method: method });
     if (!res) return false;                   // the engine refuses anyone who is not a signer
     return res.status === 'COMPLETED'
@@ -2195,8 +2304,18 @@
       id = raw;
     } else if (/^ESR-/i.test(raw)) {
       // A signature-request ref: the document is whatever that request is about.
-      var reqs = get('/v1/esign/requests') || [];
-      var hit = (Array.isArray(reqs) ? reqs : []).filter(function (r) {
+      // Both scopes, inlined rather than shared: esignRequests() lives in the wiring
+      // IIFE and is not in scope here, and a helper that resolves at parse time in one
+      // block and throws in another is the kind of bug node --check cannot see.
+      var reqs = [];
+      var seenReq = {};
+      ['/v1/esign/requests', '/v1/esign/requests?scope=to-sign'].forEach(function (u) {
+        var rows = get(u);
+        if (Array.isArray(rows)) rows.forEach(function (r) {
+          if (r && r.id && !seenReq[r.id]) { seenReq[r.id] = 1; reqs.push(r); }
+        });
+      });
+      var hit = reqs.filter(function (r) {
         return String(r.ref || '').toUpperCase() === raw.toUpperCase();
       })[0];
       if (hit) id = hit.documentId || (hit.document && hit.document.id) || null;
