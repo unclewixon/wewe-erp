@@ -34,6 +34,7 @@ async function main() {
     ['INITIATOR', 'Initiator'], ['SUPERVISOR', 'Supervisor'], ['INTERNAL_AUDIT', 'Internal Audit'],
     ['FINANCE', 'Finance'], ['FINAL_APPROVER', 'Final Approver'], ['HR_OFFICER', 'HR Officer'],
     ['SYSTEM_ADMIN', 'System Administrator'], ['EXTERNAL_AUDITOR', 'External Auditor'],
+    ['PROCUREMENT_OFFICER', 'Procurement Officer'],
   ];
   await db.insert(schema.roles).values(roleDefs.map(([code, name]) => ({ code: code as any, name }))).onConflictDoNothing();
   const roles = await db.select().from(schema.roles);

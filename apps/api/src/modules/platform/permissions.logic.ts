@@ -93,6 +93,18 @@ export const DEFAULT_ROLE_GRANTS: Record<RoleCode, PermGrant[]> = {
     ...grant(['reports'], ['VIEW', 'CREATE', 'EXPORT'], 'organisation'),               // schedules
     ...grant(['hr', 'documents'], ['VIEW'], 'organisation'),
   ],
+  /**
+   * PROC-01. Runs sourcing end to end — issue the RFQ, take quotes, award, raise the PO,
+   * receipt the goods — and approves none of it. SUBMIT without APPROVE on procurement is
+   * what keeps this SoD-clean: the award proposes a commitment, the workflow disposes.
+   * Finance keeps vendor bank confirmation and contracts; this role does not touch them.
+   */
+  PROCUREMENT_OFFICER: [
+    ...grant(['procurement'], ['VIEW', 'CREATE', 'EDIT', 'SUBMIT', 'EXPORT'], 'organisation'),
+    ...grant(['inventory'], ['VIEW', 'CREATE', 'EDIT'], 'organisation'),   // goods receipt into stores
+    ...grant(['documents', 'esign'], ['VIEW', 'CREATE'], 'own'),
+    ...grant(['budgets', 'reports'], ['VIEW'], 'organisation'),            // spend against line, before awarding
+  ],
   FINAL_APPROVER: [
     ...grant(APPROVAL_MODULES, ['VIEW', 'APPROVE'], 'organisation'),                   // stage 5 everywhere
     ...grant(['procurement'], ['VIEW', 'APPROVE'], 'organisation'),

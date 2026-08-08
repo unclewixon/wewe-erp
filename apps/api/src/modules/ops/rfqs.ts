@@ -11,7 +11,7 @@ import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, schema } from '../../db/client';
 import { AuditService } from '../../audit/audit.service';
-import { AuthGuard, CurrentUser, type AuthedUser } from '../../auth/auth';
+import { AuthGuard, CurrentUser, type AuthedUser, RequireRoles } from '../../auth/auth';
 import { WorkflowService } from '../../workflow/workflow.service';
 import { bandFor, quoteRequirement } from './ops.logic';
 import { KoboString, loadThresholds, tableRef } from './shared';
@@ -226,7 +226,17 @@ export class RfqsService {
 export class RfqsController {
   constructor(private readonly svc: RfqsService) {}
 
+  /**
+   * PROC-01: sourcing is a role, not merely a login.
+   *
+   * Every write below was reachable by any authenticated user — an INITIATOR could issue an
+   * RFQ, enter the quotes, award it and cancel it. The award in particular decides who gets
+   * public money. Restricted to the procurement officer, with SYSTEM_ADMIN retained for
+   * recovery. FINANCE is deliberately absent: awarding commits the money and paying releases
+   * it, and one person holding both is exactly what the approval chain exists to prevent.
+   */
   @Post()
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   create(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {
     return this.svc.create(user, CreateSchema.parse(body), req.ip);
   }
@@ -247,16 +257,19 @@ export class RfqsController {
   }
 
   @Post(':id/quotes')
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   addQuote(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Body() body: unknown, @Req() req: any) {
     return this.svc.addQuote(user, id, AddQuoteSchema.parse(body), req.ip);
   }
 
   @Post(':id/select')
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   select(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Body() body: unknown, @Req() req: any) {
     return this.svc.select(user, id, SelectSchema.parse(body), req.ip);
   }
 
   @Post(':id/cancel')
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   cancel(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Body() body: unknown, @Req() req: any) {
     const dto = z.object({ reason: z.string().min(5).max(1000) }).parse(body);
     return this.svc.cancel(user, id, dto.reason, req.ip);

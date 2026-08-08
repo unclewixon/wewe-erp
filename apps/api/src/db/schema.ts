@@ -5,6 +5,11 @@ import { relations, sql } from 'drizzle-orm';
 
 export const roleCode = pgEnum('role_code', [
   'INITIATOR', 'SUPERVISOR', 'INTERNAL_AUDIT', 'FINANCE', 'FINAL_APPROVER', 'HR_OFFICER', 'SYSTEM_ADMIN', 'EXTERNAL_AUDITOR',
+  // PROC-01: whoever runs a sourcing exercise — issues the RFQ, collects quotes, awards it
+  // and raises the purchase order. Deliberately NOT Finance: the award commits the money and
+  // the payment releases it, and one person holding both is the failure the approval chain
+  // exists to prevent. Before this existed, those routes had no role guard at all.
+  'PROCUREMENT_OFFICER',
 ]);
 export type RoleCode = (typeof roleCode.enumValues)[number];
 

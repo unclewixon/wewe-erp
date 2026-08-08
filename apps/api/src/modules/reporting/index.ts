@@ -305,6 +305,9 @@ export async function seedDefaults(): Promise<void> {
   // EXTERNAL_AUDITOR role row (enum value exists; role table row needed for grants)
   const existing = await db.query.roles.findFirst({ where: eq(schema.roles.code, 'EXTERNAL_AUDITOR') });
   if (!existing) await db.insert(schema.roles).values({ code: 'EXTERNAL_AUDITOR', name: 'External Auditor' }).onConflictDoNothing();
+  // PROC-01: same pattern — the enum value exists, but grants need a roles row to point at.
+  const proc = await db.query.roles.findFirst({ where: eq(schema.roles.code, 'PROCUREMENT_OFFICER') });
+  if (!proc) await db.insert(schema.roles).values({ code: 'PROCUREMENT_OFFICER', name: 'Procurement Officer' }).onConflictDoNothing();
 }
 
 let interval: NodeJS.Timeout | null = null;

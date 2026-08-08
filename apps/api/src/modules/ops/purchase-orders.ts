@@ -12,7 +12,7 @@ import { desc, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, schema } from '../../db/client';
 import { AuditService } from '../../audit/audit.service';
-import { AuthGuard, CurrentUser, type AuthedUser } from '../../auth/auth';
+import { AuthGuard, CurrentUser, RequireRoles, type AuthedUser } from '../../auth/auth';
 import { WorkflowService } from '../../workflow/workflow.service';
 import { applyReceipt, orderSplittingFlags, type PoLine } from './ops.logic';
 import { loadThresholds, tableRef } from './shared';
@@ -228,7 +228,10 @@ export class PurchaseOrdersController {
     return this.svc.orderSplittingReport();
   }
 
+  /** PROC-01: raising a purchase order commits the organisation to pay. Not open to anyone
+   *  with a login, and not to Finance, who release the payment against it. */
   @Post()
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   create(@CurrentUser() user: AuthedUser, @Body() body: unknown, @Req() req: any) {
     const dto = CreateSchema.parse(body);
     return this.svc.createFromRfq(user, dto.rfqId, req.ip);
@@ -249,7 +252,14 @@ export class PurchaseOrdersController {
     return this.svc.printable(id);
   }
 
+  /**
+   * Goods receipt. Guarded because it was open to any login, but note the residual weakness:
+   * the officer who raised the PO can still sign for its delivery. Properly this belongs to
+   * whoever runs the store, and there is no stores role yet — recorded rather than papered
+   * over with a guard that only looks like separation.
+   */
   @Post(':id/receipts')
+  @RequireRoles('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN')
   receipt(@CurrentUser() user: AuthedUser, @Param('id') id: string, @Body() body: unknown, @Req() req: any) {
     return this.svc.recordReceipt(user, id, ReceiptSchema.parse(body), req.ip);
   }

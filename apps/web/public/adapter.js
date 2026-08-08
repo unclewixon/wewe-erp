@@ -204,6 +204,7 @@
       ['FINAL_APPROVER', 'md', 'Final Approver'],
       ['FINANCE', 'finance', 'Finance'],
       ['INTERNAL_AUDIT', 'audit', 'Internal Audit'],
+      ['PROCUREMENT_OFFICER', 'procurement', 'Procurement Officer'],
       ['SUPERVISOR', 'supervisor', 'Supervisor'],
       ['HR_OFFICER', 'hr', 'HR'],
       ['EXTERNAL_AUDITOR', 'extaudit', 'External Auditor'],
