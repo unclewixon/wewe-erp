@@ -22,7 +22,7 @@ function localCdnResources(): Plugin {
     // The repository table renders from DMS_DOCS; DOCS feeds a smaller panel elsewhere.
     // Wiring only DOCS left the repository showing fixtures — and a legal hold ticked
     // against a fixture row names a document that exists on no server.
-    'DMS_DOCS'];
+    'DMS_DOCS', 'DMS_TREE', 'DMS_CLASSES'];
   const DATA_WRAPS: [string, string][] = WIRED.map((k) => [
     `const ${k} = [`,
     `const ${k} = (window.__weweData && window.__weweData.${k}) || [`,

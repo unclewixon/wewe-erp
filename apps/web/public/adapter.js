@@ -1179,6 +1179,49 @@
   }
 
   /**
+   * The repository's folder rail and its counts. The design ships a fixture tree whose
+   * numbers (4182 across 7 folders) sat above a table listing twelve real documents —
+   * a filter that says 1,284 and returns none reads as a broken search, not as demo data.
+   *
+   * Counts are of documents actually in each folder, and roll up to ancestors, so a
+   * parent's number is the sum of what its children hold rather than a separate figure
+   * that can drift from them.
+   */
+  wire('DMS_TREE', function () {
+    var docs = xhr('GET', '/v1/dms/documents');
+    var tree = xhr('GET', '/v1/dms/folders');
+    if (!Array.isArray(docs) || !Array.isArray(tree)) return null;
+    var direct = {};
+    docs.forEach(function (d) { if (d.folderId) direct[d.folderId] = (direct[d.folderId] || 0) + 1; });
+    var rows = [{ label: 'All documents', count: docs.length, depth: 0 }];
+    (function walk(nodes, depth) {
+      (nodes || []).forEach(function (n) {
+        var total = direct[n.id] || 0;
+        (function sum(kids) {
+          (kids || []).forEach(function (k) { total += direct[k.id] || 0; sum(k.children); });
+        })(n.children);
+        rows.push({ label: n.name, count: total, depth: depth });
+        if (Array.isArray(n.children) && n.children.length) walk(n.children, depth + 1);
+      });
+    })(tree, 1);
+    return rows;
+  });
+
+  /** Document classes, counted from what is actually filed under each. */
+  wire('DMS_CLASSES', function () {
+    var docs = xhr('GET', '/v1/dms/documents');
+    if (!Array.isArray(docs)) return null;
+    var byClass = {};
+    docs.forEach(function (d) {
+      var c = d.docType || 'Unclassified';
+      byClass[c] = (byClass[c] || 0) + 1;
+    });
+    var rows = [{ label: 'All classes', n: docs.length }];
+    Object.keys(byClass).sort().forEach(function (c) { rows.push({ label: c, n: byClass[c] }); });
+    return rows;
+  });
+
+  /**
    * The repository table renders from DMS_DOCS, not from DOCS — two different consts for
    * two different tables, and we had only been feeding the smaller one. So every live
    * document went into a panel nobody looks at while the repository itself showed
